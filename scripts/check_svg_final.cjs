@@ -3,10 +3,10 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
 const {spawnSync,execFileSync}=require('node:child_process');
-const root=path.resolve(__dirname,'..'),out=path.resolve(process.env.SVG_REVIEW_DIR||path.join(root,'../jiangshan-map-svg-final-ae8a422-review'));
+const root=path.resolve(__dirname,'..'),out=path.resolve(process.env.SVG_REVIEW_DIR||path.join(root,'../jiangshan-map-svg-low-risk-review'));
 fs.mkdirSync(out,{recursive:true});
 const base=process.env.WEB_BASE_REF||'ae8a422',phase=process.argv.includes('--measure-only')?'measure':'validation';
-const env={...process.env,WEB_BASE_REF:base,WEB_BASE_URL:process.env.WEB_BASE_URL||'http://127.0.0.1:8824/',ATLAS_URL:process.env.ATLAS_URL||'http://127.0.0.1:8825/'};
+const env={...process.env,WEB_BASE_REF:base,WEB_BASE_URL:process.env.WEB_BASE_URL||'http://127.0.0.1:8834/',ATLAS_URL:process.env.ATLAS_URL||'http://127.0.0.1:8835/'};
 assert(env.PLAYWRIGHT_PATH,'Set PLAYWRIGHT_PATH');
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex'),git=(...a)=>execFileSync('git',a,{cwd:root,encoding:'utf8'}).trim();
 const sources=()=>Object.fromEntries(['js/app.js','css/style.css','index.html'].map(f=>[f,sha(fs.readFileSync(path.join(root,f)))]));
@@ -52,11 +52,7 @@ try{
   run('assets','scripts/sync_version.js',{},false,['--check']);
   run('atlas','scripts/validate_atlas.js');
   run('geometry','scripts/validate_web_equivalence.cjs',{WEB_EQUIVALENCE_OUTPUT:path.join(out,'geometry.json')});
-  run('worker','scripts/validate_playback_preparation.cjs',{PLAYBACK_PREPARATION_OUTPUT:path.join(out,'worker.json')});
-  run('scenes','scripts/validate_svg_reuse.cjs',{SVG_REUSE_OUTPUT:path.join(out,'scenes.json')});
   run('camera','scripts/validate_camera.cjs',{CAMERA_TEST_OUTPUT:path.join(out,'camera')});
-  run('plane','scripts/validate_camera_plane.cjs',{CAMERA_PLANE_OUTPUT:path.join(out,'plane')});
-  run('viewport','scripts/validate_viewport_labels.cjs',{VIEWPORT_TEST_OUTPUT:path.join(out,'viewport')});
   run('callouts','scripts/validate_callout_motion.cjs',{CALLOUT_TEST_OUTPUT:path.join(out,'callouts')});
   run('features','scripts/validate_web_features.cjs',{WEB_FEATURE_OUTPUT:path.join(out,'features')});
   run('timeline','scripts/validate_timeline_rendering.cjs',{THUMB_VALIDATION_OUTPUT:path.join(out,'timeline')});

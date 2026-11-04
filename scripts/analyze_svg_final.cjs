@@ -17,8 +17,8 @@ const referenceFiles={
  'scripts/capture_window_frames.swift':'ad647a1a7a77f483cecfa128fd0e2a3a4905c2449903923207cfbd6a1f60dd68',
  // Portable capture lookup; native counting and trace calculations unchanged.
  'scripts/analyze_frame_delivery.cjs':'30a31769389925761422c433c2236173e9b64a1ac34f0a886c2aa136c175a58e',
- 'js/app.js':'c41b76fb8bc8d616187de7c537fe953fd4cd09812640bb0c7efce4e3e087c2cf',
- 'css/style.css':'f6b79d424864536da3ddfb5eb8444279d33e40e95d0c05c475aa91ab1f62c5fb',
+ 'js/app.js':'30afd72a651f5a35d4cc1a20e9ad7cb0718091a2b0967c8ff1fbd0f33cec783f',
+ 'css/style.css':'638e75afd06c4de157958d44dd586adbe4242740c0e313fe76b53eb3bc57695a',
 };
 for(const [f,digest]of Object.entries(referenceFiles))assert.equal(sha(fs.readFileSync(f)),digest,'Selected implementation changed: '+f);
 const verifiedScripts=new Set();
@@ -66,11 +66,11 @@ archive(memoryFile,'memory.json');
 const validation=read(path.join(review,'validation-checks.json')),measurement=read(path.join(review,'measure-checks.json'));assert(validation.complete&&measurement.complete);assert(validation.checks.every(r=>r.exitCode===0));
 const sourceHashes=Object.fromEntries(['js/app.js','css/style.css','index.html'].map(f=>[f,sha(fs.readFileSync(f))]));assert.deepEqual(validation.sources,sourceHashes);assert.deepEqual(measurement.sources,sourceHashes);
 const logs={};for(const record of [validation,measurement])for(const r of record.checks){verifyRecordedScript(r.script,r.scriptSHA256);const b=fs.readFileSync(path.join(review,r.name+'.log'));assert.equal(sha(b),r.logSHA256);logs[r.name]=b.toString();}
-const artifacts={};for(const f of ['geometry.json','worker.json','scenes.json','plane/checks.json','viewport/checks.json','callouts/checks.json','features/features.json','timeline/verification.json','responsive/checks.json','lan.json']){
+const artifacts={};for(const f of ['geometry.json','callouts/checks.json','features/features.json','timeline/verification.json','responsive/checks.json','lan.json']){
  const v=read(path.join(review,f));if(v.complete!==undefined)assert(v.complete);artifacts[f]=v;
 }
 assert(artifacts['features/features.json'].renderedContentEquivalent);assert.equal(artifacts['responsive/checks.json'].rows.length,18);
-write('verification.json',{complete:true,validation,measurement,sourceHashes,artifacts,logs,rawEvidenceDirectory:path.resolve(review)});
+write('verification.json',{complete:true,validation,measurement,sourceHashes,artifacts,logs,rawEvidenceDirectory:path.resolve(review),prSource:read(path.join(review,'pr-source.json'))});
 assert(hosts.every(h=>['jellyfin','LogiPluginService'].every(n=>h.busyServices.some(s=>s.process===n))));
 const host={oneMinuteLoad:stats(hosts.map(h=>h.loadAverage[0])),services:Object.fromEntries(['jellyfin','LogiPluginService'].map(n=>{const a=hosts.flatMap(h=>h.busyServices.filter(s=>s.process===n));return [n,{pids:[...new Set(a.map(s=>s.pid))],cpuPercent:stats(a.map(s=>s.cpuPercent))}]}))};
 write('summary.json',{complete:true,baseCommit:git('rev-parse',base).toString().trim(),sourceHashes,cohorts,memory:memoryGroups,host,traceCount,nativeCaptureCount:captures.length,playbackYears,

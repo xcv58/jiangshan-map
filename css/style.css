@@ -406,7 +406,7 @@ h2 {
   height: 100%;
   transform-origin: 0 0;
   contain: layout style;
-  /* Zoom uses the SVG viewBox; translation can reuse a bounded painted plane. */
+  will-change: transform;
 }
 
 #atlas-svg {
@@ -431,12 +431,6 @@ h2 {
 
 #atlas-svg.is-panning {
   cursor: grabbing;
-}
-
-/* Keep offscreen labels in the scene model; paint them again before they enter
-   the viewport. Collision rules, per-frame text scaling and outlines stay native. */
-#atlas-svg [data-outside-viewport] {
-  display: none !important;
 }
 
 /* Pause infinite SVG pulse animations while camera or timeline is actively moving.
