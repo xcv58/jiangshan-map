@@ -19,7 +19,7 @@ const urls={baseline:process.env.WEB_BASE_URL||'http://127.0.0.1:8824/',candidat
 const variants=(process.env.FRAME_VARIANTS||'baseline,candidate').split(',');
 const runs=Number(process.env.FRAME_RUNS||3);
 const output=path.resolve(process.env.FRAME_OUTPUT||'/tmp/jiangshan-frames.json');
-const base=process.env.WEB_BASE_REF||'c0274ba';
+const base=process.env.WEB_BASE_REF||'ae8a422';
 const traceDir=process.env.FRAME_TRACE_DIR;
 const scenarios=(process.env.FRAME_SCENARIOS||'pan,zoom,playback').split(',');
 const minimumFps=process.env.FRAME_MIN_FPS === undefined ? null : Number(process.env.FRAME_MIN_FPS);

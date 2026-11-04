@@ -4,7 +4,7 @@
 const fs=require('node:fs'),path=require('node:path'),z=require('node:zlib'),crypto=require('node:crypto'),assert=require('node:assert/strict');
 const {execFileSync}=require('node:child_process'),{analyze}=require('./benchmark_frames.cjs'),{analyzeRow,resolveCaptureFile}=require('./analyze_frame_delivery.cjs');
 const [review,out]=process.argv.slice(2);assert(review&&out,'Usage: node --expose-gc scripts/analyze_svg_final.cjs REVIEW OUTPUT');fs.mkdirSync(out,{recursive:true});
-const root=path.resolve(__dirname,'..'),base=process.env.WEB_BASE_REF||'c0274ba',sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const root=path.resolve(__dirname,'..'),base=process.env.WEB_BASE_REF||'ae8a422',sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 const git=(...a)=>execFileSync('git',a,{cwd:root,maxBuffer:16*1024*1024}),read=f=>JSON.parse(fs.readFileSync(f));
 const write=(n,v)=>{const bytes=Buffer.from(JSON.stringify(v,null,2)+'\n'),compressed=n!=='summary.json';fs.writeFileSync(path.join(out,'svg-final-'+n+(compressed?'.gz':'')),compressed?z.gzipSync(bytes,{level:9}):bytes)};
 const archive=(file,name)=>fs.writeFileSync(path.join(out,'svg-final-'+name+'.gz'),z.gzipSync(fs.readFileSync(file),{level:9}));
