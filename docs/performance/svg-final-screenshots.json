@@ -1,0 +1,41 @@
+[
+  {
+    "viewport": "1280x720",
+    "files": [
+      "svg-final-main-1280x720.png",
+      "svg-final-optimized-1280x720.png"
+    ],
+    "sha256": [
+      "fae48c72781ad0c59bef85c6d135b8c97ec1c379c90df43d6f93f4b450523346",
+      "6669245956c6866cde97eb28330325fbb1e950257fdff6f8869187f5890f89ef"
+    ],
+    "meanAbsoluteRgbDifference": 0.05589988425925926,
+    "fractionPixelsWithChannelDifferenceOver16": 0.00024305555555555555
+  },
+  {
+    "viewport": "768x1024",
+    "files": [
+      "svg-final-main-768x1024.png",
+      "svg-final-optimized-768x1024.png"
+    ],
+    "sha256": [
+      "1d1537951470dc2ffead6bb3e6709af3b872d5d5de501e3bd810e88278fc117a",
+      "0d3821b1d6f70b818661458d78748f44b7694fc6f4717582ce13a94ef7fef07b"
+    ],
+    "meanAbsoluteRgbDifference": 0.03128094143337674,
+    "fractionPixelsWithChannelDifferenceOver16": 0.0002721150716145833
+  },
+  {
+    "viewport": "390x844",
+    "files": [
+      "svg-final-main-390x844.png",
+      "svg-final-optimized-390x844.png"
+    ],
+    "sha256": [
+      "78cf57b9ddc7f9ca7b085852777eca7dacf6ed1d4c9978c0111ee5068e4fb824",
+      "b35e02ac5c83cc2d10ea44543c0aa236415bc75435bec638138c750d0731c8bc"
+    ],
+    "meanAbsoluteRgbDifference": 0.08127455745939159,
+    "fractionPixelsWithChannelDifferenceOver16": 0.0003736784542471746
+  }
+]
