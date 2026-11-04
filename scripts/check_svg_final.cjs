@@ -3,9 +3,9 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
 const {spawnSync,execFileSync}=require('node:child_process');
-const root=path.resolve(__dirname,'..'),out=path.resolve(process.env.SVG_REVIEW_DIR||path.join(root,'../jiangshan-map-svg-low-risk-review'));
+const root=path.resolve(__dirname,'..'),out=path.resolve(process.env.SVG_REVIEW_DIR||path.join(root,'../jiangshan-map-svg-low-risk-ff1392c-review'));
 fs.mkdirSync(out,{recursive:true});
-const base=process.env.WEB_BASE_REF||'ae8a422',phase=process.argv.includes('--measure-only')?'measure':'validation';
+const base=process.env.WEB_BASE_REF||'ff1392c',phase=process.argv.includes('--measure-only')?'measure':'validation';
 const env={...process.env,WEB_BASE_REF:base,WEB_BASE_URL:process.env.WEB_BASE_URL||'http://127.0.0.1:8834/',ATLAS_URL:process.env.ATLAS_URL||'http://127.0.0.1:8835/'};
 assert(env.PLAYWRIGHT_PATH,'Set PLAYWRIGHT_PATH');
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex'),git=(...a)=>execFileSync('git',a,{cwd:root,encoding:'utf8'}).trim();

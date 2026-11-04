@@ -11,7 +11,7 @@ const { input, settle, hostState } = require('./benchmark_frames.cjs');
 const root = path.resolve(__dirname, '..');
 const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).trim();
 const hash = b => crypto.createHash('sha256').update(b).digest('hex');
-const base = process.env.WEB_BASE_REF || 'ae8a422';
+const base = process.env.WEB_BASE_REF || 'ff1392c';
 const urls = { baseline: process.env.WEB_BASE_URL || 'http://127.0.0.1:8824/', candidate: process.env.ATLAS_URL || 'http://127.0.0.1:8825/' };
 const runs = Number(process.env.MEMORY_RUNS || 3);
 const variants = (process.env.MEMORY_VARIANTS || 'baseline,candidate').split(',');
