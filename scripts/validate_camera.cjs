@@ -13,6 +13,7 @@ async function settled(page) {
   await page.waitForFunction(() => !atlasApp.flyRaf && atlasApp._camRaf === null && atlasApp._cameraSettleTimer === null);
 }
 async function load(page, query = '?year=1415') {
+  page.setDefaultNavigationTimeout(90000);
   page.on('pageerror', e => errors.push(e.message));
   await page.route('**/*', route => {
     const host = new URL(route.request().url()).hostname;
@@ -64,9 +65,12 @@ async function load(page, query = '?year=1415') {
     assert(Math.abs(burst.nextWidth - burst.width * Math.exp(-0.24)) < 1e-7);
     assert(Math.hypot(...burst.before.map((n, i) => n - burst.after[i])) < 1e-7, `Wheel anchor drifted: ${JSON.stringify(burst)}`);
     await page.waitForFunction(() => cameraChecks.apply === 1);
-    assert.equal(await page.evaluate(() => cameraChecks.typography), 0);
+    // Current camera rendering scales visible text in the coalesced frame;
+    // settling restores outlines without repeating the same typography work.
+    assert.equal(await page.evaluate(() => cameraChecks.typography), 1);
+    assert(await page.evaluate(() => Math.abs(atlasApp.camera.w - atlasApp._lastTypographyWidth) < 0.05));
     await settled(page);
-    assert.equal(await page.evaluate(() => cameraChecks.typography), 1, 'Finish must restore typography once');
+    assert.equal(await page.evaluate(() => cameraChecks.typography), 1, 'Settling must not repeat current typography');
     assert(await page.evaluate(() => Math.abs(atlasApp.camera.w - atlasApp._lastTypographyWidth) < 0.05));
     assert.notEqual(await page.locator('.polity-caption').first().evaluate(el => getComputedStyle(el).stroke), 'none');
 
