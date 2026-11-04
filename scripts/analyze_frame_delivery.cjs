@@ -22,7 +22,17 @@ function analyzeCapture(capture,start,end){
   comparisonTotalMs:comparisons.reduce((s,x)=>s+x,0),comparisonP95Ms:percentile(comparisons,.95),
   changedTimesUs:times.map(t=>t-start)};
 }
-function analyzeRow(row,traceDir){
+function resolveCaptureFile(capture,captureRoot){
+ const file=capture.file;
+ assert(typeof file==='string'&&file.length,'Missing native capture path');
+ if(!path.isAbsolute(file))return path.resolve(captureRoot,file);
+ // Legacy standard-layout records contain the original machine's absolute
+ // captures path. Always rebase it, even if that old copy still exists.
+ const local=path.resolve(captureRoot,'captures',path.basename(file));
+ if(path.basename(path.dirname(file))==='captures'||fs.existsSync(local))return local;
+ return file; // Compatibility with legacy custom capture directories.
+}
+function analyzeRow(row,traceDir,captureRoot=path.dirname(path.resolve(traceDir))){
  const bytes=zlib.gunzipSync(fs.readFileSync(path.join(traceDir,row.traceFile)));
  assert.equal(sha(bytes),row.traceSHA256,'Wrong trace archive');
  const events=JSON.parse(bytes).traceEvents;
@@ -30,7 +40,7 @@ function analyzeRow(row,traceDir){
  assert(Math.abs((end-start)/1000-row.durationMs)<.001);
  const waits=durations(events,start,end,'IOSurfaceImageBacking::WaitForCommandsToBeScheduled::Dawn');
  let native=null;
- if(row.windowCapture){const b=fs.readFileSync(row.windowCapture.file);assert.equal(sha(b),row.windowCapture.sha256,'Wrong native capture');native=analyzeCapture(JSON.parse(b),start,end)}
+ if(row.windowCapture){const b=fs.readFileSync(resolveCaptureFile(row.windowCapture,captureRoot));assert.equal(sha(b),row.windowCapture.sha256,'Wrong native capture');native=analyzeCapture(JSON.parse(b),start,end)}
  const feedback=row.presentationTimesUs||[];
  const gaps=feedback.slice(1).map((t,i)=>({start:start+feedback[i],end:start+t})).filter(g=>g.end-g.start>25000);
  // Overlap shows association only: it does not identify GPU utilization or the
@@ -46,9 +56,9 @@ function analyzeRow(row,traceDir){
 function main(){
  const [file,traceDir,output]=process.argv.slice(2);assert(file&&traceDir&&output,'Usage: node --expose-gc scripts/analyze_frame_delivery.cjs measurements.json trace-dir output.json');
  const input=JSON.parse(fs.readFileSync(file));assert(input.complete);
- const rows=[];for(const row of input.rows||input.runs){rows.push(analyzeRow(row,traceDir));if(global.gc)global.gc()}
+ const rows=[];for(const row of input.rows||input.runs){rows.push(analyzeRow(row,traceDir,path.dirname(path.resolve(file))));if(global.gc)global.gc()}
  const result={complete:true,input:path.resolve(file),inputSHA256:sha(fs.readFileSync(file)),
   method:'Unchanged Chrome presentation-feedback count plus independent ScreenCaptureKit exact map-ROI pixel changes, inside the same monotonic-clock window. Native sample delivery can coalesce frames and identical content can be intentional; changed-sample frequency is a conservative observation of visible content changes, not a physical display FPS measurement. The first changed sample has one-sample boundary uncertainty. GPU event durations are clipped to the window; different named/nested events must not be summed. Scheduling waits and interval overlaps show association, not hardware saturation or causality.',rows};
  fs.writeFileSync(output,JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(rows.map(r=>({scenario:r.scenario,variant:r.variant,repeat:r.repeat,chrome:r.chromePresentationFeedbackFps,native:r.native?.changedSamplesPerSecond,waitMs:r.gpu.dawnCommandSchedulingWait.totalMs}))));
 }
-module.exports={analyzeCapture,analyzeRow};if(require.main===module)main();
+module.exports={analyzeCapture,analyzeRow,resolveCaptureFile};if(require.main===module)main();

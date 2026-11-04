@@ -2,7 +2,7 @@
 // Offline evidence assembly; never run alongside timed browser workloads.
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),z=require('node:zlib'),crypto=require('node:crypto'),assert=require('node:assert/strict');
-const {execFileSync}=require('node:child_process'),{analyze}=require('./benchmark_frames.cjs'),{analyzeRow}=require('./analyze_frame_delivery.cjs');
+const {execFileSync}=require('node:child_process'),{analyze}=require('./benchmark_frames.cjs'),{analyzeRow,resolveCaptureFile}=require('./analyze_frame_delivery.cjs');
 const [review,out]=process.argv.slice(2);assert(review&&out,'Usage: node --expose-gc scripts/analyze_svg_final.cjs REVIEW OUTPUT');fs.mkdirSync(out,{recursive:true});
 const root=path.resolve(__dirname,'..'),base=process.env.WEB_BASE_REF||'d54411d',sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 const git=(...a)=>execFileSync('git',a,{cwd:root,maxBuffer:16*1024*1024}),read=f=>JSON.parse(fs.readFileSync(f));
@@ -15,7 +15,8 @@ const parser=s=>s.slice(s.indexOf('function analyze(events){'),s.indexOf('\nasyn
 assert.equal(sha(parser(fs.readFileSync('scripts/benchmark_frames.cjs','utf8'))),'f87076d0c643dccd7f1ab5831fa5b26e30e15b24073b68b40347d228a41dea43','FPS parser changed');
 const referenceFiles={
  'scripts/capture_window_frames.swift':'ad647a1a7a77f483cecfa128fd0e2a3a4905c2449903923207cfbd6a1f60dd68',
- 'scripts/analyze_frame_delivery.cjs':'5f4c4ac53ebcd1cd72267c9b8d74216071231ad4b73032324968c489d6cba9aa',
+ // Portable capture lookup; native counting and trace calculations unchanged.
+ 'scripts/analyze_frame_delivery.cjs':'30a31769389925761422c433c2236173e9b64a1ac34f0a886c2aa136c175a58e',
  'js/app.js':'c41b76fb8bc8d616187de7c537fe953fd4cd09812640bb0c7efce4e3e087c2cf',
  'css/style.css':'eed7e3eb7d52e6254ed84421b0a0e21bb850151287c3dca4d9e26bb90f9ca51e',
 };
@@ -45,8 +46,8 @@ for(const name of ['frames','native']){
   const checked=analyze(JSON.parse(bytes).traceEvents);assert.equal(checked.presentedFps,row.presentedFps);assert.deepEqual(checked.presentationTimesUs,row.presentationTimesUs);
   assert.deepEqual(row.errors,[]);assert.deepEqual(row.failed,[]);assert(row.state.focused&&row.state.visible==='visible'&&!row.state.playing&&!row.state.stageTransform&&row.state.typographyCurrent);assert.deepEqual(row.state.interruptions,[]);
   if(row.scenario==='playback'){playbackYears??=row.state.years;assert(playbackYears.length>=8);assert.deepEqual(row.state.years,playbackYears);}
-  const delivery=analyzeRow(row,path.join(review,name,'traces'));
-  if(row.windowCapture){const b=fs.readFileSync(row.windowCapture.file);assert.equal(sha(b),row.windowCapture.sha256);captures.push({file:row.windowCapture.file,sha256:sha(b),imageSHA256:sha(fs.readFileSync(row.windowCapture.file+'.png')),json:b.toString()});}
+  const captureRoot=path.resolve(review,name),delivery=analyzeRow(row,path.join(review,name,'traces'),captureRoot);
+  if(row.windowCapture){const captureFile=resolveCaptureFile(row.windowCapture,captureRoot),b=fs.readFileSync(captureFile);assert.equal(sha(b),row.windowCapture.sha256);captures.push({file:row.windowCapture.file,sha256:sha(b),imageSHA256:sha(fs.readFileSync(captureFile+'.png')),json:b.toString()});}
   rows.push({...delivery,layoutMs:checked.breakdown.Layout?.totalMs||0,paintMs:checked.breakdown.Paint?.totalMs||0,p95Ms:row.frameIntervalP95Ms,maxGapMs:row.frameIntervalMaxMs,longTasks:row.state.longTasks,droppedPct:row.droppedPct,partialPct:row.partialPct});
   hosts.push(row.hostBefore,row.hostAfter);traceCount++;if(global.gc)global.gc();
  }

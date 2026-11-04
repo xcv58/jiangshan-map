@@ -55,7 +55,7 @@ async function captureWindow(cdp,page,variant,repeat,scenario){
     child.once('error',error=>{clearTimeout(timer);reject(error)});
     child.once('close',code=>{clearTimeout(timer);if(!stdout.includes('"ready":true'))reject(Error('Native capture exited before readiness: '+code+' '+stderr))});
   });
-  return {async stop(){child.stdin.end('stop\n');await closed;const bytes=fs.readFileSync(file),result=JSON.parse(bytes);assert(result.complete,result.error);return {file:path.resolve(file),sha256:hash(bytes),requestedCaptureHz:result.requestedCaptureHz,frames:result.frames.length}},
+  return {async stop(){child.stdin.end('stop\n');await closed;const bytes=fs.readFileSync(file),result=JSON.parse(bytes);assert(result.complete,result.error);return {file:path.relative(path.dirname(output),path.resolve(file)),sha256:hash(bytes),requestedCaptureHz:result.requestedCaptureHz,frames:result.frames.length}},
     abort(){child.kill('SIGTERM')}};
 }
 
@@ -193,7 +193,7 @@ async function main(){
   if(assets.baseline&&assets.candidate)for(const file of ['js/map_data.js','js/lore_data.js','js/atlas_snapshots.js','js/atlas_quiz.js'])assert.equal(assets.baseline[file],assets.candidate[file]);
   const browserArgs=['--window-position=0,0','--disk-cache-size=33554432'];
   const browser=await chromium.launch({channel:'chrome',headless:false,args:browserArgs});
-  const result={schemaVersion:1,environment:{measuredAt:new Date().toISOString(),browser:browser.version(),node:process.version,platform:os.platform(),osRelease:os.release(),cpu:os.cpus()[0].model,memoryBytes:os.totalmem(),loadAverage:os.loadavg(),swap:process.platform==='darwin'?execFileSync('sysctl',['vm.swapusage'],{encoding:'utf8'}).trim():null,headless:false,viewport:{width:1280,height:720},dpr:2,baseCommit:git('rev-parse',base),candidateCommit:git('rev-parse','HEAD'),applicationDiff:git('diff','HEAD','--','js/app.js','css/style.css','index.html'),harnessSHA256:hash(fs.readFileSync(__filename)),assets,categories,method:'Unique presented PipelineReporter end timestamps from the page renderer, cross-checked against Display::FrameDisplayed. These Chrome events share presentation feedback; agreement validates parsing, not an independent measurement of display output. Trusted input and real 4x autoplay; no renderer overrides, synthetic animation or RAF FPS proxy.'},runs:[]};
+  const result={schemaVersion:1,environment:{runId:process.env.FRAME_RUN_ID||crypto.randomUUID(),measuredAt:new Date().toISOString(),browser:browser.version(),node:process.version,platform:os.platform(),osRelease:os.release(),cpu:os.cpus()[0].model,memoryBytes:os.totalmem(),loadAverage:os.loadavg(),swap:process.platform==='darwin'?execFileSync('sysctl',['vm.swapusage'],{encoding:'utf8'}).trim():null,headless:false,viewport:{width:1280,height:720},dpr:2,baseCommit:git('rev-parse',base),candidateCommit:git('rev-parse','HEAD'),applicationDiff:git('diff','HEAD','--','js/app.js','css/style.css','index.html'),harnessSHA256:hash(fs.readFileSync(__filename)),assets,categories,method:'Unique presented PipelineReporter end timestamps from the page renderer, cross-checked against Display::FrameDisplayed. These Chrome events share presentation feedback; agreement validates parsing, not an independent measurement of display output. Trusted input and real 4x autoplay; no renderer overrides, synthetic animation or RAF FPS proxy.'},runs:[]};
   try{
     result.complete=false;
     result.environment.repetitions=runs;
