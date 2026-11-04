@@ -14,6 +14,24 @@ const out=process.env.CALLOUT_TEST_OUTPUT||'/tmp/atlas-callouts';
   }
   assert.deepEqual(errors,[]);rows.push({phone,variant,states,errors});await c.close();
  }
- for(const phone of [false,true]){const [a,b]=rows.filter(r=>r.phone===phone);assert.deepEqual(b.states,a.states,'Callout dimensions, positions, caret or content changed')}
- fs.writeFileSync(path.join(out,'checks.json'),JSON.stringify({complete:true,rows},null,2)+'\n');console.log('PASS: identical callout position, size, caret and content before/during/after camera motion across six years on desktop/phone.');
+ fs.writeFileSync(path.join(out,'in-progress.json'),JSON.stringify({complete:false,rows},null,2)+'\n');
+ // Unchanged main has produced both 275.25 and 275.28125 CSS px for the
+ // first desktop callout. Preserve exact position/content/caret comparisons;
+ // allow only this subpixel text-width rounding (less than 0.1 device px).
+ const widthToleranceCssPx=.05;
+ for(const phone of [false,true]){
+  const [a,b]=rows.filter(r=>r.phone===phone);assert.equal(a.states.length,b.states.length);
+  for(let i=0;i<a.states.length;i++){
+   assert.equal(a.states[i].year,b.states[i].year);
+   for(const phase of ['before','during','after']){
+    const actual=b.states[i][phase],expected=a.states[i][phase];
+    assert.deepEqual({...actual,rect:undefined},{...expected,rect:undefined},'Callout content or caret changed');
+    for(const key of Object.keys(expected.rect)){
+     if(['width','right'].includes(key))assert(Math.abs(actual.rect[key]-expected.rect[key])<=widthToleranceCssPx,'Callout width changed beyond subpixel rounding');
+     else assert.equal(actual.rect[key],expected.rect[key],'Callout position or height changed: '+key);
+    }
+   }
+  }
+ }
+ fs.writeFileSync(path.join(out,'checks.json'),JSON.stringify({complete:true,widthToleranceCssPx,rows},null,2)+'\n');console.log('PASS: exact callout position, height, caret and content, width within 0.05 CSS px, before/during/after camera motion across six years on desktop/phone.');
 }finally{await b.close()}})().catch(e=>{console.error(e);process.exitCode=1});
