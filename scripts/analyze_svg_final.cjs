@@ -4,7 +4,7 @@
 const fs=require('node:fs'),path=require('node:path'),z=require('node:zlib'),crypto=require('node:crypto'),assert=require('node:assert/strict');
 const {execFileSync}=require('node:child_process'),{analyze}=require('./benchmark_frames.cjs'),{analyzeRow,resolveCaptureFile}=require('./analyze_frame_delivery.cjs');
 const [review,out]=process.argv.slice(2);assert(review&&out,'Usage: node --expose-gc scripts/analyze_svg_final.cjs REVIEW OUTPUT');fs.mkdirSync(out,{recursive:true});
-const root=path.resolve(__dirname,'..'),base=process.env.WEB_BASE_REF||'d54411d',sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const root=path.resolve(__dirname,'..'),base=process.env.WEB_BASE_REF||'c0274ba',sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 const git=(...a)=>execFileSync('git',a,{cwd:root,maxBuffer:16*1024*1024}),read=f=>JSON.parse(fs.readFileSync(f));
 const write=(n,v)=>{const bytes=Buffer.from(JSON.stringify(v,null,2)+'\n'),compressed=n!=='summary.json';fs.writeFileSync(path.join(out,'svg-final-'+n+(compressed?'.gz':'')),compressed?z.gzipSync(bytes,{level:9}):bytes)};
 const archive=(file,name)=>fs.writeFileSync(path.join(out,'svg-final-'+name+'.gz'),z.gzipSync(fs.readFileSync(file),{level:9}));
@@ -18,7 +18,7 @@ const referenceFiles={
  // Portable capture lookup; native counting and trace calculations unchanged.
  'scripts/analyze_frame_delivery.cjs':'30a31769389925761422c433c2236173e9b64a1ac34f0a886c2aa136c175a58e',
  'js/app.js':'c41b76fb8bc8d616187de7c537fe953fd4cd09812640bb0c7efce4e3e087c2cf',
- 'css/style.css':'eed7e3eb7d52e6254ed84421b0a0e21bb850151287c3dca4d9e26bb90f9ca51e',
+ 'css/style.css':'f6b79d424864536da3ddfb5eb8444279d33e40e95d0c05c475aa91ab1f62c5fb',
 };
 for(const [f,digest]of Object.entries(referenceFiles))assert.equal(sha(fs.readFileSync(f)),digest,'Selected implementation changed: '+f);
 const verifiedScripts=new Set();

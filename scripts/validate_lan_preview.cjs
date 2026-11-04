@@ -4,7 +4,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {execFileSync}=require('node:child_process'),{chromium}=require(process.env.PLAYWRIGHT_PATH||'playwright');
 const urls={baseline:process.env.LAN_MAIN_URL,candidate:process.env.LAN_CANDIDATE_URL};
 assert(urls.baseline&&urls.candidate,'Set LAN_MAIN_URL and LAN_CANDIDATE_URL');
-const base=process.env.WEB_BASE_REF||'d54411d',root=path.resolve(__dirname,'..'),sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const base=process.env.WEB_BASE_REF||'c0274ba',root=path.resolve(__dirname,'..'),sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 (async()=>{
  const browser=await chromium.launch({channel:'chrome',headless:true}),rows=[];
  try{
