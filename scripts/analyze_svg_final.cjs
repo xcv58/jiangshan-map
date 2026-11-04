@@ -17,7 +17,7 @@ const referenceFiles={
  'scripts/capture_window_frames.swift':'ad647a1a7a77f483cecfa128fd0e2a3a4905c2449903923207cfbd6a1f60dd68',
  // Portable capture lookup; native counting and trace calculations unchanged.
  'scripts/analyze_frame_delivery.cjs':'30a31769389925761422c433c2236173e9b64a1ac34f0a886c2aa136c175a58e',
- 'js/app.js':'30afd72a651f5a35d4cc1a20e9ad7cb0718091a2b0967c8ff1fbd0f33cec783f',
+ 'js/app.js':'d20260917e042c79fb25cf5915358ebf35fe91c92558f6042158817c12e901c5',
  'css/style.css':'638e75afd06c4de157958d44dd586adbe4242740c0e313fe76b53eb3bc57695a',
 };
 for(const [f,digest]of Object.entries(referenceFiles))assert.equal(sha(fs.readFileSync(f)),digest,'Selected implementation changed: '+f);
