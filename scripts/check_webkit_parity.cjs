@@ -18,6 +18,16 @@ const record = { complete: false, engine: 'Playwright WebKit',
   sourceCommit: git('rev-parse', 'HEAD'), baseCommit: git('rev-parse', process.env.WEB_BASE_REF),
   sources: sources(), checks: [] };
 const output = path.join(out, 'checks.json');
+if (process.env.WEBKIT_RESUME === '1') {
+  const previous = JSON.parse(fs.readFileSync(output));
+  assert.deepEqual(previous.sources, record.sources, 'Cannot reuse WebKit checks for changed application');
+  assert.equal(previous.baseCommit, record.baseCommit);
+  for (const check of previous.checks.filter(c => c.exitCode === 0)) {
+    assert.equal(sha(fs.readFileSync(path.join(root, check.script))), check.scriptSHA256, 'Reused test changed');
+    assert.equal(sha(fs.readFileSync(path.join(out, check.name + '.log'))), check.logSHA256, 'Reused log changed');
+    record.checks.push({ ...check, reusedFromCommit: previous.sourceCommit });
+  }
+}
 const save = () => fs.writeFileSync(output, JSON.stringify(record, null, 2) + '\n');
 save();
 (async () => {
@@ -30,6 +40,10 @@ save();
     ['timeline', 'scripts/validate_timeline_rendering.cjs', 'THUMB_VALIDATION_OUTPUT'],
     ['responsive', 'scripts/validate_responsive.cjs', 'RESPONSIVE_OUTPUT'],
   ]) {
+    if (record.checks.some(c => c.name === name && c.exitCode === 0)) {
+      console.log('Reusing verified unchanged WebKit check:', name);
+      continue;
+    }
     console.log('Starting WebKit:', name);
     const run = spawnSync(process.execPath, ['--expose-gc', script], {
       cwd: root, env: { ...process.env, WEB_TEST_ENGINE: 'webkit', [key]: path.join(out, name) },

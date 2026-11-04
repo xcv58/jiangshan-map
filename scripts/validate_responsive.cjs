@@ -39,12 +39,16 @@ const pose=p=>p.evaluate(()=>{
    const box=await p.locator('#atlas-svg').boundingBox(),x=box.x+box.width*.62,y=box.y+box.height*.4;
    await p.mouse.move(x,y);await p.mouse.down();await p.mouse.move(x+30,y+12,{steps:6});await p.mouse.up();await rest(p);
    const pan=await pose(p);assert(Math.abs(pan.camera.x-initial.camera.x)>.1);
-   await p.mouse.wheel(0,-100);await rest(p);const zoom=await pose(p);assert(zoom.camera.w<pan.camera.w);
+   // Playwright cannot send wheel input to mobile WebKit. Exercise the
+   // application's existing trusted keyboard zoom shortcut in that context.
+   const zoomInput=engine==='webkit'&&width<=900?'keyboard +':'wheel';
+   if(zoomInput==='keyboard +')await p.keyboard.press('+');else await p.mouse.wheel(0,-100);
+   await rest(p);const zoom=await pose(p);assert(zoom.camera.w<pan.camera.w);
    await p.locator('#act-reset-camera').click();await rest(p);
    await p.screenshot({path:path.join(out,variant+'-'+width+'x'+height+'.png'),animations:'disabled'});
    await p.setViewportSize({width:height,height:width});await rest(p);const rotated=await pose(p);
    assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
-   rows.push({variant,width,height,initial,railYear,nextYear,panelState,pan,zoom,rotated,errors,failed});
+   rows.push({variant,width,height,zoomInput,initial,railYear,nextYear,panelState,pan,zoom,rotated,errors,failed});
    await context.close();console.log('PASS responsive',variant,width+'x'+height);
   }
   for(const [width,height]of sizes){
