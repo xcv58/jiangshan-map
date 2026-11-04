@@ -6,8 +6,8 @@ const {execFileSync}=require('node:child_process'),{analyze}=require('./benchmar
 const [review,out]=process.argv.slice(2);assert(review&&out,'Usage: node --expose-gc scripts/analyze_svg_final.cjs REVIEW OUTPUT');fs.mkdirSync(out,{recursive:true});
 const root=path.resolve(__dirname,'..'),base=process.env.WEB_BASE_REF||'ae8a422',sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 const git=(...a)=>execFileSync('git',a,{cwd:root,maxBuffer:16*1024*1024}),read=f=>JSON.parse(fs.readFileSync(f));
-const write=(n,v)=>{const bytes=Buffer.from(JSON.stringify(v,null,2)+'\n'),compressed=n!=='summary.json';fs.writeFileSync(path.join(out,'svg-final-'+n+(compressed?'.gz':'')),compressed?z.gzipSync(bytes,{level:9}):bytes)};
-const archive=(file,name)=>fs.writeFileSync(path.join(out,'svg-final-'+name+'.gz'),z.gzipSync(fs.readFileSync(file),{level:9}));
+const write=(n,v)=>{const bytes=Buffer.from(JSON.stringify(v,null,2)+'\n'),compressed=n!=='summary.json';fs.writeFileSync(path.join(out,'svg-low-risk-'+n+(compressed?'.gz':'')),compressed?z.gzipSync(bytes,{level:9}):bytes)};
+const archive=(file,name)=>fs.writeFileSync(path.join(out,'svg-low-risk-'+name+'.gz'),z.gzipSync(fs.readFileSync(file),{level:9}));
 const stats=a=>{assert(a.length);const s=[...a].sort((a,b)=>a-b),i=Math.floor(s.length/2);return {count:s.length,median:s.length%2?s[i]:(s[i-1]+s[i])/2,min:s[0],max:s.at(-1)}};
 const parser=s=>s.slice(s.indexOf('function analyze(events){'),s.indexOf('\nasync function stopTrace('));
 // Fixed fingerprints retain the measured implementation's integrity without
@@ -64,16 +64,20 @@ const memoryFile=path.join(review,'memory.json'),memory=read(memoryFile);assert(
 const memoryGroups=['baseline','candidate'].map(variant=>{const rows=memory.runs.filter(r=>r.variant===variant);assert.equal(rows.length,3);for(const r of rows){assert.deepEqual(r.errors,[]);assert.deepEqual(r.failed,[]);hosts.push(r.hostBefore,r.hostAfter)}return {variant,metrics:Object.fromEntries(Object.keys(rows[0].summary).map(k=>[k,stats(rows.map(r=>r.summary[k]))]))}});
 archive(memoryFile,'memory.json');
 const validation=read(path.join(review,'validation-checks.json')),measurement=read(path.join(review,'measure-checks.json'));assert(validation.complete&&measurement.complete);assert(validation.checks.every(r=>r.exitCode===0));
+const prSource=read(path.join(review,'pr-source.json'));
+assert.equal(prSource.baseCommit,git('rev-parse',base).toString().trim(),'PR source base mismatch');
+assert.deepEqual(Object.keys(prSource.files).sort(),['css/style.css','index.html','js/app.js','scripts/validate_atlas.js']);
+for(const [file,digest]of Object.entries(prSource.files))assert.equal(sha(fs.readFileSync(file)),digest,'Measured source differs from PR: '+file);
 const sourceHashes=Object.fromEntries(['js/app.js','css/style.css','index.html'].map(f=>[f,sha(fs.readFileSync(f))]));assert.deepEqual(validation.sources,sourceHashes);assert.deepEqual(measurement.sources,sourceHashes);
 const logs={};for(const record of [validation,measurement])for(const r of record.checks){verifyRecordedScript(r.script,r.scriptSHA256);const b=fs.readFileSync(path.join(review,r.name+'.log'));assert.equal(sha(b),r.logSHA256);logs[r.name]=b.toString();}
 const artifacts={};for(const f of ['geometry.json','callouts/checks.json','features/features.json','timeline/verification.json','responsive/checks.json','lan.json']){
  const v=read(path.join(review,f));if(v.complete!==undefined)assert(v.complete);artifacts[f]=v;
 }
 assert(artifacts['features/features.json'].renderedContentEquivalent);assert.equal(artifacts['responsive/checks.json'].rows.length,18);
-write('verification.json',{complete:true,validation,measurement,sourceHashes,artifacts,logs,rawEvidenceDirectory:path.resolve(review),prSource:read(path.join(review,'pr-source.json'))});
+write('verification.json',{complete:true,validation,measurement,sourceHashes,artifacts,logs,rawEvidenceDirectory:path.resolve(review),prSource});
 assert(hosts.every(h=>['jellyfin','LogiPluginService'].every(n=>h.busyServices.some(s=>s.process===n))));
 const host={oneMinuteLoad:stats(hosts.map(h=>h.loadAverage[0])),services:Object.fromEntries(['jellyfin','LogiPluginService'].map(n=>{const a=hosts.flatMap(h=>h.busyServices.filter(s=>s.process===n));return [n,{pids:[...new Set(a.map(s=>s.pid))],cpuPercent:stats(a.map(s=>s.cpuPercent))}]}))};
 write('summary.json',{complete:true,baseCommit:git('rev-parse',base).toString().trim(),sourceHashes,cohorts,memory:memoryGroups,host,traceCount,nativeCaptureCount:captures.length,playbackYears,
  everyRun60Passed:cohorts.every(c=>c.target.passed),limitations:['Separate three-pair captured/uncaptured cohorts; do not pool or discard slow samples.','Chrome feedback and native changed-pixel frequency are different metrics; neither proves physical photon FPS or every-layer freshness.','Fresh browser profiles; OS/font caches and background load uncontrolled.','Main-page heap excludes workers; summed RSS may double-count shared pages and excludes total GPU memory.','Responsive checks emulate viewports/touch; physical-phone and Safari FPS are not established.']});
-fs.writeFileSync(path.join(out,'svg-final-native-captures.json.gz'),z.gzipSync(JSON.stringify({complete:true,captures}),{level:9}));
+fs.writeFileSync(path.join(out,'svg-low-risk-native-captures.json.gz'),z.gzipSync(JSON.stringify({complete:true,captures}),{level:9}));
 console.log('Verified',traceCount,'traces,',captures.length,'native captures, six startup/memory runs and',validation.checks.length,'validation groups.');
