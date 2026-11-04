@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 'use strict';
-const fs=require('fs'),path=require('path'),assert=require('assert/strict'),crypto=require('crypto');const{chromium}=require(process.env.PLAYWRIGHT_PATH||'playwright');
+const fs=require('fs'),path=require('path'),assert=require('assert/strict'),crypto=require('crypto');
+const engine=process.env.WEB_TEST_ENGINE||'chromium';
+assert(['chromium','webkit'].includes(engine));
+const browserType=require(process.env.PLAYWRIGHT_PATH||'playwright')[engine];
 const urls={baseline:process.env.WEB_BASE_URL||'http://127.0.0.1:8796/',candidate:process.env.ATLAS_URL||'http://127.0.0.1:8797/'},out=process.env.THUMB_VALIDATION_OUTPUT||'/tmp/thumb-validation';
 const rest=async p=>{await p.waitForFunction(()=>!atlasApp.flyRaf&&atlasApp._camRaf===null&&atlasApp._cameraSettleTimer===null);await p.evaluate(async()=>{await document.fonts.ready;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))})};
-(async()=>{fs.mkdirSync(out,{recursive:true});const browser=await chromium.launch({channel:'chrome',headless:true});const rows=[];try{
+(async()=>{fs.mkdirSync(out,{recursive:true});const browser=await browserType.launch({headless:true,...(engine==='chromium'?{channel:'chrome'}:{})});const rows=[];try{
  for(const phone of [false,true])for(const variant of ['baseline','candidate']){
   const c=await browser.newContext(phone?{viewport:{width:390,height:844},isMobile:true,hasTouch:true}:{viewport:{width:1280,height:720}});
   await c.route(/cloudflareinsights|vercount/,r=>r.fulfill({status:200,body:'',contentType:'application/javascript'}));const p=await c.newPage(),errors=[];p.setDefaultNavigationTimeout(90000);p.on('pageerror',e=>errors.push(e.message));

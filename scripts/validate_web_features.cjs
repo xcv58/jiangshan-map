@@ -2,10 +2,12 @@
 // Semantic feature parity; animation-dependent label culling is excluded.
 'use strict';
 const fs=require('node:fs'),crypto=require('node:crypto'),assert=require('node:assert/strict');
-const{chromium}=require(process.env.PLAYWRIGHT_PATH||'playwright');
+const engine=process.env.WEB_TEST_ENGINE||'chromium';
+assert(['chromium','webkit'].includes(engine));
+const browserType=require(process.env.PLAYWRIGHT_PATH||'playwright')[engine];
 const out=process.env.WEB_FEATURE_OUTPUT||'/tmp/jiangshan-svg-features',sha=s=>crypto.createHash('sha256').update(s).digest('hex');
 fs.mkdirSync(out,{recursive:true});
-(async()=>{const b=await chromium.launch({channel:'chrome',headless:true});const rows=[];try{
+(async()=>{const b=await browserType.launch({headless:true,...(engine==='chromium'?{channel:'chrome'}:{})});const rows=[];try{
  for(const phone of [true,false])for(const variant of ['baseline','candidate']){
   const url=variant==='baseline'?(process.env.WEB_BASE_URL||'http://127.0.0.1:8774/'):(process.env.ATLAS_URL||'http://127.0.0.1:8775/');
   const c=await b.newContext(phone?{viewport:{width:390,height:844},isMobile:true,hasTouch:true}:{viewport:{width:1440,height:900}});

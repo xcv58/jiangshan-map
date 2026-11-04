@@ -2,7 +2,9 @@
 // Layout and trusted-control checks, separate from timed FPS collection.
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
-const {chromium}=require(process.env.PLAYWRIGHT_PATH||'playwright');
+const engine=process.env.WEB_TEST_ENGINE||'chromium';
+assert(['chromium','webkit'].includes(engine));
+const browserType=require(process.env.PLAYWRIGHT_PATH||'playwright')[engine];
 const urls={baseline:process.env.WEB_BASE_URL,candidate:process.env.ATLAS_URL};
 assert(urls.baseline&&urls.candidate,'Set WEB_BASE_URL and ATLAS_URL');
 const out=process.env.RESPONSIVE_OUTPUT||'/tmp/atlas-responsive';fs.mkdirSync(out,{recursive:true});
@@ -14,7 +16,7 @@ const pose=p=>p.evaluate(()=>{
   boxes:Object.fromEntries(ids.map(id=>{const r=document.getElementById(id).getBoundingClientRect();return [id,{x:r.x,y:r.y,width:r.width,height:r.height}]}))};
 });
 (async()=>{
- const browser=await chromium.launch({channel:'chrome',headless:true}),rows=[];
+ const browser=await browserType.launch({headless:true,...(engine==='chromium'?{channel:'chrome'}:{})}),rows=[];
  try{
   for(const [width,height]of sizes)for(const variant of ['baseline','candidate']){
    const context=await browser.newContext({viewport:{width,height},isMobile:width<=900,hasTouch:width<=900});
