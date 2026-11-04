@@ -18,6 +18,10 @@
   const SHAPE_BBOX_WEAK = new WeakMap();
   const SHAPE_SIG_WEAK = new WeakMap();
   const PREF_BOUNDARY_MESH_CACHE = new WeakMap();
+  const setSvgAttribute = (node, name, value) => {
+    const text = String(value);
+    if (node.getAttribute(name) !== text) node.setAttribute(name, text);
+  };
   // Regime prefixes carried by era-span names, e.g. '北魏正光' = '北魏' + era '正光'.
   const ERA_DYNASTY_PREFIXES = [
     '南朝宋', '南朝齐', '南朝梁', '南朝陈', '西汉', '东汉', '新莽', '西晋', '东晋',
@@ -442,6 +446,7 @@
       this._cameraViewportRect = null;
       this._lastCameraViewBox = null;
       this._baseViewBoxCam = null;
+      this._panPlaneRect = null;
       this._hoveredPrefEl = null;
       this._hoverRaf = null;
       this._pendingHoverEvent = null;
@@ -831,6 +836,23 @@
       return node;
     }
 
+    _syncSvgChildren(parent, nodes) {
+      // Retain native SVG/text renderers when their data and order are unchanged.
+      if (typeof parent.insertBefore !== 'function') {
+        parent.innerHTML = '';
+        for (const node of nodes) parent.appendChild(node);
+        return;
+      }
+      const wanted = new Set(nodes);
+      for (const node of Array.from(parent.childNodes)) if (!wanted.has(node)) parent.removeChild(node);
+      let cursor = parent.firstChild;
+      for (const node of nodes) {
+        if (node === cursor) cursor = cursor.nextSibling;
+        else parent.insertBefore(node, cursor);
+      }
+      while (cursor) { const next = cursor.nextSibling; parent.removeChild(cursor); cursor = next; }
+    }
+
     _bindDom() {
       this.viewportFrame = this._id('viewport-frame');
       this._stageWrap = this._id('svg-stage-wrap');
@@ -942,7 +964,15 @@
     _hasEnDict() {
       const dict = this.enLocale && this.enLocale.dict;
       if (!dict) return false;
-      for (const _ in dict) return true;
+      // Avoid enumerating a large translation table for every lookup. Recheck the
+      // probe so replacing, emptying or populating the dictionary still works.
+      if (this._enDictProbeRef === dict &&
+          Object.prototype.propertyIsEnumerable.call(dict, this._enDictProbeKey)) return true;
+      for (const key in dict) {
+        this._enDictProbeRef = dict;
+        this._enDictProbeKey = key;
+        return true;
+      }
       return false;
     }
 
@@ -2848,25 +2878,25 @@
         this._prefShapesGroup = prefGroup;
         this._renderedPrefecturesRef = prefs;
         this._regOverlayGroup = this._svgNode('g', {}, this.grpPrefectures);
-      } else if (this._regOverlayGroup && this._regOverlayGroup.parentNode === this.grpPrefectures) {
-        this._regOverlayGroup.innerHTML = '';
-      } else {
+        this._regionLabelNodes = new Map();
+        this._regionBoundaryNodes = null;
+      } else if (!this._regOverlayGroup || this._regOverlayGroup.parentNode !== this.grpPrefectures) {
         this._regOverlayGroup = this._svgNode('g', {}, this.grpPrefectures);
+        this._regionLabelNodes = new Map();
+        this._regionBoundaryNodes = null;
       }
 
       const regGroup = this._regOverlayGroup;
+      const children = [], nextLabels = new Map();
       const regBoundaryPath = this._buildRegionBoundaryPath(snap);
       if (regBoundaryPath) {
-        this._svgNode(
-          'path',
-          { d: regBoundaryPath, class: 'region-shape-casing' },
-          regGroup
-        );
-        this._svgNode(
-          'path',
-          { d: regBoundaryPath, class: 'region-shape' },
-          regGroup
-        );
+        if (!this._regionBoundaryNodes) this._regionBoundaryNodes = [
+          this._svgNode('path', { d: regBoundaryPath, class: 'region-shape-casing' }, regGroup),
+          this._svgNode('path', { d: regBoundaryPath, class: 'region-shape' }, regGroup),
+        ];
+        for (const node of this._regionBoundaryNodes) { setSvgAttribute(node, 'd', regBoundaryPath); children.push(node); }
+      } else {
+        this._regionBoundaryNodes = null;
       }
 
       for (const reg of snap.regions || []) {
@@ -2880,25 +2910,32 @@
             continue;
           }
           const [baseX, baseY] = this.projector.toScreen(reg.anchor[0], reg.anchor[1]);
-          const rLbl = this._svgNode(
-            'text',
-            {
+          const attrs = {
               class: isQiao ? 'region-caption is-qiaozhou' : 'region-caption',
               'data-x': baseX.toFixed(1),
               'data-y': baseY.toFixed(1),
               'data-base-x': baseX.toFixed(1),
               'data-base-y': baseY.toFixed(1),
-            },
-            regGroup
-          );
+            };
+          const rLbl = (!nextLabels.has(reg) && this._regionLabelNodes?.get(reg)) || this._svgNode('text', attrs, regGroup);
+          for (const [name, value] of Object.entries(attrs)) setSvgAttribute(rLbl, name, value);
+          // Placement output belongs to the previous scene. A crowded/hidden
+          // label may not receive a new transform during the full layout pass.
+          for (const name of ['transform', 'data-placed', 'data-outside-viewport']) {
+            if (rLbl.getAttribute(name) != null) rLbl.removeAttribute(name);
+          }
           rLbl._regShape = reg.shape;
-          rLbl.textContent = isQiao
+          const text = isQiao
             ? this.locale === 'en'
               ? `${this.trTerm(reg.title)} (Emigre)`
               : this._zh(`${reg.title}·侨`)
             : this.trTerm(reg.title);
+          if (rLbl.textContent !== text) rLbl.textContent = text;
+          nextLabels.set(reg, rLbl); children.push(rLbl);
         }
       }
+      this._regionLabelNodes = nextLabels;
+      this._syncSvgChildren(regGroup, children);
     }
 
     _materializeDeferredPrefectures() {
@@ -2914,9 +2951,12 @@
     _renderPolitiesAndPrefectures(dynasty, snap) {
       this._setPolityFocus(null);
       this._clearHoveredPrefecture();
-      this.grpPolities.innerHTML = '';
-
-      const polGroup = this._svgNode('g', {}, this.grpPolities);
+      if (!this._politiesGroup || this._politiesGroup.parentNode !== this.grpPolities) {
+        this.grpPolities.innerHTML = '';
+        this._politiesGroup = this._svgNode('g', {}, this.grpPolities);
+        this._polityNodes = new Map();
+      }
+      const polGroup = this._politiesGroup, children = [], nextPolities = new Map();
       const zOrder = { neighbor: 0, main: 1, rival: 2, protectorate: 3 };
       const sorted = (snap.polities || [])
         .slice()
@@ -2932,29 +2972,40 @@
           attrs.fill = pol.tint;
           attrs.stroke = pol.tint;
         }
-        const path = this._svgNode('path', attrs, polGroup);
+        let entry = !nextPolities.has(pol) && this._polityNodes.get(pol);
+        if (!entry) entry = { path: this._svgNode('path', attrs, polGroup), label: null };
+        const path = entry.path;
+        for (const [name, value] of Object.entries(attrs)) setSvgAttribute(path, name, value);
+        if (isN) for (const name of ['fill', 'stroke']) if (path.getAttribute(name) != null) path.removeAttribute(name);
         path.dataset.polityTitle = pol.title;
         path.dataset.polityRole = pol.role;
+        children.push(path);
 
         if (pol.anchor) {
           const [cx, cy] = this.projector.toScreen(pol.anchor[0], pol.anchor[1]);
-          const lbl = this._svgNode(
-            'text',
-            {
+          const attrs = {
               class: `polity-caption ${pol.role}`,
               'data-x': cx.toFixed(1),
               'data-y': cy.toFixed(1),
               'data-base-x': cx.toFixed(1),
               'data-base-y': cy.toFixed(1),
-            },
-            polGroup
-          );
+            };
+          const lbl = entry.label || (entry.label = this._svgNode('text', attrs, polGroup));
+          for (const [name, value] of Object.entries(attrs)) setSvgAttribute(lbl, name, value);
+          for (const name of ['transform', 'data-placed', 'data-outside-viewport']) {
+            if (lbl.getAttribute(name) != null) lbl.removeAttribute(name);
+          }
           lbl._polShape = pol.shape;
           lbl.dataset.polityTitle = pol.title;
           lbl.dataset.polityRole = pol.role;
-          lbl.textContent = this.trTerm(pol.title);
-        }
+          const text = this.trTerm(pol.title);
+          if (lbl.textContent !== text) lbl.textContent = text;
+          children.push(lbl);
+        } else entry.label = null;
+        nextPolities.set(pol, entry);
       }
+      this._polityNodes = nextPolities;
+      this._syncSvgChildren(polGroup, children);
 
       const prefHidden = Boolean(
         this.grpPrefectures &&
@@ -2981,9 +3032,13 @@
       this._rescaleSvgTypography();
     }
 
-    _buildRegionBoundaryPath(snap) {
+    _buildRegionBoundaryPath(snap, preparedPath) {
       if (!snap || snap._skipRegionBoundaryStroke || !Array.isArray(snap.regions) || !snap.regions.length) {
         return '';
+      }
+      if (preparedPath === undefined && this._preparedPlaybackBoundary?.snap === snap) {
+        preparedPath = this._preparedPlaybackBoundary.path;
+        this._preparedPlaybackBoundary = null;
       }
       if (snap._cachedRegionBoundaryPath !== undefined) {
         return snap._cachedRegionBoundaryPath;
@@ -3023,13 +3078,45 @@
       );
       const hasLargePolity = !allCommanderyRegions && polAreas.some((a) => a >= 35);
       const isMultiRegime = !allCommanderyRegions && polList.filter((p) => p && p.role !== 'neighbor').length >= 4;
-      const findPolIdx = (x, y) => {
+      // The boundary build queries many points against the same long rings.
+      // Index candidate edges by latitude; all geometric predicates below stay
+      // exact. The margin also covers nearPolityBorder's distance test.
+      const ringEdgeBins = new Map();
+      // The bins must cover the widest upstream distance query, including
+      // multi-regime midpoint (0.55) and endpoint (0.38) exclusions.
+      const borderMargin = isMultiRegime ? 0.55 : 0.16, binCount = 64;
+      const candidateEdges = (b, y) => {
+        if (b.ring.length < 128 || b.maxY <= b.minY) return null;
+        let index = ringEdgeBins.get(b);
+        if (!index) {
+          const bins = Array.from({ length: binCount }, () => []);
+          const scale = binCount / (b.maxY - b.minY);
+          for (let i = 0, j = b.ring.length - 1; i < b.ring.length; j = i++) {
+            const y1 = b.ring[i][1], y2 = b.ring[j][1];
+            // Extra neighboring bins make the filter conservative at floating
+            // point bucket boundaries. They never change the final predicates.
+            const lo = Math.max(0, Math.floor((Math.min(y1, y2) - borderMargin - b.minY) * scale) - 1);
+            const hi = Math.min(binCount - 1, Math.floor((Math.max(y1, y2) + borderMargin - b.minY) * scale) + 1);
+            for (let k = lo; k <= hi; k++) bins[k].push(i);
+          }
+          index = { bins, scale }; ringEdgeBins.set(b, index);
+        }
+        return index.bins[Math.max(0, Math.min(binCount - 1, Math.floor((y - b.minY) * index.scale)))];
+      };
+      const findPolIdx = (x, y, cache) => {
+        const key = cache ? `${x},${y}` : null;
+        if (cache) {
+          const hit = cache.get(key);
+          if (hit !== undefined) return hit;
+        }
         for (let rIdx = 0; rIdx < polRings.length; rIdx++) {
           const b = polRings[rIdx];
           if (x < b.minX || x > b.maxX || y < b.minY || y > b.maxY) continue;
           const ring = b.ring;
+          const edges = cache ? candidateEdges(b, y) : null;
           let inside = false;
-          for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+          for (let k = 0, count = edges ? edges.length : ring.length; k < count; k++) {
+            const i = edges ? edges[k] : k, j = i === 0 ? ring.length - 1 : i - 1;
             const xi = ring[i][0],
               yi = ring[i][1];
             const xj = ring[j][0],
@@ -3038,8 +3125,12 @@
               inside = !inside;
             }
           }
-          if (inside) return b.pIdx;
+          if (inside) {
+            if (cache) cache.set(key, b.pIdx);
+            return b.pIdx;
+          }
         }
+        if (cache) cache.set(key, -1);
         return -1;
       };
       const allowPolIdx = (pIdx) => {
@@ -3062,11 +3153,18 @@
             continue;
           }
           const ring = b.ring;
-          for (let i = 0; i < ring.length - 1; i++) {
+          const edges = candidateEdges(b, y);
+          for (let k = 0, count = edges ? edges.length : ring.length; k < count; k++) {
+            // Ray edge 0 closes the ring implicitly; the original distance
+            // test only considers explicitly consecutive coordinate pairs.
+            const end = edges ? edges[k] : k;
+            if (end === 0) continue;
+            const i = end - 1;
             const x1 = ring[i][0],
               y1 = ring[i][1];
             const x2 = ring[i + 1][0],
               y2 = ring[i + 1][1];
+            if (x < Math.min(x1, x2) - margin || x > Math.max(x1, x2) + margin) continue;
             const dx = x2 - x1,
               dy = y2 - y1;
             const len2 = dx * dx + dy * dy;
@@ -3086,6 +3184,14 @@
         enumerable: false,
         configurable: true,
       });
+      // A worker can prepare the expensive edge traversal. Keep the original
+      // exact anchor predicate on the main thread, including arbitrary queries.
+      if (preparedPath !== undefined) {
+        Object.defineProperty(snap, '_cachedRegionBoundaryPath', {
+          value: preparedPath, writable: true, enumerable: false, configurable: true,
+        });
+        return preparedPath;
+      }
       const ptKey = (pt) => `${pt[0].toFixed(2)},${pt[1].toFixed(2)}`;
       const edgeKey = (p1, p2) => {
         const k1 = ptKey(p1);
@@ -3093,47 +3199,62 @@
         return k1 < k2 ? `${k1}|${k2}` : `${k2}|${k1}`;
       };
 
-      const allRings = [];
-      const regEdgeCounts = new Map();
-      for (const reg of snap.regions) {
-        if (!reg || !reg.shape) continue;
-        const coords = reg.shape.coordinates;
-        const polys = reg.shape.type === 'Polygon' ? [coords] : coords || [];
-        for (const poly of polys) {
-          for (const ring of poly || []) {
-            if (!ring || ring.length < 2) continue;
-            allRings.push(ring);
-            for (let i = 0; i < ring.length - 1; i++) {
-              const ek = edgeKey(ring[i], ring[i + 1]);
-              regEdgeCounts.set(ek, (regEdgeCounts.get(ek) || 0) + 1);
+      // Adjacent phases frequently share the same administrative regions.
+      // Keep only the latest topology, so visiting history does not accumulate
+      // edge maps. Polity-dependent filtering still runs for every snapshot.
+      let topology = this._regionBoundaryTopology;
+      if (!topology || topology.regions !== snap.regions) {
+        const allRings = [];
+        const regEdgeCounts = new Map();
+        for (const reg of snap.regions) {
+          if (!reg || !reg.shape) continue;
+          const coords = reg.shape.coordinates;
+          const polys = reg.shape.type === 'Polygon' ? [coords] : coords || [];
+          for (const poly of polys) {
+            for (const ring of poly || []) {
+              if (!ring || ring.length < 2) continue;
+              allRings.push(ring);
+              for (let i = 0; i < ring.length - 1; i++) {
+                const ek = edgeKey(ring[i], ring[i + 1]);
+                regEdgeCounts.set(ek, (regEdgeCounts.get(ek) || 0) + 1);
+              }
             }
           }
         }
+        const rings = [];
+        for (const ring of allRings) {
+          const edges = [];
+          for (let i = 0; i < ring.length - 1; i++) {
+            const p1 = ring[i], p2 = ring[i + 1], key = edgeKey(p1, p2);
+            if ((regEdgeCounts.get(key) || 0) >= 2) edges.push({ p1, p2, key });
+            else if (edges.length && edges[edges.length - 1] !== null) edges.push(null);
+          }
+          if (edges.length) rings.push(edges);
+        }
+        topology = this._regionBoundaryTopology = { regions: snap.regions, rings };
       }
 
       const seenEdges = new Set();
+      const pointPolities = new Map();
       let d = '';
-      for (const ring of allRings) {
+      for (const edges of topology.rings) {
         let penX = NaN;
         let penY = NaN;
-        for (let i = 0; i < ring.length - 1; i++) {
-          const p1 = ring[i];
-          const p2 = ring[i + 1];
-          const ek = edgeKey(p1, p2);
-          if ((regEdgeCounts.get(ek) || 0) < 2 || seenEdges.has(ek)) {
+        for (const edge of edges) {
+          if (!edge || seenEdges.has(edge.key)) {
             penX = NaN;
             penY = NaN;
             continue;
           }
+          const { p1, p2, key: ek } = edge;
           const mx = (p1[0] + p2[0]) * 0.5;
           const my = (p1[1] + p2[1]) * 0.5;
-          const pIdxM = polRings.length ? findPolIdx(mx, my) : 0;
-          const borderMargin = isMultiRegime ? 0.55 : 0.16;
+          const pIdxM = polRings.length ? findPolIdx(mx, my, pointPolities) : 0;
           if (
             polRings.length &&
             (!allowPolIdx(pIdxM) ||
-              findPolIdx(p1[0], p1[1]) !== pIdxM ||
-              findPolIdx(p2[0], p2[1]) !== pIdxM ||
+              findPolIdx(p1[0], p1[1], pointPolities) !== pIdxM ||
+              findPolIdx(p2[0], p2[1], pointPolities) !== pIdxM ||
               (hasLargePolity &&
                 (nearPolityBorder(mx, my, borderMargin) ||
                   (isMultiRegime &&
@@ -3156,6 +3277,9 @@
         }
       }
 
+      // The label-anchor predicate outlives this build; retain no point cache.
+      pointPolities.clear();
+      ringEdgeBins.clear();
       Object.defineProperty(snap, '_cachedRegionBoundaryPath', {
         value: d,
         writable: true,
@@ -4202,7 +4326,7 @@
         (this.dragState && this.dragState.rect) ||
         (this.pinchState && this.pinchState.rect) ||
         this._cameraViewportRect ||
-        this.svg.getBoundingClientRect();
+        this._getUnscaledSvgRect();
       if (!rect.width || !rect.height) return;
       this._cameraViewportRect = rect;
       const scale = Math.min(rect.width / this.camera.w, rect.height / this.camera.h);
@@ -6810,7 +6934,7 @@
 
     _findNearestPersonPin(clientX, clientY, maxPx = 26) {
       if (!this.activePerson || !this.grpJourney || !this.svg) return null;
-      const rect = this._cameraViewportRect || this.svg.getBoundingClientRect();
+      const rect = this._cameraViewportRect || this._getUnscaledSvgRect();
       if (!rect.width || !rect.height) return null;
       this._cameraViewportRect = rect;
       const screenScale = Math.min(rect.width / this.camera.w, rect.height / this.camera.h);
@@ -7915,7 +8039,7 @@
     }
 
     _findNearestTouchNode(clientX, clientY, maxPx = 22) {
-      const rect = this._cameraViewportRect || this.svg.getBoundingClientRect();
+      const rect = this._cameraViewportRect || this._getUnscaledSvgRect();
       if (!rect.width || !rect.height) return { settlementEl: null, milestoneEl: null };
       this._cameraViewportRect = rect;
       const [sx, sy] = this._clientToSvgPoint(clientX, clientY);
@@ -9168,16 +9292,23 @@
         // Clamp bubble strictly inside [0, railW - bW] so text never clips off-screen
         const maxLeft = Math.max(0, railW - bW);
         const leftPx = Math.max(0, Math.min(maxLeft, handleX - bW * 0.5));
-        bubble.style.left = `${leftPx.toFixed(1)}px`;
-        bubble.style.transform = 'none';
+        bubble.style.left = '0px';
+        bubble.style.transform = `translateX(${leftPx.toFixed(1)}px)`;
 
         // Direct caret arrow to point straight at the timeline thumb
         const arrowX = Math.max(8, Math.min(bW - 8, handleX - leftPx));
         bubble.style.setProperty('--arrow-left', `${arrowX.toFixed(1)}px`);
       }
 
-      const handle = this._id('scrubber-handle');
-      if (handle) handle.style.left = `${pct}%`;
+      const motion = this._id('scrubber-motion');
+      if (motion) {
+        // The wrapper spans the rail, so percentage transforms use the same
+        // reference width as the previous absolute-positioned thumb.
+        motion.style.transform = `translateX(${pct}%)`;
+      } else {
+        const handle = this._id('scrubber-handle');
+        if (handle) handle.style.left = `${pct}%`;
+      }
 
       const track = this._id('scrubber-track');
       if (track) track.setAttribute('aria-valuenow', String(this.year));
@@ -9279,6 +9410,7 @@
           preserveScroll,
         });
       }
+      if (this.playing) this._schedulePlaybackPreparation();
     }
 
     _ensureCoordInView(coord) {
@@ -9477,6 +9609,128 @@
       this.playHoldTicks = AUTOPLAY_EVENT_TICKS;
       this._syncAutoMilestoneBalloon(this.dynasties[this.dynastyIdx]);
       this.playInterval = setInterval(() => this._autoplayTick(), this._autoplayIntervalMs());
+      this._schedulePlaybackPreparation();
+    }
+
+    _nextPlaybackBoundary() {
+      for (const stop of this._autoplayStops()) {
+        if (stop.year <= this.year) continue;
+        const dynasty = this.dynasties[this._findDynastyIndex(stop.year)];
+        const key = this._resolveSnapKey(dynasty, stop.year);
+        if (key !== this.activeSnapKey) return { key, snap: this.snapshots[key], dynasty };
+      }
+      return null;
+    }
+
+    _schedulePlaybackPreparation() {
+      if (!this.playing || this._playbackPrepareTask != null || typeof window === 'undefined') return;
+      const run = () => {
+        this._playbackPrepareTask = null;
+        if (!this.playing) return;
+        const next = this._nextPlaybackBoundary();
+        if (next?.snap) this._preparePlaybackBoundary(next.key, next.snap);
+      };
+      this._playbackPrepareUsesIdle = typeof window.requestIdleCallback === 'function';
+      this._playbackPrepareTask = this._playbackPrepareUsesIdle
+        ? window.requestIdleCallback(run, { timeout: 200 }) : setTimeout(run, 0);
+    }
+
+    _createPlaybackWorker() {
+      if (this._playbackWorker) return this._playbackWorker;
+      if (this._playbackWorkerUnavailable || typeof Worker !== 'function') return null;
+      // Serialize the same tested kernel, rather than maintaining a second
+      // geometry implementation. The worker never receives DOM nodes or caches.
+      const source = `const DEG_TO_RAD = Math.PI / 180, RAD_TO_DEG = 180 / Math.PI;
+        const engine = { ${HistoricalAtlasController.prototype._buildRegionBoundaryPath.toString()} };
+        const projection = { ${MercatorProjector.prototype._latToMerc.toString()}, ${MercatorProjector.prototype.toScreen.toString()},
+          ${MercatorProjector.prototype.ringToSvgPath.toString()}, ${MercatorProjector.prototype.smoothRingToSvgPath.toString()},
+          ${MercatorProjector.prototype._orientRing.toString()}, ${MercatorProjector.prototype.shapeToSvgPath.toString()} };
+        self.onmessage = ({data}) => {
+          try {
+            engine.projector = Object.assign({}, data.projector, projection);
+            const path = engine._buildRegionBoundaryPath(data.snapshot);
+            const polityPaths = (data.snapshot.polities || []).map(p => engine.projector.shapeToSvgPath(p.shape));
+            self.postMessage({ id: data.id, path, polityPaths });
+          } catch (_) { self.postMessage({ id: data.id, error: true }); }
+        };`;
+      let url;
+      try {
+        url = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
+        const worker = this._playbackWorker = new Worker(url);
+        worker.onmessage = ({ data }) => {
+          const job = this._playbackBoundaryJob;
+          if (!job || data.id !== job.id || this._playbackWorker !== worker) return;
+          this._playbackBoundaryJob = null;
+          const valid = !data.error && typeof data.path === 'string' && this.playing &&
+            this.snapshots[job.key] === job.snap &&
+            (this.activeSnapKey === job.sourceKey || this.activeSnapKey === job.key);
+          if (valid) {
+            this._preparedPlaybackBoundary = { key: job.key, snap: job.snap, path: data.path };
+            // Publish the same immutable geometry cache the visible renderer
+            // would build, without creating or modifying any DOM in advance.
+            const polities = job.snap.polities || [];
+            if (Array.isArray(data.polityPaths) && data.polityPaths.length === polities.length) {
+              for (let i = 0; i < polities.length; i++) {
+                const shape = polities[i].shape, path = data.polityPaths[i];
+                if (shape && shape._svgPathSmooth === undefined && typeof path === 'string') {
+                  Object.defineProperty(shape, '_svgPathSmooth', {
+                    value: path, writable: true, enumerable: false, configurable: true,
+                  });
+                }
+              }
+            }
+          }
+          if (data.error) this._disablePlaybackWorker();
+          job.resolve(valid);
+          this._schedulePlaybackPreparation();
+        };
+        worker.onerror = event => { event.preventDefault(); this._disablePlaybackWorker(); };
+        return worker;
+      } catch (_) {
+        this._playbackWorkerUnavailable = true;
+        return null;
+      } finally { if (url) URL.revokeObjectURL(url); }
+    }
+
+    _preparePlaybackBoundary(key, snap) {
+      if (!snap || snap._cachedRegionBoundaryPath !== undefined ||
+          this._preparedPlaybackBoundary?.snap === snap) return Promise.resolve(true);
+      if (this._playbackBoundaryJob) return this._playbackBoundaryJob.promise;
+      const worker = this._createPlaybackWorker();
+      if (!worker) return Promise.resolve(false);
+      this._preparedPlaybackBoundary = null;
+      let resolve;
+      const promise = new Promise(done => { resolve = done; });
+      const id = this._playbackPreparationId = (this._playbackPreparationId || 0) + 1;
+      this._playbackBoundaryJob = { id, key, snap, sourceKey: this.activeSnapKey, promise, resolve };
+      try {
+        worker.postMessage({ id, projector: { bounds: this.projector.bounds, scale: this.projector.scale,
+          padX: this.projector.padX, padY: this.projector.padY, northMerc: this.projector.northMerc },
+          snapshot: { regions: snap.regions, polities: snap.polities,
+            _skipRegionBoundaryStroke: snap._skipRegionBoundaryStroke } });
+      } catch (_) { this._disablePlaybackWorker(); }
+      return promise;
+    }
+
+    _disablePlaybackWorker() {
+      this._playbackWorkerUnavailable = true;
+      if (this._playbackWorker) this._playbackWorker.terminate();
+      this._playbackWorker = null;
+      if (this._playbackBoundaryJob) this._playbackBoundaryJob.resolve(false);
+      this._playbackBoundaryJob = null;
+    }
+
+    _stopPlaybackPreparation() {
+      if (this._playbackPrepareTask != null) {
+        if (this._playbackPrepareUsesIdle) window.cancelIdleCallback(this._playbackPrepareTask);
+        else clearTimeout(this._playbackPrepareTask);
+      }
+      this._playbackPrepareTask = null;
+      if (this._playbackWorker) this._playbackWorker.terminate();
+      this._playbackWorker = null;
+      if (this._playbackBoundaryJob) this._playbackBoundaryJob.resolve(false);
+      this._playbackBoundaryJob = null;
+      this._preparedPlaybackBoundary = null;
     }
 
     // Sorted years the autoplay lands on: every milestone year plus every territory-snapshot
@@ -9523,6 +9777,7 @@
 
     stopAutoplay() {
       this.playing = false;
+      this._stopPlaybackPreparation();
       if (this.playInterval) {
         clearInterval(this.playInterval);
         this.playInterval = null;
@@ -9659,6 +9914,11 @@
       if (this._stageWrap && this._stageWrap.style && this._stageWrap.style.transform) {
         this._stageWrap.style.transform = '';
       }
+      if (this._panPlaneRect) {
+        this._stageWrap.style.clipPath = '';
+        this._stageWrap.style.willChange = '';
+        this._panPlaneRect = null;
+      }
       if (this.svg && typeof this.svg.setAttribute === 'function') {
         const vb = `${this.camera.x.toFixed(1)} ${this.camera.y.toFixed(1)} ${this.camera.w.toFixed(1)} ${this.camera.h.toFixed(1)}`;
         if (vb !== this._lastCameraViewBox) {
@@ -9675,10 +9935,37 @@
     }
 
     _getUnscaledSvgRect() {
-      if (this._stageWrap && this._stageWrap.style && this._stageWrap.style.transform) {
+      // The SVG's DOM rectangle moves with its compositor plane. Input and
+      // overlays always use the stationary logical viewport instead.
+      return this._panPlaneRect || this.svg.getBoundingClientRect();
+    }
+
+    _applyCameraPan(rect, force) {
+      const base = this._baseViewBoxCam;
+      if (force || this._typoDirty || !base || !this._stageWrap ||
+          Math.abs(base.w - this.camera.w) > 0.000001 ||
+          Math.abs(base.h - this.camera.h) > 0.000001 ||
+          !(rect.width > 0 && rect.height > 0)) {
         this._commitStageTransform();
+        return;
       }
-      return this.svg.getBoundingClientRect();
+      const scale = Math.min(rect.width / this.camera.w, rect.height / this.camera.h);
+      const dx = (base.x - this.camera.x) * scale;
+      const dy = (base.y - this.camera.y) * scale;
+      if (!this._panPlaneRect && dx === 0 && dy === 0) return;
+      // Bound the reusable painted area and rebase before revealing an edge.
+      // Translation does not change glyph sizes or non-scaling SVG strokes.
+      const padding = 256;
+      if (Math.abs(dx) > padding || Math.abs(dy) > padding) {
+        this._commitStageTransform();
+        return;
+      }
+      if (!this._panPlaneRect) {
+        this._panPlaneRect = rect;
+        this._stageWrap.style.clipPath = `inset(-${padding}px)`;
+        this._stageWrap.style.willChange = 'transform';
+      }
+      this._stageWrap.style.transform = `translate3d(${dx}px,${dy}px,0)`;
     }
 
     _finishCameraMotion() {
@@ -9687,7 +9974,7 @@
       this._cameraSettleTimer = null;
       this._commitStageTransform();
       this._cameraViewportRect = null;
-      const rect = this.svg.getBoundingClientRect();
+      const rect = this._getUnscaledSvgRect();
       this._cameraViewportRect = rect;
       this.svg.classList.remove('is-camera-moving');
       if (this.viewportFrame && this.viewportFrame.classList) {
@@ -9743,7 +10030,7 @@
           this._cameraSettleTimer = setTimeout(() => this._finishCameraMotion(), 120);
         }
       }
-      this._commitStageTransform();
+      this._applyCameraPan(rect, forceTypography);
       // Keep typography scale(invScale) synchronized on every zoom frame via the
       // _zoomScaleNodes fast-path so font sizes scale smoothly without stepping.
       const needsTypography =
@@ -9755,6 +10042,7 @@
         const zoomOnly = !this._typoDirty && this._lastTypographyWidth !== undefined;
         this._rescaleSvgTypography({ zoomOnly });
       }
+      this._updateViewportLabels(rect);
       this._updateScaleBar(rect);
       if (this.activeMilestone) this._positionMilestoneBalloon(rect);
     }
@@ -9763,7 +10051,7 @@
       const lblEl = this._id('scale-label-text');
       const barEl = this._id('scale-ruler-bar');
       if (!lblEl || !barEl || !this.svg) return;
-      const rect = viewportRect || (this.dragState && this.dragState.rect) || this.svg.getBoundingClientRect();
+      const rect = viewportRect || (this.dragState && this.dragState.rect) || this._getUnscaledSvgRect();
       const rw = rect.width || 1000;
       const rh = rect.height || 700;
       const screenScale = Math.min(rw / this.camera.w, rh / this.camera.h);
@@ -9792,6 +10080,47 @@
       const label = `${bestKm} km`;
       if (barEl.style.width !== width) barEl.style.width = width;
       if (lblEl.textContent !== label) lblEl.textContent = label;
+    }
+
+    _updateViewportLabels(viewportRect = null) {
+      const items = this._zoomScaleNodes;
+      if (!items || !this.svg || typeof this.svg.getBoundingClientRect !== 'function') return;
+      // CSS media rules can change text bounds even on a small resize that
+      // does not trigger the normal full typography pass. Reveal everything
+      // until that pass refreshes the measurements.
+      if (typeof window !== 'undefined' && this._lastViewportWidth !== window.innerWidth) {
+        for (const item of items) if (item.hidden) {
+          item.hidden = false;
+          item.node.setAttribute('transform', item.prefix + this._lastInvScale + item.suffix);
+          item.node.removeAttribute('data-outside-viewport');
+        }
+        return;
+      }
+      const r = viewportRect || this._cameraViewportRect || this._getUnscaledSvgRect();
+      if (!(r.width > 0 && r.height > 0)) return;
+      const screenScale = Math.min(r.width / this.camera.w, r.height / this.camera.h);
+      // Keep the bounded pan plane's labels painted ahead of movement. Their
+      // visibility stays stable until rebasing; no label pops at viewport edges.
+      const cam = this._panPlaneRect ? this._baseViewBoxCam : this.camera;
+      const margin = (this._panPlaneRect ? 320 : 64) / screenScale;
+      const extraX = (r.width / screenScale - cam.w) * 0.5;
+      const extraY = (r.height / screenScale - cam.h) * 0.5;
+      const left = cam.x - extraX - margin, right = cam.x + cam.w + extraX + margin;
+      const top = cam.y - extraY - margin, bottom = cam.y + cam.h + extraY + margin;
+      const s = Number(this._lastInvScale);
+      for (const item of items) {
+        if (!item.bounds) continue;
+        const b = item.bounds;
+        const hidden = item.x + b.right * s < left || item.x + b.left * s > right ||
+          item.y + b.bottom * s < top || item.y + b.top * s > bottom;
+        if (hidden === item.hidden) continue;
+        item.hidden = hidden;
+        if (hidden) item.node.setAttribute('data-outside-viewport', '');
+        else {
+          item.node.setAttribute('transform', item.prefix + this._lastInvScale + item.suffix);
+          item.node.removeAttribute('data-outside-viewport');
+        }
+      }
     }
 
     _isMobileViewport() {
@@ -9972,12 +10301,12 @@
           const items = this._zoomScaleNodes;
           for (let i = 0; i < items.length; i++) {
             const item = items[i];
-            item.node.setAttribute('transform', item.prefix + invScale + item.suffix);
+            if (!item.hidden) item.node.setAttribute('transform', item.prefix + invScale + item.suffix);
           }
           if (showProvNames) {
             const fontSize = (9.5 * s).toFixed(1);
             this.grpProvNames.querySelectorAll('.province-caption').forEach((node) => {
-              node.setAttribute('font-size', fontSize);
+              setSvgAttribute(node, 'font-size', fontSize);
             });
           }
           if (this.activePerson && this.grpJourney) {
@@ -9991,11 +10320,16 @@
       }
 
       const scaleNodes = [];
+      // A full layout can change text, alignment or visibility. Restore any
+      // previous offscreen labels before measuring their new local bounds.
+      for (const item of this._zoomScaleNodes || []) {
+        if (item.hidden) item.node.removeAttribute('data-outside-viewport');
+      }
       const applyNodeScale = (node, xStr, yStr, rotStr = null) => {
         const prefix = `translate(${xStr},${yStr}) scale(`;
         const suffix = rotStr !== null ? `) rotate(${rotStr})` : ')';
-        node.setAttribute('transform', prefix + invScale + suffix);
-        scaleNodes.push({ node, prefix, suffix });
+        setSvgAttribute(node, 'transform', prefix + invScale + suffix);
+        scaleNodes.push({ node, prefix, suffix, x: Number(xStr), y: Number(yStr), rotation: Number(rotStr) || 0 });
       };
 
       // Scale static markers (milestones, journey waypoints, directional chevrons, challenge pins, genealogy overlays)
@@ -10305,9 +10639,9 @@
             node.classList.remove('is-label-crowded');
             if (node.dataset.appliedDir !== bestDir) {
               node.dataset.appliedDir = bestDir;
-              nameEl.setAttribute('x', String(best.dx));
-              nameEl.setAttribute('y', String(best.dy1));
-              nameEl.setAttribute('text-anchor', best.anchor);
+              setSvgAttribute(nameEl, 'x', String(best.dx));
+              setSvgAttribute(nameEl, 'y', String(best.dy1));
+              setSvgAttribute(nameEl, 'text-anchor', best.anchor);
             }
             occupied.push(best.box);
             return;
@@ -10340,9 +10674,9 @@
         node.classList.remove('is-label-crowded');
         if (node.dataset.appliedDir !== bestDir) {
           node.dataset.appliedDir = bestDir;
-          nameEl.setAttribute('x', String(best.dx));
-          nameEl.setAttribute('y', String(best.dy1));
-          nameEl.setAttribute('text-anchor', best.anchor);
+          setSvgAttribute(nameEl, 'x', String(best.dx));
+          setSvgAttribute(nameEl, 'y', String(best.dy1));
+          setSvgAttribute(nameEl, 'text-anchor', best.anchor);
         }
         occupied.push(best.box);
       };
@@ -10529,8 +10863,8 @@
         node.dataset.placed = '1';
         const bestXStr = bestX.toFixed(1);
         const bestYStr = bestY.toFixed(1);
-        node.setAttribute('data-x', bestXStr);
-        node.setAttribute('data-y', bestYStr);
+        setSvgAttribute(node, 'data-x', bestXStr);
+        setSvgAttribute(node, 'data-y', bestYStr);
         applyNodeScale(node, bestXStr, bestYStr);
         occupied.push(bestBox);
       }
@@ -10618,8 +10952,8 @@
           node.classList.remove('is-crowded-hidden');
           const bestXStr = bestX.toFixed(1);
           const bestYStr = bestY.toFixed(1);
-          node.setAttribute('data-x', bestXStr);
-          node.setAttribute('data-y', bestYStr);
+          setSvgAttribute(node, 'data-x', bestXStr);
+          setSvgAttribute(node, 'data-y', bestYStr);
           applyNodeScale(node, bestXStr, bestYStr);
           occupied.push(bestBox);
         });
@@ -10674,8 +11008,8 @@
             node.dataset.placed = '1';
             const cxStr = cx.toFixed(1);
             const cyStr = cy.toFixed(1);
-            node.setAttribute('data-x', cxStr);
-            node.setAttribute('data-y', cyStr);
+            setSvgAttribute(node, 'data-x', cxStr);
+            setSvgAttribute(node, 'data-y', cyStr);
             applyNodeScale(node, cxStr, cyStr);
             node.classList.remove('is-crowded-hidden');
             occupied.push(candBox);
@@ -10687,8 +11021,8 @@
           node.dataset.placed = '1';
           const bxStr = baseX.toFixed(1);
           const byStr = baseY.toFixed(1);
-          node.setAttribute('data-x', bxStr);
-          node.setAttribute('data-y', byStr);
+          setSvgAttribute(node, 'data-x', bxStr);
+          setSvgAttribute(node, 'data-y', byStr);
           node.classList.add('is-crowded-hidden');
         }
       });
@@ -10754,8 +11088,8 @@
           node.dataset.placed = '1';
           const cxStr = cx.toFixed(1);
           const cyStr = cy.toFixed(1);
-          node.setAttribute('data-x', cxStr);
-          node.setAttribute('data-y', cyStr);
+          setSvgAttribute(node, 'data-x', cxStr);
+          setSvgAttribute(node, 'data-y', cyStr);
           applyNodeScale(node, cxStr, cyStr);
           node.classList.remove('is-crowded-hidden');
           occupied.push(candBox);
@@ -10766,8 +11100,8 @@
           node.dataset.placed = '1';
           const bxStr = baseX.toFixed(1);
           const byStr = baseY.toFixed(1);
-          node.setAttribute('data-x', bxStr);
-          node.setAttribute('data-y', byStr);
+          setSvgAttribute(node, 'data-x', bxStr);
+          setSvgAttribute(node, 'data-y', byStr);
           node.classList.add('is-crowded-hidden');
         }
       }
@@ -10849,8 +11183,8 @@
               node.dataset.placed = '1';
               const cxStr = cx.toFixed(1);
               const cyStr = cy.toFixed(1);
-              node.setAttribute('data-x', cxStr);
-              node.setAttribute('data-y', cyStr);
+              setSvgAttribute(node, 'data-x', cxStr);
+              setSvgAttribute(node, 'data-y', cyStr);
               applyNodeScale(node, cxStr, cyStr, rotStr);
               node.classList.remove('is-crowded-hidden');
               for (let k = 0; k < boxes.length; k++) occupied.push(boxes[k]);
@@ -10866,11 +11200,27 @@
       }
 
       this.grpProvNames.querySelectorAll('.province-caption').forEach((node) => {
-        node.setAttribute('font-size', (9.5 * s).toFixed(1));
+        setSvgAttribute(node, 'font-size', (9.5 * s).toFixed(1));
       });
       this._zoomScaleNodes = scaleNodes;
       this._lastZoomStateKey = zoomStateKey;
       this._lastInvScale = invScale;
+      for (const item of scaleNodes) {
+        const node = item.node;
+        if (typeof node.matches !== 'function' || typeof node.getBBox !== 'function' ||
+            !node.matches('.settlement-node, .polity-caption, .region-caption, .hydro-label, .neighbor-caption, .corridor-caption')) continue;
+        const b = node.getBBox();
+        if (!(b.width > 0 || b.height > 0)) continue;
+        const angle = item.rotation * DEG_TO_RAD, cos = Math.cos(angle), sin = Math.sin(angle);
+        // Include outlines and small nested marker animations; camera bounds
+        // add another 64 CSS pixels of overscan before suppressing any paint.
+        const corners = [[b.x - 8, b.y - 8], [b.x + b.width + 8, b.y - 8],
+          [b.x - 8, b.y + b.height + 8], [b.x + b.width + 8, b.y + b.height + 8]];
+        const xs = corners.map(([x, y]) => x * cos - y * sin), ys = corners.map(([x, y]) => x * sin + y * cos);
+        item.bounds = { left: Math.min(...xs), right: Math.max(...xs), top: Math.min(...ys), bottom: Math.max(...ys) };
+        item.hidden = false;
+      }
+      this._updateViewportLabels();
     }
 
     _rescaleActivePersonPins(vw, s, zoomOnly = false) {
@@ -10880,7 +11230,7 @@
         (this.pinchState && this.pinchState.rect) ||
         this._cameraViewportRect ||
         (typeof this.svg.getBoundingClientRect === 'function'
-          ? this.svg.getBoundingClientRect()
+          ? this._getUnscaledSvgRect()
           : null);
       if (svgRect && svgRect.width) this._cameraViewportRect = svgRect;
       const rw = (svgRect && svgRect.width) || vw || 1000;
@@ -10935,12 +11285,12 @@
         }
       }
       for (const p of pts) {
-        p.n.setAttribute('transform', `translate(${p.x.toFixed(1)},${p.y.toFixed(1)}) scale(${pinScaleStr})`);
-        p.n.setAttribute('data-ox', p.ox.toFixed(2));
-        p.n.setAttribute('data-oy', p.oy.toFixed(2));
+        setSvgAttribute(p.n, 'transform', `translate(${p.x.toFixed(1)},${p.y.toFixed(1)}) scale(${pinScaleStr})`);
+        setSvgAttribute(p.n, 'data-ox', p.ox.toFixed(2));
+        setSvgAttribute(p.n, 'data-oy', p.oy.toFixed(2));
         const shiftEl = p.n.querySelector('.jn-pin-shift');
         if (shiftEl) {
-          shiftEl.setAttribute('transform', `translate(${p.ox.toFixed(2)},${p.oy.toFixed(2)})`);
+          setSvgAttribute(shiftEl, 'transform', `translate(${p.ox.toFixed(2)},${p.oy.toFixed(2)})`);
         }
       }
       const placedRects = pts.map((p) => {
@@ -11040,9 +11390,9 @@
           lbl.style.display = '';
           lbl.style.textAnchor = chosenSlot.anchor;
           lbl.dataset.slotIdx = String(chosenSlot.idx);
-          lbl.setAttribute('text-anchor', chosenSlot.anchor);
-          lbl.setAttribute('x', chosenSlot.lx);
-          lbl.setAttribute('y', chosenSlot.ly);
+          setSvgAttribute(lbl, 'text-anchor', chosenSlot.anchor);
+          setSvgAttribute(lbl, 'x', chosenSlot.lx);
+          setSvgAttribute(lbl, 'y', chosenSlot.ly);
           placedRects.push(chosenRect);
         } else {
           lbl.style.display = 'none';
@@ -13549,7 +13899,7 @@
           const k = nextW / this.pinchState.camW;
           const midX = (pts[0].x + pts[1].x) * 0.5;
           const midY = (pts[0].y + pts[1].y) * 0.5;
-          const rect = this.pinchState.rect || this.svg.getBoundingClientRect();
+          const rect = this.pinchState.rect || this._getUnscaledSvgRect();
           const scale = Math.min(rect.width / nextW, rect.height / (this.pinchState.camH * k));
           const padX = (rect.width - nextW * scale) * 0.5;
           const padY = (rect.height - this.pinchState.camH * k * scale) * 0.5;
@@ -13577,7 +13927,7 @@
           }
         }
         if (this.didPan) {
-          const rect = this.dragState.rect || this.svg.getBoundingClientRect();
+          const rect = this.dragState.rect || this._getUnscaledSvgRect();
           const scale = Math.min(rect.width / this.camera.w, rect.height / this.camera.h);
           this.camera.x = this.dragState.camX - dx / scale;
           this.camera.y = this.dragState.camY - dy / scale;
@@ -13844,6 +14194,7 @@
         clearLongPress();
         // Preserve the last move even when pointerup/cancel arrives before rAF.
         if (this._camRaf !== null) this._applyCamera();
+        this._commitStageTransform();
         this.activePointers.delete(e.pointerId);
         if (this.activePointers.size < 2) {
           this.pinchState = null;
@@ -13878,7 +14229,7 @@
           this._recordGestureClick();
           const [sx, sy] = this._clientToSvgPoint(e.clientX, e.clientY);
           const pend = this.challenge.pendingGuess;
-          const svgPerPx = this.camera.w / Math.max(1, this.svg.getBoundingClientRect().width);
+          const svgPerPx = this.camera.w / Math.max(1, this._getUnscaledSvgRect().width);
           if (pend && Math.hypot(sx - pend[0], sy - pend[1]) <= 14 * svgPerPx) {
             // Clicking the pending mark again confirms it.
             this._evaluateLocateClick(pend[0], pend[1]);
@@ -14087,7 +14438,10 @@
             this._commitStageTransform();
           }
           this._cameraViewportRect = null;
+          if (this.dragState) this.dragState.rect = null;
+          if (this.pinchState) this.pinchState.rect = null;
           this._scrubberRailWidth = 0;
+          this._updateViewportLabels();
         });
         this._cameraResizeObserver.observe(this.svg);
       }

@@ -633,6 +633,28 @@ function main() {
     }),
   });
   ctrl._initTimelineBands();
+  {
+    const probe = Object.create(ControllerClass.prototype);
+    const dict = {};
+    probe.enLocale = { dict };
+    assert.strictEqual(probe._hasEnDict(), false, 'An empty English dictionary is not loaded');
+    dict[''] = 'empty-string key';
+    assert.strictEqual(probe._hasEnDict(), true, 'In-place population must be detected');
+    delete dict[''];
+    assert.strictEqual(probe._hasEnDict(), false, 'In-place emptying must be detected');
+    dict.first = 'one';
+    assert.strictEqual(probe._hasEnDict(), true);
+    Object.defineProperty(dict, 'first', { enumerable: false });
+    assert.strictEqual(probe._hasEnDict(), false, 'A non-enumerable probe is not dictionary content');
+    dict.second = 'two';
+    assert.strictEqual(probe._hasEnDict(), true, 'Another enumerable entry must remain visible');
+    probe.enLocale = { dict: {} };
+    assert.strictEqual(probe._hasEnDict(), false, 'Replacing the dictionary must invalidate its probe');
+    probe.enLocale.dict = Object.create({ inherited: 'translation' });
+    assert.strictEqual(probe._hasEnDict(), true, 'Preserve inherited enumerable entries');
+    probe.enLocale = null;
+    assert.strictEqual(probe._hasEnDict(), false, 'A missing locale must remain supported');
+  }
   assert.strictEqual(
     typeof ctrl._lazyAssetUrl,
     'function',
@@ -5255,6 +5277,7 @@ function main() {
       camera: { x: 200, y: 200, w: 444, h: 311, zoom: 2.25 },
       projector: ctrl.projector,
       _estimateLocalTextWidth: proto._estimateLocalTextWidth,
+      _updateViewportLabels: proto._updateViewportLabels,
       svg: {
         classList: makeCls(),
         querySelectorAll: () => [],
@@ -7486,6 +7509,7 @@ function main() {
             camera: { x: 395, y: 310, w: camW, h: camW * 0.7, zoom: 1000 / camW },
             projector: realProj,
             _estimateLocalTextWidth: proto._estimateLocalTextWidth,
+            _updateViewportLabels: proto._updateViewportLabels,
             svg: {
               classList: makeCls(),
               querySelectorAll: (sel) => (sel === '.settlement-node' ? sNodes : []),
@@ -7654,7 +7678,8 @@ function main() {
           };
         };
 
-        // 44a. Pure camera pan commits exact viewBox (no stage CSS transform checkerboarding) and suppresses infinite pulse animations via is-camera-moving
+        // 44a. Pure pan reuses bounded paint, then commits the exact camera on
+        // settle. Browser pixel/layer checks cover edge rebasing and hit testing.
         let viewBoxWrites = 0;
         let committedVb = '';
         const hoveredMockPref = { classList: makeCls() };
@@ -7705,20 +7730,26 @@ function main() {
           panCtrl._applyCamera(false);
         }
         assert(
-          viewBoxWrites === 6 &&
-            committedVb === '115.0 90.0 600.0 420.0' &&
-            panCtrl._stageWrap.style.transform === '' &&
+          viewBoxWrites === 1 &&
+            committedVb === '100.0 80.0 600.0 420.0' &&
+            panCtrl._stageWrap.style.transform === 'translate3d(-30px,-20px,0)' &&
+            panCtrl._stageWrap.style.clipPath === 'inset(-256px)' &&
+            panCtrl._stageWrap.style.willChange === 'transform' &&
             panCtrl.svg.classList.contains('is-camera-moving') &&
             panCtrl._cameraSettleTimer !== null &&
             !hoveredMockPref.classList.contains('is-hovered'),
-          `Expected pure pan frames to update exact viewBox without CSS translate3d while adding is-camera-moving and clearing hovered prefecture (writes=${viewBoxWrites}, vb="${committedVb}", transform="${panCtrl._stageWrap.style.transform}")`
+          `Expected bounded translation without repeated SVG paint, with is-camera-moving and cleared hover (writes=${viewBoxWrites}, vb="${committedVb}", transform="${panCtrl._stageWrap.style.transform}")`
         );
         clearTimeout(panCtrl._cameraSettleTimer);
         panCtrl.dragState = null;
         panCtrl._finishCameraMotion();
         assert(
-          !panCtrl.svg.classList.contains('is-camera-moving'),
-          'Expected _finishCameraMotion to remove is-camera-moving after pan settles'
+          !panCtrl.svg.classList.contains('is-camera-moving') &&
+            viewBoxWrites === 2 && committedVb === '115.0 90.0 600.0 420.0' &&
+            panCtrl._stageWrap.style.transform === '' &&
+            panCtrl._stageWrap.style.clipPath === '' &&
+            panCtrl._stageWrap.style.willChange === '',
+          'Expected settle to commit the exact final camera and release plane hints'
         );
 
         // 44b. Lazy secondary prefecture deferral when hidden + DOM reuse across intra-dynasty phases when visible
