@@ -1,0 +1,8 @@
+{
+  "complete": true,
+  "baselineFailsSameStaleAssertion": true,
+  "expectedTypographyUpdatesInCoalescedFrame": 1,
+  "expectedUpdatesAfterSettle": 1,
+  "panPlaneOnlyProbeExcluded": true,
+  "productionSourceChanged": false
+}

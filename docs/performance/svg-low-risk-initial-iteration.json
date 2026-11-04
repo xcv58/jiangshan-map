@@ -1,0 +1,16 @@
+{
+  "complete": true,
+  "reason": "Initial extraction added a getAttribute guard to the always-changing zoom transform loop; restore the original reviewed direct-write fast path before final measurement.",
+  "retainedCollections": {
+    "frames": {
+      "complete": true,
+      "runs": 18
+    },
+    "native": {
+      "complete": false,
+      "runs": 13
+    }
+  },
+  "allPrimaryRunsRetained": true,
+  "processGroupStopped": 43712
+}

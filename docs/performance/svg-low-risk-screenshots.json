@@ -1,0 +1,41 @@
+[
+  {
+    "viewport": "1280x720",
+    "files": [
+      "svg-low-risk-main-1280x720.png",
+      "svg-low-risk-subset-1280x720.png"
+    ],
+    "sha256": [
+      "383f7b8516796398aa4ea230a671007aa7903030467b7877ab60d2a6308ea52f",
+      "9dddea4ef2d01e095c5031fe60ec1bb105e49d4f1df17265d489d88b829138d5"
+    ],
+    "meanAbsoluteRgbDifference": 0.02227213541666667,
+    "fractionPixelsWithChannelDifferenceOver16": 0.00035264756944444444
+  },
+  {
+    "viewport": "768x1024",
+    "files": [
+      "svg-low-risk-main-768x1024.png",
+      "svg-low-risk-subset-768x1024.png"
+    ],
+    "sha256": [
+      "098b3ae5ad86f92be59b4cfe3e0e17ac475eaaf15e19cd4f7ace0fb8859ea0c2",
+      "9daf3671ae72ba2bd5f99fdfdada2c1786f0ebbc3566ede3edcdd3b2ff37fbf2"
+    ],
+    "meanAbsoluteRgbDifference": 0.010955810546875,
+    "fractionPixelsWithChannelDifferenceOver16": 0.0002606709798177083
+  },
+  {
+    "viewport": "390x844",
+    "files": [
+      "svg-low-risk-main-390x844.png",
+      "svg-low-risk-subset-390x844.png"
+    ],
+    "sha256": [
+      "02654ab3b46322de7a1b083ef8be54efbb8690cd495a24d3dfbbb7c6f07c0c13",
+      "80ab78c7b8ca1467fc98c92aae546221a01acc60d1aac2d6ba2fbd0118f7cf97"
+    ],
+    "meanAbsoluteRgbDifference": 0.010562239235225018,
+    "fractionPixelsWithChannelDifferenceOver16": 0.0003736784542471746
+  }
+]

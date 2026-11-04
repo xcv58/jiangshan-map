@@ -1,16 +1,16 @@
 {
   "complete": true,
-  "baseCommit": "ae8a42293331ed2305360f236f20f6a252b2ba3b",
+  "baseCommit": "ff1392c4b54fed4fd1478547b9c24c3fb36dc528",
   "sourceHashes": {
-    "js/app.js": "c41b76fb8bc8d616187de7c537fe953fd4cd09812640bb0c7efce4e3e087c2cf",
-    "css/style.css": "f6b79d424864536da3ddfb5eb8444279d33e40e95d0c05c475aa91ab1f62c5fb",
-    "index.html": "be1b65dcb19f17c426d675a6b8436338bbc687a07e0c959a053b23f5c627a608"
+    "js/app.js": "d20260917e042c79fb25cf5915358ebf35fe91c92558f6042158817c12e901c5",
+    "css/style.css": "638e75afd06c4de157958d44dd586adbe4242740c0e313fe76b53eb3bc57695a",
+    "index.html": "f225ed393e4f3f5dedc52abec0796c56b3ba28a7148ccd8f9ed3d9353704da14"
   },
   "cohorts": [
     {
       "name": "frames",
-      "sourceCommit": "376573a455402a856b1d2465389186a2866ac5b1",
-      "baseCommit": "ae8a42293331ed2305360f236f20f6a252b2ba3b",
+      "sourceCommit": "5eab48f05c1ea3fbc0406be75e01fad3f6e4553c",
+      "baseCommit": "ff1392c4b54fed4fd1478547b9c24c3fb36dc528",
       "target": {
         "minimumFps": 60,
         "scope": "Every candidate run, without rounding or discarding low samples",
@@ -19,43 +19,53 @@
           {
             "repeat": 0,
             "scenario": "pan",
-            "presentedFps": 59.951786920987246
+            "presentedFps": 59.833455307870324
           },
           {
             "repeat": 0,
             "scenario": "zoom",
-            "presentedFps": 57.37835112349521
+            "presentedFps": 40.48847868244565
           },
           {
             "repeat": 0,
             "scenario": "playback",
-            "presentedFps": 57.967671310598426
+            "presentedFps": 56.97058987586962
+          },
+          {
+            "repeat": 1,
+            "scenario": "pan",
+            "presentedFps": 59.86208072216826
           },
           {
             "repeat": 1,
             "scenario": "zoom",
-            "presentedFps": 57.743815859413054
+            "presentedFps": 40.495986946464306
           },
           {
             "repeat": 1,
             "scenario": "playback",
-            "presentedFps": 57.44316877985641
+            "presentedFps": 57.7928138565085
+          },
+          {
+            "repeat": 2,
+            "scenario": "pan",
+            "presentedFps": 59.88013580418898
           },
           {
             "repeat": 2,
             "scenario": "zoom",
-            "presentedFps": 57.408180788955946
+            "presentedFps": 38.87302667107884
           },
           {
             "repeat": 2,
             "scenario": "playback",
-            "presentedFps": 57.67750649715767
+            "presentedFps": 56.92827543986034
           }
         ],
         "minimumByScenario": {
-          "pan": 59.951786920987246,
-          "zoom": 57.37835112349521,
-          "playback": 57.44316877985641
+          "pan": 59.833455307870324,
+          "zoom": 38.87302667107884,
+          "playback": 56.92827543986034
         }
       },
       "groups": [
@@ -64,22 +74,368 @@
           "variant": "baseline",
           "fps": {
             "count": 3,
-            "median": 59.82240655653576,
-            "min": 59.82030671997101,
-            "max": 59.87249138590715
+            "median": 59.97634651854657,
+            "min": 59.842391954808605,
+            "max": 60.04017503069956
           },
           "nativeChangedHz": null,
           "layoutMs": {
             "count": 3,
-            "median": 246.18199999999982,
-            "min": 244.2629999999999,
-            "max": 248.66600000000005
+            "median": 244.41599999999985,
+            "min": 236.34600000000006,
+            "max": 247.47700000000015
           },
           "paintMs": {
             "count": 3,
-            "median": 158.50399999999996,
-            "min": 155.86999999999983,
-            "max": 162.24800000000002
+            "median": 150.08999999999992,
+            "min": 144.84099999999995,
+            "max": 154.6330000000001
+          },
+          "maxGapMs": {
+            "count": 3,
+            "median": 16.668,
+            "min": 16.668,
+            "max": 16.668
+          },
+          "longTasks": {
+            "count": 3,
+            "median": 0,
+            "min": 0,
+            "max": 0
+          },
+          "droppedPct": {
+            "count": 3,
+            "median": 0,
+            "min": 0,
+            "max": 0
+          },
+          "partialPct": {
+            "count": 3,
+            "median": 0,
+            "min": 0,
+            "max": 0
+          }
+        },
+        {
+          "scenario": "pan",
+          "variant": "candidate",
+          "fps": {
+            "count": 3,
+            "median": 59.86208072216826,
+            "min": 59.833455307870324,
+            "max": 59.88013580418898
+          },
+          "nativeChangedHz": null,
+          "layoutMs": {
+            "count": 3,
+            "median": 252.58900000000003,
+            "min": 247.29599999999996,
+            "max": 259.001
+          },
+          "paintMs": {
+            "count": 3,
+            "median": 151.89399999999998,
+            "min": 146.61899999999997,
+            "max": 159.41900000000007
+          },
+          "maxGapMs": {
+            "count": 3,
+            "median": 16.668,
+            "min": 16.668,
+            "max": 16.668
+          },
+          "longTasks": {
+            "count": 3,
+            "median": 0,
+            "min": 0,
+            "max": 0
+          },
+          "droppedPct": {
+            "count": 3,
+            "median": 0,
+            "min": 0,
+            "max": 0
+          },
+          "partialPct": {
+            "count": 3,
+            "median": 0,
+            "min": 0,
+            "max": 0
+          }
+        },
+        {
+          "scenario": "zoom",
+          "variant": "baseline",
+          "fps": {
+            "count": 3,
+            "median": 46.65750797065761,
+            "min": 36.999836214058355,
+            "max": 48.240157223532826
+          },
+          "nativeChangedHz": null,
+          "layoutMs": {
+            "count": 3,
+            "median": 321.56800000000004,
+            "min": 243.88199999999995,
+            "max": 326.212
+          },
+          "paintMs": {
+            "count": 3,
+            "median": 192.78999999999985,
+            "min": 141.16500000000005,
+            "max": 200.26299999999986
+          },
+          "maxGapMs": {
+            "count": 3,
+            "median": 50,
+            "min": 33.334,
+            "max": 50
+          },
+          "longTasks": {
+            "count": 3,
+            "median": 0,
+            "min": 0,
+            "max": 1
+          },
+          "droppedPct": {
+            "count": 3,
+            "median": 2.074688796680498,
+            "min": 0.8264462809917356,
+            "max": 2.857142857142857
+          },
+          "partialPct": {
+            "count": 3,
+            "median": 5.394190871369295,
+            "min": 0.4132231404958678,
+            "max": 9.795918367346939
+          }
+        },
+        {
+          "scenario": "zoom",
+          "variant": "candidate",
+          "fps": {
+            "count": 3,
+            "median": 40.48847868244565,
+            "min": 38.87302667107884,
+            "max": 40.495986946464306
+          },
+          "nativeChangedHz": null,
+          "layoutMs": {
+            "count": 3,
+            "median": 271.2199999999998,
+            "min": 251.42100000000002,
+            "max": 273.9189999999999
+          },
+          "paintMs": {
+            "count": 3,
+            "median": 155.3349999999999,
+            "min": 149.21899999999994,
+            "max": 162.69299999999996
+          },
+          "maxGapMs": {
+            "count": 3,
+            "median": 50.001,
+            "min": 50,
+            "max": 50.001
+          },
+          "longTasks": {
+            "count": 3,
+            "median": 1,
+            "min": 1,
+            "max": 2
+          },
+          "droppedPct": {
+            "count": 3,
+            "median": 2.0491803278688523,
+            "min": 0,
+            "max": 2.4691358024691357
+          },
+          "partialPct": {
+            "count": 3,
+            "median": 6.147540983606557,
+            "min": 2.510460251046025,
+            "max": 8.23045267489712
+          }
+        },
+        {
+          "scenario": "playback",
+          "variant": "baseline",
+          "fps": {
+            "count": 3,
+            "median": 46.57115178302968,
+            "min": 46.46150009490854,
+            "max": 48.765652930378735
+          },
+          "nativeChangedHz": null,
+          "layoutMs": {
+            "count": 3,
+            "median": 305.86099999999965,
+            "min": 297.21699999999976,
+            "max": 315.9510000000001
+          },
+          "paintMs": {
+            "count": 3,
+            "median": 600.2710000000006,
+            "min": 574.3160000000001,
+            "max": 628.2190000000006
+          },
+          "maxGapMs": {
+            "count": 3,
+            "median": 83.332,
+            "min": 66.667,
+            "max": 99.999
+          },
+          "longTasks": {
+            "count": 3,
+            "median": 4,
+            "min": 3,
+            "max": 5
+          },
+          "droppedPct": {
+            "count": 3,
+            "median": 8.774834437086092,
+            "min": 6.456953642384106,
+            "max": 9.437086092715232
+          },
+          "partialPct": {
+            "count": 3,
+            "median": 1.8211920529801324,
+            "min": 1.6556291390728477,
+            "max": 1.9867549668874172
+          }
+        },
+        {
+          "scenario": "playback",
+          "variant": "candidate",
+          "fps": {
+            "count": 3,
+            "median": 56.97058987586962,
+            "min": 56.92827543986034,
+            "max": 57.7928138565085
+          },
+          "nativeChangedHz": null,
+          "layoutMs": {
+            "count": 3,
+            "median": 344.29399999999987,
+            "min": 329.6210000000001,
+            "max": 362.2280000000004
+          },
+          "paintMs": {
+            "count": 3,
+            "median": 801.7500000000009,
+            "min": 784.2650000000006,
+            "max": 836.3629999999993
+          },
+          "maxGapMs": {
+            "count": 3,
+            "median": 83.331,
+            "min": 83.33,
+            "max": 99.998
+          },
+          "longTasks": {
+            "count": 3,
+            "median": 0,
+            "min": 0,
+            "max": 0
+          },
+          "droppedPct": {
+            "count": 3,
+            "median": 0.33222591362126247,
+            "min": 0.33167495854063017,
+            "max": 0.33222591362126247
+          },
+          "partialPct": {
+            "count": 3,
+            "median": 0.4983388704318937,
+            "min": 0.33167495854063017,
+            "max": 0.4983388704318937
+          }
+        }
+      ]
+    },
+    {
+      "name": "native",
+      "sourceCommit": "5eab48f05c1ea3fbc0406be75e01fad3f6e4553c",
+      "baseCommit": "ff1392c4b54fed4fd1478547b9c24c3fb36dc528",
+      "target": {
+        "minimumFps": 60,
+        "scope": "Every candidate run, without rounding or discarding low samples",
+        "passed": false,
+        "failures": [
+          {
+            "repeat": 0,
+            "scenario": "pan",
+            "presentedFps": 59.83264167294045
+          },
+          {
+            "repeat": 0,
+            "scenario": "zoom",
+            "presentedFps": 36.94595840771786
+          },
+          {
+            "repeat": 0,
+            "scenario": "playback",
+            "presentedFps": 57.34560489592567
+          },
+          {
+            "repeat": 1,
+            "scenario": "zoom",
+            "presentedFps": 45.351988117779115
+          },
+          {
+            "repeat": 1,
+            "scenario": "playback",
+            "presentedFps": 57.500709324380566
+          },
+          {
+            "repeat": 2,
+            "scenario": "pan",
+            "presentedFps": 59.78823599750866
+          },
+          {
+            "repeat": 2,
+            "scenario": "zoom",
+            "presentedFps": 40.81027573241538
+          },
+          {
+            "repeat": 2,
+            "scenario": "playback",
+            "presentedFps": 57.929932008344295
+          }
+        ],
+        "minimumByScenario": {
+          "pan": 59.78823599750866,
+          "zoom": 36.94595840771786,
+          "playback": 57.34560489592567
+        }
+      },
+      "groups": [
+        {
+          "scenario": "pan",
+          "variant": "baseline",
+          "fps": {
+            "count": 3,
+            "median": 59.79553386663372,
+            "min": 59.54242756206619,
+            "max": 59.93055485044974
+          },
+          "nativeChangedHz": {
+            "count": 3,
+            "median": 59.68290792958011,
+            "min": 59.29536354728583,
+            "max": 60.042622849553695
+          },
+          "layoutMs": {
+            "count": 3,
+            "median": 246.99800000000005,
+            "min": 244.9740000000001,
+            "max": 257.9539999999999
+          },
+          "paintMs": {
+            "count": 3,
+            "median": 155.54199999999986,
+            "min": 145.6970000000001,
+            "max": 163.39299999999997
           },
           "maxGapMs": {
             "count": 3,
@@ -111,22 +467,27 @@
           "variant": "candidate",
           "fps": {
             "count": 3,
-            "median": 60.04995266432744,
-            "min": 59.951786920987246,
-            "max": 60.08067128158748
+            "median": 59.83264167294045,
+            "min": 59.78823599750866,
+            "max": 60.00877165254773
           },
-          "nativeChangedHz": null,
+          "nativeChangedHz": {
+            "count": 3,
+            "median": 59.83264167294044,
+            "min": 59.541177171072675,
+            "max": 60.00877165254773
+          },
           "layoutMs": {
             "count": 3,
-            "median": 79.61600000000003,
-            "min": 75.325,
-            "max": 80.74
+            "median": 245.98499999999996,
+            "min": 244.99599999999998,
+            "max": 248.91800000000003
           },
           "paintMs": {
             "count": 3,
-            "median": 161.692,
-            "min": 149.43500000000003,
-            "max": 167.93299999999996
+            "median": 147.33199999999988,
+            "min": 147.2189999999999,
+            "max": 154.11199999999994
           },
           "maxGapMs": {
             "count": 3,
@@ -158,28 +519,85 @@
           "variant": "baseline",
           "fps": {
             "count": 3,
-            "median": 40.37491555734125,
-            "min": 37.43388732202895,
-            "max": 41.91052841780359
+            "median": 42.822199520440584,
+            "min": 34.2316032029044,
+            "max": 47.55015679233048
           },
-          "nativeChangedHz": null,
+          "nativeChangedHz": {
+            "count": 3,
+            "median": 41.09946735582516,
+            "min": 34.965137557252355,
+            "max": 44.347296490256404
+          },
           "layoutMs": {
             "count": 3,
-            "median": 270.39200000000005,
-            "min": 251.1579999999999,
-            "max": 287.0489999999999
+            "median": 299.5749999999999,
+            "min": 286.9499999999999,
+            "max": 319.0210000000002
           },
           "paintMs": {
             "count": 3,
-            "median": 154.2080000000002,
-            "min": 146.37500000000014,
-            "max": 170.08500000000004
+            "median": 188.46700000000004,
+            "min": 170.6889999999997,
+            "max": 199.19499999999996
           },
           "maxGapMs": {
             "count": 3,
             "median": 50,
+            "min": 33.334,
+            "max": 83.333
+          },
+          "longTasks": {
+            "count": 3,
+            "median": 0,
+            "min": 0,
+            "max": 12
+          },
+          "droppedPct": {
+            "count": 3,
+            "median": 2.459016393442623,
+            "min": 1.639344262295082,
+            "max": 10.743801652892563
+          },
+          "partialPct": {
+            "count": 3,
+            "median": 8.19672131147541,
+            "min": 7.377049180327869,
+            "max": 15.702479338842975
+          }
+        },
+        {
+          "scenario": "zoom",
+          "variant": "candidate",
+          "fps": {
+            "count": 3,
+            "median": 40.81027573241538,
+            "min": 36.94595840771786,
+            "max": 45.351988117779115
+          },
+          "nativeChangedHz": {
+            "count": 3,
+            "median": 39.33520552521964,
+            "min": 35.71442646079394,
+            "max": 44.36607533261
+          },
+          "layoutMs": {
+            "count": 3,
+            "median": 290.90099999999984,
+            "min": 248.43599999999995,
+            "max": 308.8259999999999
+          },
+          "paintMs": {
+            "count": 3,
+            "median": 173.12299999999988,
+            "min": 142.71400000000025,
+            "max": 184.14799999999994
+          },
+          "maxGapMs": {
+            "count": 3,
+            "median": 50.001,
             "min": 50,
-            "max": 50
+            "max": 66.667
           },
           "longTasks": {
             "count": 3,
@@ -189,62 +607,15 @@
           },
           "droppedPct": {
             "count": 3,
-            "median": 0.8264462809917356,
-            "min": 0.4132231404958678,
-            "max": 4.11522633744856
+            "median": 1.2396694214876034,
+            "min": 0.4166666666666667,
+            "max": 2.928870292887029
           },
           "partialPct": {
             "count": 3,
-            "median": 2.479338842975207,
-            "min": 0.4132231404958678,
-            "max": 8.641975308641975
-          }
-        },
-        {
-          "scenario": "zoom",
-          "variant": "candidate",
-          "fps": {
-            "count": 3,
-            "median": 57.408180788955946,
-            "min": 57.37835112349521,
-            "max": 57.743815859413054
-          },
-          "nativeChangedHz": null,
-          "layoutMs": {
-            "count": 3,
-            "median": 336.81399999999996,
-            "min": 329.4830000000002,
-            "max": 342.2840000000002
-          },
-          "paintMs": {
-            "count": 3,
-            "median": 191.12400000000014,
-            "min": 190.35800000000012,
-            "max": 200.45200000000008
-          },
-          "maxGapMs": {
-            "count": 3,
-            "median": 33.334,
-            "min": 33.334,
-            "max": 33.334
-          },
-          "longTasks": {
-            "count": 3,
-            "median": 0,
-            "min": 0,
-            "max": 0
-          },
-          "droppedPct": {
-            "count": 3,
-            "median": 0,
-            "min": 0,
-            "max": 0.819672131147541
-          },
-          "partialPct": {
-            "count": 3,
-            "median": 0,
-            "min": 0,
-            "max": 2.0491803278688523
+            "median": 10.330578512396695,
+            "min": 0.8333333333333334,
+            "max": 11.715481171548117
           }
         },
         {
@@ -252,389 +623,33 @@
           "variant": "baseline",
           "fps": {
             "count": 3,
-            "median": 45.87756786528598,
-            "min": 45.086007517843484,
-            "max": 47.76637574858402
-          },
-          "nativeChangedHz": null,
-          "layoutMs": {
-            "count": 3,
-            "median": 303.75100000000003,
-            "min": 292.05199999999974,
-            "max": 310.356
-          },
-          "paintMs": {
-            "count": 3,
-            "median": 593.2270000000009,
-            "min": 592.9899999999999,
-            "max": 632.7459999999994
-          },
-          "maxGapMs": {
-            "count": 3,
-            "median": 83.333,
-            "min": 66.667,
-            "max": 99.999
-          },
-          "longTasks": {
-            "count": 3,
-            "median": 3,
-            "min": 3,
-            "max": 5
-          },
-          "droppedPct": {
-            "count": 3,
-            "median": 8.443708609271523,
-            "min": 7.462686567164179,
-            "max": 8.609271523178808
-          },
-          "partialPct": {
-            "count": 3,
-            "median": 1.658374792703151,
-            "min": 1.6556291390728477,
-            "max": 1.8211920529801324
-          }
-        },
-        {
-          "scenario": "playback",
-          "variant": "candidate",
-          "fps": {
-            "count": 3,
-            "median": 57.67750649715767,
-            "min": 57.44316877985641,
-            "max": 57.967671310598426
-          },
-          "nativeChangedHz": null,
-          "layoutMs": {
-            "count": 3,
-            "median": 276.6220000000001,
-            "min": 269.65699999999987,
-            "max": 286.8050000000002
-          },
-          "paintMs": {
-            "count": 3,
-            "median": 678.6689999999994,
-            "min": 671.6749999999997,
-            "max": 684.5540000000002
-          },
-          "maxGapMs": {
-            "count": 3,
-            "median": 83.331,
-            "min": 66.668,
-            "max": 83.331
-          },
-          "longTasks": {
-            "count": 3,
-            "median": 0,
-            "min": 0,
-            "max": 0
-          },
-          "droppedPct": {
-            "count": 3,
-            "median": 0.33167495854063017,
-            "min": 0.33112582781456956,
-            "max": 0.4966887417218543
-          },
-          "partialPct": {
-            "count": 3,
-            "median": 0.4966887417218543,
-            "min": 0.33112582781456956,
-            "max": 0.6633499170812603
-          }
-        }
-      ]
-    },
-    {
-      "name": "native",
-      "sourceCommit": "376573a455402a856b1d2465389186a2866ac5b1",
-      "baseCommit": "ae8a42293331ed2305360f236f20f6a252b2ba3b",
-      "target": {
-        "minimumFps": 60,
-        "scope": "Every candidate run, without rounding or discarding low samples",
-        "passed": false,
-        "failures": [
-          {
-            "repeat": 0,
-            "scenario": "pan",
-            "presentedFps": 59.9143299050666
-          },
-          {
-            "repeat": 0,
-            "scenario": "zoom",
-            "presentedFps": 56.446679086579344
-          },
-          {
-            "repeat": 0,
-            "scenario": "playback",
-            "presentedFps": 58.01031570425666
-          },
-          {
-            "repeat": 1,
-            "scenario": "zoom",
-            "presentedFps": 57.484989756322854
-          },
-          {
-            "repeat": 1,
-            "scenario": "playback",
-            "presentedFps": 58.17109867237868
-          },
-          {
-            "repeat": 2,
-            "scenario": "zoom",
-            "presentedFps": 58.032199721642996
-          },
-          {
-            "repeat": 2,
-            "scenario": "playback",
-            "presentedFps": 58.078870112812
-          }
-        ],
-        "minimumByScenario": {
-          "pan": 59.9143299050666,
-          "zoom": 56.446679086579344,
-          "playback": 58.01031570425666
-        }
-      },
-      "groups": [
-        {
-          "scenario": "pan",
-          "variant": "baseline",
-          "fps": {
-            "count": 3,
-            "median": 59.83878146481381,
-            "min": 59.7060144927715,
-            "max": 59.84615087857611
+            "median": 49.39091167473948,
+            "min": 47.19763777313397,
+            "max": 51.96851363890289
           },
           "nativeChangedHz": {
             "count": 3,
-            "median": 59.838781464813806,
-            "min": 59.59885273444977,
-            "max": 59.95273356092345
+            "median": 49.291533582838596,
+            "min": 46.89954742930365,
+            "max": 52.365978370366776
           },
           "layoutMs": {
             "count": 3,
-            "median": 249.97399999999988,
-            "min": 243.3370000000001,
-            "max": 261.12699999999995
+            "median": 320.35399999999987,
+            "min": 310.42699999999996,
+            "max": 321.6740000000001
           },
           "paintMs": {
             "count": 3,
-            "median": 155.28699999999998,
-            "min": 149.09600000000015,
-            "max": 167.5880000000001
+            "median": 633.0369999999997,
+            "min": 621.1060000000001,
+            "max": 675.4080000000007
           },
           "maxGapMs": {
             "count": 3,
-            "median": 16.668,
-            "min": 16.668,
-            "max": 33.332
-          },
-          "longTasks": {
-            "count": 3,
-            "median": 0,
-            "min": 0,
-            "max": 0
-          },
-          "droppedPct": {
-            "count": 3,
-            "median": 0,
-            "min": 0,
-            "max": 0
-          },
-          "partialPct": {
-            "count": 3,
-            "median": 0,
-            "min": 0,
-            "max": 0
-          }
-        },
-        {
-          "scenario": "pan",
-          "variant": "candidate",
-          "fps": {
-            "count": 3,
-            "median": 60.007067499061,
-            "min": 59.9143299050666,
-            "max": 60.091413134894836
-          },
-          "nativeChangedHz": {
-            "count": 3,
-            "median": 60.091413134894836,
-            "min": 60.007067499061,
-            "max": 60.16089093348252
-          },
-          "layoutMs": {
-            "count": 3,
-            "median": 67.87800000000006,
-            "min": 48.98999999999997,
-            "max": 77.224
-          },
-          "paintMs": {
-            "count": 3,
-            "median": 142.55599999999995,
-            "min": 94.86500000000036,
-            "max": 157.58000000000013
-          },
-          "maxGapMs": {
-            "count": 3,
-            "median": 16.668,
-            "min": 16.668,
-            "max": 16.668
-          },
-          "longTasks": {
-            "count": 3,
-            "median": 0,
-            "min": 0,
-            "max": 0
-          },
-          "droppedPct": {
-            "count": 3,
-            "median": 0,
-            "min": 0,
-            "max": 0
-          },
-          "partialPct": {
-            "count": 3,
-            "median": 0,
-            "min": 0,
-            "max": 0
-          }
-        },
-        {
-          "scenario": "zoom",
-          "variant": "baseline",
-          "fps": {
-            "count": 3,
-            "median": 43.193915155370476,
-            "min": 39.19366551484947,
-            "max": 46.65109326466819
-          },
-          "nativeChangedHz": {
-            "count": 3,
-            "median": 42.21223526547569,
-            "min": 37.96116030997999,
-            "max": 45.170106176900944
-          },
-          "layoutMs": {
-            "count": 3,
-            "median": 294.533,
-            "min": 267.38300000000004,
-            "max": 318.5979999999999
-          },
-          "paintMs": {
-            "count": 3,
-            "median": 180.091,
-            "min": 160.6620000000002,
-            "max": 188.29899999999995
-          },
-          "maxGapMs": {
-            "count": 3,
-            "median": 50,
-            "min": 49.999,
-            "max": 50.001
-          },
-          "longTasks": {
-            "count": 3,
-            "median": 0,
-            "min": 0,
-            "max": 3
-          },
-          "droppedPct": {
-            "count": 3,
-            "median": 2.074688796680498,
-            "min": 0,
-            "max": 4.508196721311475
-          },
-          "partialPct": {
-            "count": 3,
-            "median": 5.394190871369295,
-            "min": 1.2658227848101267,
-            "max": 11.885245901639344
-          }
-        },
-        {
-          "scenario": "zoom",
-          "variant": "candidate",
-          "fps": {
-            "count": 3,
-            "median": 57.484989756322854,
-            "min": 56.446679086579344,
-            "max": 58.032199721642996
-          },
-          "nativeChangedHz": {
-            "count": 3,
-            "median": 53.34023463776548,
-            "min": 52.502806311971185,
-            "max": 56.25140628515713
-          },
-          "layoutMs": {
-            "count": 3,
-            "median": 334.97199999999987,
-            "min": 333.7439999999999,
-            "max": 343.19699999999983
-          },
-          "paintMs": {
-            "count": 3,
-            "median": 192.71199999999993,
-            "min": 188.8460000000001,
-            "max": 202.8459999999998
-          },
-          "maxGapMs": {
-            "count": 3,
-            "median": 33.334,
-            "min": 33.334,
-            "max": 33.334
-          },
-          "longTasks": {
-            "count": 3,
-            "median": 0,
-            "min": 0,
-            "max": 0
-          },
-          "droppedPct": {
-            "count": 3,
-            "median": 1.2345679012345678,
-            "min": 0,
-            "max": 1.2345679012345678
-          },
-          "partialPct": {
-            "count": 3,
-            "median": 1.646090534979424,
-            "min": 0.4098360655737705,
-            "max": 1.646090534979424
-          }
-        },
-        {
-          "scenario": "playback",
-          "variant": "baseline",
-          "fps": {
-            "count": 3,
-            "median": 47.26245106037462,
-            "min": 45.97293018548836,
-            "max": 49.36244969648549
-          },
-          "nativeChangedHz": {
-            "count": 3,
-            "median": 46.47144769534743,
-            "min": 45.97293018548836,
-            "max": 49.064487223468475
-          },
-          "layoutMs": {
-            "count": 3,
-            "median": 318.0360000000001,
-            "min": 310.15000000000026,
-            "max": 343.92900000000026
-          },
-          "paintMs": {
-            "count": 3,
-            "median": 606.8709999999994,
-            "min": 603.3280000000007,
-            "max": 645.3749999999985
-          },
-          "maxGapMs": {
-            "count": 3,
-            "median": 83.331,
-            "min": 83.33,
-            "max": 83.332
+            "median": 66.667,
+            "min": 66.666,
+            "max": 66.667
           },
           "longTasks": {
             "count": 3,
@@ -644,15 +659,15 @@
           },
           "droppedPct": {
             "count": 3,
-            "median": 7.947019867549669,
-            "min": 6.456953642384106,
-            "max": 8.58085808580858
+            "median": 5.3156146179401995,
+            "min": 2.3217247097844114,
+            "max": 6.953642384105961
           },
           "partialPct": {
             "count": 3,
             "median": 1.8211920529801324,
-            "min": 1.490066225165563,
-            "max": 2.6402640264026402
+            "min": 1.3266998341625207,
+            "max": 1.8272425249169435
           }
         },
         {
@@ -660,33 +675,33 @@
           "variant": "candidate",
           "fps": {
             "count": 3,
-            "median": 58.078870112812,
-            "min": 58.01031570425666,
-            "max": 58.17109867237868
+            "median": 57.500709324380566,
+            "min": 57.34560489592567,
+            "max": 57.929932008344295
           },
           "nativeChangedHz": {
             "count": 3,
-            "median": 58.369634845321954,
-            "min": 57.78102975325912,
-            "max": 58.50697936610817
+            "median": 57.798640460776326,
+            "min": 57.34560489592567,
+            "max": 58.128662478355764
           },
           "layoutMs": {
             "count": 3,
-            "median": 262.05000000000035,
-            "min": 260.577,
-            "max": 263.54899999999964
+            "median": 342.74899999999985,
+            "min": 309.86000000000024,
+            "max": 353.55800000000005
           },
           "paintMs": {
             "count": 3,
-            "median": 663.390000000001,
-            "min": 636.1289999999995,
-            "max": 676.897
+            "median": 769.6140000000005,
+            "min": 668.9550000000005,
+            "max": 791.9389999999996
           },
           "maxGapMs": {
             "count": 3,
-            "median": 66.665,
+            "median": 83.331,
             "min": 66.665,
-            "max": 83.331
+            "max": 83.332
           },
           "longTasks": {
             "count": 3,
@@ -696,15 +711,15 @@
           },
           "droppedPct": {
             "count": 3,
-            "median": 0.33112582781456956,
-            "min": 0.16556291390728478,
-            "max": 0.9933774834437086
+            "median": 0.6633499170812603,
+            "min": 0.16583747927031509,
+            "max": 0.8291873963515755
           },
           "partialPct": {
             "count": 3,
-            "median": 0.33112582781456956,
-            "min": 0.33112582781456956,
-            "max": 0.4966887417218543
+            "median": 0.33167495854063017,
+            "min": 0.33167495854063017,
+            "max": 0.4975124378109453
           }
         }
       ]
@@ -716,51 +731,51 @@
       "metrics": {
         "startupMs": {
           "count": 3,
-          "median": 907.5,
-          "min": 875,
-          "max": 912.5
+          "median": 1010.1000000238419,
+          "min": 776.8000000119209,
+          "max": 3218.599999964237
         },
         "fcpMs": {
           "count": 3,
-          "median": 384,
-          "min": 384,
-          "max": 404
+          "median": 524,
+          "min": 404,
+          "max": 2812
         },
         "startupJsHeapBytes": {
           "count": 3,
-          "median": 15004424,
-          "min": 14997752,
-          "max": 15005124
+          "median": 14990776,
+          "min": 14970836,
+          "max": 14991016
         },
         "startupProcessRssBytes": {
           "count": 3,
-          "median": 1540325376,
-          "min": 1364312064,
-          "max": 1545797632
+          "median": 1471332352,
+          "min": 1429192704,
+          "max": 1486159872
         },
         "peakJsHeapBytes": {
           "count": 3,
-          "median": 48241200,
-          "min": 34284464,
-          "max": 49785804
+          "median": 43522456,
+          "min": 43518212,
+          "max": 46823620
         },
         "peakProcessRssBytes": {
           "count": 3,
-          "median": 1693302784,
-          "min": 1662320640,
-          "max": 1698398208
+          "median": 1670168576,
+          "min": 1660059648,
+          "max": 1698332672
         },
         "afterJsHeapBytes": {
           "count": 3,
-          "median": 23720208,
-          "min": 23643144,
-          "max": 49785804
+          "median": 23931108,
+          "min": 23872040,
+          "max": 23933192
         },
         "afterProcessRssBytes": {
           "count": 3,
-          "median": 1633550336,
-          "min": 1575878656,
-          "max": 1642381312
+          "median": 1599815680,
+          "min": 1575550976,
+          "max": 1635516416
         }
       }
     },
@@ -769,51 +784,51 @@
       "metrics": {
         "startupMs": {
           "count": 3,
-          "median": 883.6999999880791,
-          "min": 852.2999999523163,
-          "max": 908.7999999523163
+          "median": 926,
+          "min": 870.6000000238419,
+          "max": 1108.800000011921
         },
         "fcpMs": {
           "count": 3,
-          "median": 404,
-          "min": 376,
-          "max": 424
+          "median": 456,
+          "min": 412,
+          "max": 484
         },
         "startupJsHeapBytes": {
           "count": 3,
-          "median": 14647864,
-          "min": 14492148,
-          "max": 14649772
+          "median": 15229436,
+          "min": 15229404,
+          "max": 15229812
         },
         "startupProcessRssBytes": {
           "count": 3,
-          "median": 1562411008,
-          "min": 1337573376,
-          "max": 1562787840
+          "median": 1539538944,
+          "min": 1514602496,
+          "max": 1541111808
         },
         "peakJsHeapBytes": {
           "count": 3,
-          "median": 33749772,
-          "min": 32393768,
-          "max": 33774184
+          "median": 47786696,
+          "min": 42745424,
+          "max": 47942412
         },
         "peakProcessRssBytes": {
           "count": 3,
-          "median": 1665007616,
-          "min": 1632141312,
-          "max": 1675018240
+          "median": 1683750912,
+          "min": 1680621568,
+          "max": 1695531008
         },
         "afterJsHeapBytes": {
           "count": 3,
-          "median": 21214676,
-          "min": 21142500,
-          "max": 21453628
+          "median": 23916064,
+          "min": 23609748,
+          "max": 23920332
         },
         "afterProcessRssBytes": {
           "count": 3,
-          "median": 1612742656,
-          "min": 1580449792,
-          "max": 1631764480
+          "median": 1594064896,
+          "min": 1555480576,
+          "max": 1627832320
         }
       }
     }
@@ -821,9 +836,9 @@
   "host": {
     "oneMinuteLoad": {
       "count": 84,
-      "median": 7.561279296875,
-      "min": 3.64013671875,
-      "max": 16.64892578125
+      "median": 4.25146484375,
+      "min": 3.48876953125,
+      "max": 5.470703125
     },
     "services": {
       "jellyfin": {
@@ -832,9 +847,9 @@
         ],
         "cpuPercent": {
           "count": 84,
-          "median": 0.2,
+          "median": 0.1,
           "min": 0,
-          "max": 1.1
+          "max": 2.3
         }
       },
       "LogiPluginService": {
@@ -845,7 +860,7 @@
           "count": 84,
           "median": 0,
           "min": 0,
-          "max": 12.4
+          "max": 12.6
         }
       }
     }
