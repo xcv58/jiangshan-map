@@ -1,111 +1,111 @@
-**Final web SVG optimization batch — 2026-11-04**
+**Reconciled web SVG optimization batch — 2026-11-04**
 
-**The selected SVG implementation improves zoom and playback against the measured main baseline, while preserving the tested features and onboarding. It does not meet 60 FPS in every run.** Work is on branch `codex/svg-performance-final`, based directly on upstream main **`d54411d`**, fetched for measurement on 2026-11-04. The production change is limited to `js/app.js`, `css/style.css` and the timeline wrapper/asset versions in `index.html`. No iOS, data, locale, quiz or topic-page source changes are introduced. The original dirty checkout and earlier experiments remain preserved.
+**Playback improvements reproduce against latest fetched main; the earlier consistent zoom and startup gains do not reproduce in this rerun. The every-run 60 FPS target remains unmet.** Branch `codex/svg-performance-final` now includes upstream main **`c0274ba`** (#254). The CSS asset-version conflict in `index.html` is resolved, with synchronized content hashes. Main's compact mobile header and single-row collapsed chronicle bar are retained alongside the SVG optimizations. All 16 validation groups pass, including unchanged onboarding and paired feature/responsive checks.
 
-At publication, upstream main has advanced to **`c0274ba`** (mobile header/chronicle layout, #254). This draft retains the measured runtime and comparisons against `d54411d`; they are not measurements against `c0274ba`. The new main causes an `index.html` CSS asset-version merge conflict. Reconcile that layout change and rerun comparisons against the reconciled runtime before marking the PR ready.
+The fresh measured source is **`8050ef3`**, compared with unmodified **`c0274ba`**. Controller `c41b76fb` is unchanged from the selected SVG implementation; reconciled CSS is `f6b79d42`. The production diff against main is still limited to `js/app.js`, `css/style.css` and the timeline wrapper/asset versions in `index.html`. No iOS, data, locale, quiz or topic-page source changes are introduced. Both roots use the same 190 snapshot entries, 189 concrete snapshots and 498 historical milestones.
 
-The measured implementation is commit **`f4a70c2`**. Controller `c41b76fb` and CSS `eed7e3eb` retain the selected SVG implementation; the current main HTML/SEO and updated datasets are retained, with synchronized asset versions. Main now includes 190 snapshot entries, 189 concrete snapshots and 498 historical milestones. Both comparison roots use these same upstream data. These measurements are a new paired cohort, not a continuation or pooling of the earlier optimized-SVG/MapLibre comparisons.
+These are fresh, separate cohorts. The earlier `d54411d` report and packaged evidence remain in [branch history](https://github.com/xcv58/jiangshan-map/blob/2e2f08afb65df47a558bd27996a7ade71fd855b0/docs/svg-performance-final.md), with original raw evidence preserved in `../jiangshan-map-svg-final-review`. Those older results are not pooled with this rerun or presented as measurements of the reconciled runtime.
 
-**Local comparison.** The LAN server is detached from the terminal and binds only the current LAN address. Both pages include an identical preview-only startup helper, which waits for loaded fonts/snapshots and a settled camera, then starts real 4× playback from 750. Space pauses/resumes; reload restarts. Compare one foreground tab at a time. The helper is absent from measured loopback pages and the production HTML.
+**Local comparison.** Both LAN pages serve the reconciled roots. An identical preview-only helper waits for fonts/snapshots and a settled camera, then starts real 4× playback from 750. Space pauses/resumes; reload restarts. Compare one foreground tab at a time. The helper is absent from measured loopback pages and production HTML.
 
-- [Latest main — d54411d](http://192.168.8.31:8826/?year=750&compareplay=1)
-- [Final SVG optimization](http://192.168.8.31:8827/?year=750&compareplay=1)
+- [Latest main — c0274ba](http://192.168.8.31:8826/?year=750&compareplay=1)
+- [Reconciled SVG optimization](http://192.168.8.31:8827/?year=750&compareplay=1)
 
-**Repeated actual FPS.** Three alternating pairs per pan, zoom and playback workload use visible Chrome 156 on Apple M4 / 16 GiB, 1280×720 CSS viewport, emulated DPR 2, default Metal/Graphite backend. Trusted four-second pan/zoom input and ten seconds of real 4× playback are unchanged. Chrome presented-page-frame feedback is parsed with the original counter and cross-checked against display feedback. No synthetic animation, RAF FPS proxy, hidden footer, skipped events or graphics-backend override is introduced. Values are medians with full ranges.
+**Repeated actual FPS.** Three alternating pairs per workload use visible Chrome 156.0.8078.79 on Apple M4 / 16 GiB, a 1280×720 CSS viewport, DPR 2 and the default Metal/Graphite backend. Pan/zoom use trusted four-second input; playback runs real 4× event playback for ten seconds. Chrome presented-page-frame feedback is cross-checked against display feedback with the unchanged parser. There is no synthetic animation, RAF FPS proxy, hidden footer, skipped event or graphics-backend override. Values are medians with full ranges; all observations are retained.
 
-| Workload | Current main FPS | Final SVG FPS |
+| Workload | Main c0274ba FPS | Reconciled SVG FPS |
 | --- | ---: | ---: |
-| Pan | 59.85 (59.84–59.92) | 59.97 (59.94–60.00) |
-| Zoom | 40.68 (39.41–44.15) | 57.41 (57.01–58.04) |
-| Playback | 46.34 (46.03–46.42) | 57.57 (57.36–57.96) |
+| Pan | 60.06 (58.30–60.12) | 59.95 (59.93–60.04) |
+| Zoom | 43.89 (38.77–46.69) | 43.22 (39.87–56.69) |
+| Playback | 46.08 (45.23–47.25) | 58.13 (58.08–58.38) |
 
-All three paired zoom and playback comparisons improve; the lowest candidate exceeds the highest main observation for those workloads. Pan stays approximately 60 FPS. Zoom frame-interval p95 improves **33.334 → 16.668 ms**, and playback **50.000 → 16.668 ms**. Playback still has occasional **66.7–83.3 ms maximum gaps**, so higher average FPS does not eliminate every visible hitch. The candidate primary-run minima are **59.94 pan, 57.01 zoom and 57.36 playback**. The literal every-run 60 FPS result remains `passed=false`, including the 59.9983 pan observation; rounding does not change acceptance. [Raw browser cohort](performance/svg-final-frames.json.gz), [verified analysis](performance/svg-final-frames-analysis.json.gz).
+Playback improves in all three pairs; the lowest optimized observation exceeds the highest main observation. Pan remains approximately 60 FPS. Zoom does not improve consistently: it is slower in two of three primary pairs, including the slow first run, and the candidate median is slightly lower. The captured cohort below is stronger for zoom, but does not replace these primary results. The individual primary zoom pairs are:
 
-Native ScreenCaptureKit/GPU tracing is collected in a separate cohort so capture overhead does not affect the primary comparison. Native counts observe actual changed pixels in the map ROI, excluding footer/browser chrome. They are independent of Chrome page feedback, but not physical photon FPS or proof that every map layer refreshed. Delivery may coalesce samples; holds can legitimately produce identical content, and the first changed sample carries boundary uncertainty. Values are changed samples per second.
-
-| Workload | Current main native changes, Hz | Final SVG native changes, Hz |
+| Repeat | Main zoom FPS | Reconciled SVG zoom FPS |
 | --- | ---: | ---: |
-| Pan | 59.35 (59.24–59.80) | 59.87 (59.84–59.95) |
-| Zoom | 36.45 (35.77–38.97) | 53.23 (51.72–53.50) |
-| Playback | 46.91 (45.75–47.94) | 58.34 (57.80–58.43) |
+| 1 | 43.89 | 39.87 |
+| 2 | 38.77 | 56.69 |
+| 3 | 46.69 | 43.22 |
 
-Both independent native zoom/playback ranges separate from their controls. Captured Chrome feedback remains separate: zoom **36.75 → 57.18 FPS**, playback **47.70 → 57.74 FPS**. Native changed-pixel rates and Chrome pipeline feedback describe different events and must not be substituted for each other. All 12 playback observations across both cohorts visit the same **22 historical event years**, from 751 through 885. [Raw captured cohort](performance/svg-final-native.json.gz), [aligned native/GPU analysis](performance/svg-final-native-analysis.json.gz), [native metadata archive](performance/svg-final-native-captures.json.gz).
+Playback frame-interval p95 improves **50.000 → 16.668 ms**. Its candidate maximum gaps remain approximately **83.3 ms**, so higher average FPS does not eliminate every hitch. Primary candidate minima are **59.93 pan, 39.87 zoom and 58.08 playback FPS**. Both cohorts retain literal `target.passed=false`; rounding and the stronger captured zoom result do not change acceptance. [Raw primary cohort](performance/svg-final-frames.json.gz), [verified analysis](performance/svg-final-frames-analysis.json.gz).
 
-**Startup and memory.** Three alternating fresh-browser pairs are measured after both FPS cohorts. Readiness requires complete snapshots, loaded UI fonts and a settled year-1415 camera. Samples are every 250 ms in a separate interaction workload. Values are medians with full ranges; memory is MiB.
+**Independent native capture.** ScreenCaptureKit/GPU traces are collected in a separate three-pair cohort to keep capture overhead out of the primary comparison. Changed pixels in the map ROI exclude footer and browser chrome. They are independent of Chrome feedback, but describe observed content changes rather than physical photon FPS or every-layer freshness. Capture can coalesce samples; still content can be intentional, and the first change has one-sample boundary uncertainty. Values below are changed samples per second, kept separate from Chrome FPS.
 
-| Metric | Current main | Final SVG |
+| Workload | Main native changes, Hz | Reconciled native changes, Hz |
 | --- | ---: | ---: |
-| Full-scene ready, ms | 822.2 (785.1–823.0) | 747.0 (695.5–754.4) |
-| First contentful paint, ms | 392.0 (376.0–396.0) | 376.0 (372.0–388.0) |
-| Startup main-page JS heap | 14.28 (14.28–14.30) | 13.93 (13.92–13.93) |
-| Peak sampled main-page JS heap | 41.29 (32.79–41.31) | 29.83 (29.81–31.99) |
-| Main-page JS heap after interactions | 22.62 (22.35–22.77) | 20.34 (20.27–20.38) |
-| Startup owned-process RSS | 1483.94 (1475.70–1497.17) | 1492.50 (1480.02–1493.91) |
-| Peak sampled owned-process RSS | 1781.61 (1714.11–1814.56) | 1612.12 (1573.83–1817.39) |
-| Owned-process RSS after interactions | 1631.67 (1573.58–1737.14) | 1549.41 (1521.30–1665.61) |
+| Pan | 59.69 (56.72–59.75) | 59.74 (59.46–59.83) |
+| Zoom | 37.73 (37.45–38.72) | 50.43 (40.85–53.08) |
+| Playback | 47.38 (46.30–48.25) | 58.21 (58.07–58.27) |
 
-Startup is faster in all three pairs; sampled peak main-page heaps are lower. Peak process RSS falls in median but its ranges overlap and one pair is slightly higher, so no consistent total-memory reduction is established. Browser/application profiles are fresh, while OS caches, remote UI-font/network timing and host load are uncontrolled. Main-page heap excludes worker isolates; summed owned-process RSS may double-count shared pages and does not measure unique physical or total GPU memory. [All six observations and resource timing](performance/svg-final-memory.json.gz).
+Captured Chrome feedback also remains separate: zoom **38.22 → 55.59 FPS** (candidate range 41.10–56.78); playback **47.68 → 58.11 FPS**. Captured zoom improves in all three pairs, but primary zoom remains mixed. All 12 playback observations across the separate cohorts visit the same **22 historical event years, 751 through 885**. [Captured cohort](performance/svg-final-native.json.gz), [native/GPU analysis](performance/svg-final-native-analysis.json.gz), [native metadata archive](performance/svg-final-native-captures.json.gz).
 
-**Changes included.** This is the aggregate selected optimization against stock current main, not just the last three changes relative to an already optimized baseline:
+The trace audit finds no >50 ms main-thread long tasks in any primary candidate zoom run. Input-driver durations are about 4.03 seconds and final camera/wheel deltas are verified. Across all six captured zoom traces, the recorded Dawn scheduling waits remain below 0.8 ms individually, with no >=8 ms overlap counted. This does not identify the cause of the variable zoom cadence or isolate SVG repainting from host/browser scheduling. Main and host conditions changed since the older cohort; these observations do not establish which change caused the difference.
 
-- Cache repeated geometry/boundary work and dictionary availability without changing source data or point-in-ring semantics. Exact boundary and anchor-predicate comparisons use current main.
-- Retain unchanged native SVG polity/region nodes, avoid repeated attribute writes, and suppress only labels outside the viewport with a visibility margin. Revealed labels receive the current scale before painting.
-- Reuse a bounded painted SVG plane during translation. Its 256 CSS px overscan rebases before exposing an edge; zoom/resize/settle commit the canonical camera. Logical hit-test coordinates and callouts remain stationary relative to the viewport.
-- Lazily prepare upcoming boundary/polity paths in a background worker, using the existing projection functions and immutable caches. Cancellation, stale-result rejection and Worker/idle-unavailable fallbacks are retained.
-- Move the timeline playhead with a transform, separate its unchanged frosted backdrop during autoplay, and isolate changing year surfaces. Promotion hints are released on pause. The existing 220 ms easing, timeline input, labels and onboarding remain.
+**Startup and memory.** Three alternating fresh-browser pairs are collected after both FPS cohorts. Readiness requires complete snapshots, loaded UI fonts and a settled year-1415 camera. Separate interaction samples are taken every 250 ms. Values are medians with full ranges; memory is MiB.
 
-Pan layout totals fall **237.27 → 80.85 ms** per four seconds, while whole-page Paint totals do not fall. Zoom/playback process more presented frames, so their aggregate trace totals are not direct per-frame cost comparisons. These observations do not isolate an individual optimization or prove a GPU-utilization reduction. All five later rejected SVG trials and the MapLibre engine prototype are excluded from this final branch.
+| Metric | Main c0274ba | Reconciled SVG |
+| --- | ---: | ---: |
+| Full-scene ready, ms | 912.0 (909.4–921.8) | 913.9 (901.7–958.7) |
+| First contentful paint, ms | 416.0 (392.0–420.0) | 408.0 (388.0–412.0) |
+| Startup main-page JS heap | 14.30 (14.30–14.30) | 13.96 (13.96–13.96) |
+| Peak sampled main-page JS heap | 41.36 (35.17–41.69) | 30.08 (29.92–33.73) |
+| Main-page JS heap after interactions | 22.62 (22.33–22.62) | 20.49 (20.31–20.61) |
+| Startup owned-process RSS | 1481.72 (1319.08–1486.61) | 1488.92 (1486.14–1496.92) |
+| Peak sampled owned-process RSS | 1621.09 (1608.11–1670.56) | 1606.20 (1523.91–1655.16) |
+| Owned-process RSS after interactions | 1539.39 (1526.55–1567.33) | 1463.84 (1438.80–1555.20) |
 
-**Responsive and feature verification.** All **15 final validation groups pass**: synchronized assets; full atlas/40 CUJs; current-main geometry equivalence; worker lifecycle/capability fallbacks; exact SVG scene equivalence; camera/pointer/mobile pinch; bounded-plane rebasing/layer reuse; viewport-label safety; callout motion; paired feature flows; timeline/onboarding; responsive controls; Chrome/native parser fixtures; LAN playback/source verification. [Complete verification record](performance/svg-final-verification.json.gz).
+Startup is effectively flat in this rerun: the candidate is faster in only one of three pairs and its median is slightly higher. No startup improvement is established. Peak sampled main-page JS heap is lower in all three pairs. Peak process RSS is lower in median but ranges overlap and one pair is higher, so no consistent total-memory reduction is established. Browser/application profiles are fresh, but OS/font/network caches and host load are uncontrolled. Main-page heap excludes worker isolates; summed RSS can double-count shared pages and does not measure unique physical or total GPU memory. [All six observations and resource timing](performance/svg-final-memory.json.gz).
 
-Current-main geometry is byte-identical across **189 concrete snapshots**, with **16,433 anchor comparisons** and six margin/threshold fixtures. Complete SVG scenes match in forward/reverse snapshot order. Feature checks cover real person search, person pins, routes, place history, Simplified/Traditional Chinese and English, polity links, quiz answer/next/exit, embed, actual playback and year navigation. First-visit onboarding DOM, hint markup, timeline ARIA and the existing easing remain equivalent.
+**Changes retained.** The aggregate selected SVG optimization remains in place against the reconciled main:
 
-Responsive checks run both versions at **320×568, 390×844, 640×900, 768×1024, 900×640, 1024×768, 1280×720, 1440×900 and 1920×1080**, followed by orientation swaps. Trusted interactions cover layer switches, chronology panels, rail/year navigation, pan, zoom and reset. Control geometry agrees within 0.51 CSS px, final cameras within 0.1 world unit, and no new horizontal overflow appears. These are functional/layout checks on emulated viewports and touch contexts; physical-phone/Safari FPS and production INP are not measured.
+- Cache repeated geometry/boundary work and dictionary availability while retaining exact predicates and source data.
+- Reuse unchanged SVG polity/region nodes, avoid redundant attribute writes and suppress only labels safely outside the viewport. Revealed labels receive the current scale before painting.
+- Reuse a bounded painted SVG plane during translation, with 256 CSS px overscan and canonical camera commits on rebase, zoom, resize and settle. Logical hit tests and callouts retain their coordinates.
+- Lazily prepare upcoming boundary/polity paths in a worker, preserving cancellation, stale-result rejection and capability fallbacks.
+- Move the timeline playhead by transform and isolate changing surfaces from the unchanged frosted backdrop. Existing 220 ms easing, controls, labels, hints and onboarding remain.
 
-The initial callout test found a 0.03125 CSS px width discrepancy while newly loaded event text triggered additional font loading. Waiting for those fonts and restoring the canonical camera removes the discrepancy; exact callout equality remains required, with no relaxed tolerance. The preliminary failed log/check record is retained in the raw review directory. No production code was changed to resolve this test-settling issue.
+Pan layout totals fall **250.31 → 71.07 ms** per four seconds. Primary playback long tasks fall from median **5 → 0**, and dropped-frame reports from **9.44% → 0.33%**. Aggregate paint totals process different numbers of frames and do not isolate per-frame cost or an individual optimization. No WebGL/MapLibre dependency, rejected SVG trial or city-detail feature is included.
 
-Six screenshots come from the final paired responsive run. They are full, unmasked, unaligned images; animations are frozen only for deterministic visual validation, never during FPS collection. Mean RGB difference is **0.0313–0.0813 / 255**, with **0.0243–0.0374%** of pixels differing by more than 16 in a channel. This is close static rendering, not pixel identity during movement. [Screenshot hashes and pixel comparison](performance/svg-final-screenshots.json).
+**Feature, onboarding and responsive verification.** All **16 validation groups pass**: assets; full atlas/40 CUJs; geometry equivalence; worker lifecycle/capability fallbacks; exact SVG scenes; camera/pointer/mobile pinch; bounded-plane rebasing/layer reuse; viewport labels; callouts; paired feature flows; timeline/onboarding; responsive controls; Chrome/native parser fixtures; evidence-tooling regressions; and LAN preview/source checks. [Complete verification record](performance/svg-final-verification.json.gz).
+
+Geometry remains byte-identical across 189 concrete snapshots, with 16,433 anchor comparisons and six margin/threshold fixtures. Complete scenes match in forward/reverse order. Paired feature checks cover person search and pins, routes, place history, English/Traditional Chinese, polity links, quiz answer/next/exit, embed, real playback and year navigation. First-visit onboarding DOM/hints, timeline ARIA and the existing easing remain equivalent. The upstream compact header and collapsed/expanded chronicle behavior are retained; canonical atlas bundles and topology baseline also pass local publication checks.
+
+Responsive checks compare both versions at **320×568, 390×844, 640×900, 768×1024, 900×640, 1024×768, 1280×720, 1440×900 and 1920×1080**, followed by orientation changes. Trusted interactions exercise layers, chronology panels, timeline/year navigation, pan, zoom and reset. Control geometry agrees within 0.51 CSS px, final cameras within 0.1 world unit, with no new horizontal overflow. These are emulated viewport/touch checks, not physical-phone or Safari FPS/INP measurements.
+
+Six refreshed screenshots come from the reconciled paired responsive run. They are full, unmasked and unaligned; animations are frozen only for deterministic visual QA, never for FPS collection. Mean RGB difference is **0.0818–0.1802 / 255**; **0.0246–0.0374%** of pixels differ by >16 in a channel. This is close static rendering, not pixel identity during motion. [Hashes and pixel comparisons](performance/svg-final-screenshots.json).
 
 - Desktop: [main](performance/svg-final-main-1280x720.png), [optimized](performance/svg-final-optimized-1280x720.png).
 - Tablet: [main](performance/svg-final-main-768x1024.png), [optimized](performance/svg-final-optimized-768x1024.png).
 - Phone: [main](performance/svg-final-main-390x844.png), [optimized](performance/svg-final-optimized-390x844.png).
 
-**Recorded host conditions.** Jellyfin and LogiPluginService are left running throughout collection. Their actual load is much lower than in the earlier experiments; no artificial workload is added.
+**Recorded host conditions.** The user relaunched Jellyfin before measurement; neither service was stopped or altered during collection. Jellyfin PID 12908 and LogiPluginService PID 81073 are present in all 84 before/after host observations. Observed CPU: Jellyfin **0.20 (0.00–1.00)%**; LogiPluginService **0.00 (0.00–16.30)%**. One-minute load is **12.16 (8.48–31.18)**, substantially more variable/higher than in the old cohort. Load is context, not proof of causality or CPU/GPU utilization. Do not pool this rerun with older measurements.
 
-One-minute load: 4.04 (3.13–5.24). Jellyfin PID 36851 CPU: 0.20 (0.00–14.20)%; LogiPluginService PID 40427: 0.00 (0.00–11.80)%. These loads are observed, not causally isolated. Do not pool this cohort with prior tests whose data, controls and background-service load differed.
+**Evidence and reproduction.** Runtime sources were committed before validation/measurement. Served assets are checked before and after collection and again offline. The assembler verifies all 36 trace digests, recomputes FPS using the unchanged counter, aligns 18 native captures, retains six startup/memory observations and checks all validation/measurement script and log hashes. The fresh-run guards accepted completed target failures while rejecting stale/incomplete output in 13 offline regression cases; new native paths are relative, with relocated legacy captures supported by both analyzers. Historical tool versions are resolved by exact contents in branch history. All raw traces, captures and screenshots for this rerun are preserved in `../jiangshan-map-svg-final-c0274ba-review`; old raw evidence remains in its original directory. No low samples were removed or replaced.
 
-**Reproduction.** Runtime sources are frozen before measurement, served assets verified at both ends and checked again offline. The offline assembler verifies all **36 trace digests**, recomputes FPS with the unchanged parser, aligns all **18 native captures**, retains all six startup/memory runs and checks each recorded validation/measurement script version and log against its recorded hash. Matching tool versions are resolved by content hash in this branch's history, so applying the patch with new commit IDs also works. Raw compressed traces, captures, all responsive screenshots and earlier failed validation logs remain in `../jiangshan-map-svg-final-review`. Every completed measurement is retained. Detailed raw/analysis/verification JSON is packaged as gzip archives; the [readable summary](performance/svg-final-summary.json) retains full ranges and acceptance results.
-
-The tooling cleanup removes the unused footer-hiding preview mode. Both benchmark tools now default to pinned main `d54411d` and loopback ports 8824/8825; the LAN server always compares main and optimized SVG with visible footers on 8826/8827. Fixed source/parser fingerprints replace the analyzer's dependency on experimental branch history. Historical tool hashes are matched against file versions committed in this branch; no original experimental commit ID is required. The cleaned analyzer reproduces all eight generated evidence artifacts byte-for-byte; measured application assets and results remain unchanged.
-
-Two subsequent review findings are fixed in the evidence tooling. Each FPS/native invocation receives a unique run ID. The phase runner requires that ID, a completed collection, all 18 distinct expected samples, the correct native/uncaptured cohort and a target verdict consistent with the samples before accepting either success or a completed 60 FPS target failure. Old, malformed or incomplete output stops the phase, including when a child exits zero. Phase records start as incomplete. A replay of the actual preflight fetch failure with an existing completed FPS file now stops before memory collection and preserves that file.
-
-New native capture paths are relative to their measurement JSON. Both offline analyzers use the supplied cohort directory for captures and PNGs; legacy absolute paths under `captures/` are rebased there even when the original copy still exists. Legacy custom directories retain their absolute-path fallback. Recorded paths and hashes in the existing archives remain untouched. Reassembling the original evidence still produces all eight artifacts byte-for-byte. Reassembling a relocated copy with original capture reads blocked verifies all 36 traces, 18 native JSON/PNG captures and six startup/memory observations; seven artifacts are byte-identical and the verification archive differs only in `rawEvidenceDirectory`. Standalone native analysis also reproduces all 18 rows. Native counting, trace calculations, application assets and the measured results are unchanged; no new timed measurements are claimed.
-
-`node scripts/validate_svg_evidence.cjs` runs offline regressions for 13 collection scenarios, relocated legacy/relative captures, missing/corrupt local captures, standalone CLI roots and relative path recording by the native helper. It is also included in future validation phases; the archived measurement's original 15 validation groups are preserved.
+Detailed evidence is packaged as compressed JSON; the [readable summary](performance/svg-final-summary.json) retains full ranges and acceptance. Defaults are pinned to `c0274ba`, loopback ports 8824/8825 and a fresh review directory. LAN previews keep both footers visible on 8826/8827. The native helper is a macOS measurement CLI under `scripts/`, not an iOS app or runtime dependency.
 
 ```sh
-# Terminal 1: unmodified current-main and optimized worktrees, ports 8824/8825:
+# Serve unmodified c0274ba and the reconciled optimized checkout:
 node scripts/serve_web_benchmark.cjs MAIN_CHECKOUT OPTIMIZED_CHECKOUT
 
-# Terminal 2: LAN comparison on ports 8826/8827:
+# LAN preview:
 LAN_HOST=192.168.8.31 LAN_MAIN_ROOT=MAIN_CHECKOUT \
 node scripts/serve_timeline_comparison.cjs
 
-# Terminal 3: validation, then measurements:
+# Full verification (including LAN):
 PLAYWRIGHT_PATH=/path/to/playwright \
 LAN_MAIN_URL=http://192.168.8.31:8826/ \
 LAN_CANDIDATE_URL=http://192.168.8.31:8827/ \
 node scripts/check_svg_final.cjs
 
-# Sequentially, with visible/focused Chrome and services running:
+# Then collect sequentially, keeping Chrome visible/focused and services running:
 PLAYWRIGHT_PATH=/path/to/playwright \
 FRAME_CAPTURE_BINARY=/path/to/capture-window \
 node scripts/check_svg_final.cjs --measure-only
 
-# Offline after all timed collection:
+# Offline only after timed collection:
 node --expose-gc scripts/analyze_svg_final.cjs \
-  ../jiangshan-map-svg-final-review docs/performance
+  ../jiangshan-map-svg-final-c0274ba-review docs/performance
 ```
 
-The native helper is a macOS measurement CLI under `scripts/`, not an iOS app change or runtime dependency. It can be built with `xcrun swiftc -O -parse-as-library -swift-version 5 scripts/capture_window_frames.swift -o /tmp/capture-window` and requires existing screen-recording access. Pinned `WEB_BASE_REF=d54411d` and `SVG_REVIEW_DIR` can be supplied explicitly. The phase runner continues after a completed 60 FPS acceptance failure while refusing incomplete/invalid collections or changed validated sources.
+Build the native helper with `xcrun swiftc -O -parse-as-library -swift-version 5 scripts/capture_window_frames.swift -o /tmp/capture-window`; it requires existing screen-recording access. Supply `WEB_BASE_REF=c0274ba` and a separate `SVG_REVIEW_DIR` explicitly to preserve an existing collection when rerunning. The runner continues after a fresh, completed 60 FPS acceptance failure while refusing collection errors or changed validated sources.

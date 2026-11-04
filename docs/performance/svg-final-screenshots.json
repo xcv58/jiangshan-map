@@ -6,11 +6,11 @@
       "svg-final-optimized-1280x720.png"
     ],
     "sha256": [
-      "fae48c72781ad0c59bef85c6d135b8c97ec1c379c90df43d6f93f4b450523346",
-      "6669245956c6866cde97eb28330325fbb1e950257fdff6f8869187f5890f89ef"
+      "8d95daed75239c84d4271eefa7b4f4499503b2aaf12ce800c22c487687cb256b",
+      "e73746d5ea6d3d0a2c9cbd44ac3309206695c3f003e6f96fd8df84b4982cbcca"
     ],
-    "meanAbsoluteRgbDifference": 0.05589988425925926,
-    "fractionPixelsWithChannelDifferenceOver16": 0.00024305555555555555
+    "meanAbsoluteRgbDifference": 0.0818359375,
+    "fractionPixelsWithChannelDifferenceOver16": 0.0002463107638888889
   },
   {
     "viewport": "768x1024",
@@ -19,11 +19,11 @@
       "svg-final-optimized-768x1024.png"
     ],
     "sha256": [
-      "1d1537951470dc2ffead6bb3e6709af3b872d5d5de501e3bd810e88278fc117a",
-      "0d3821b1d6f70b818661458d78748f44b7694fc6f4717582ce13a94ef7fef07b"
+      "24594f83251e3ca1cc92050a3922fffdf2b8ea9cd6155ee6d3aaac88cfd6cd1a",
+      "8b89e21b8e0eb182f349d8c6d4480020a36cb00b6de4013781906c9c07763d4f"
     ],
-    "meanAbsoluteRgbDifference": 0.03128094143337674,
-    "fractionPixelsWithChannelDifferenceOver16": 0.0002721150716145833
+    "meanAbsoluteRgbDifference": 0.18019527859157985,
+    "fractionPixelsWithChannelDifferenceOver16": 0.0002606709798177083
   },
   {
     "viewport": "390x844",
@@ -32,10 +32,10 @@
       "svg-final-optimized-390x844.png"
     ],
     "sha256": [
-      "78cf57b9ddc7f9ca7b085852777eca7dacf6ed1d4c9978c0111ee5068e4fb824",
-      "b35e02ac5c83cc2d10ea44543c0aa236415bc75435bec638138c750d0731c8bc"
+      "28c15bf88fb19d609a6c2d6f67f067bcedad2de9fbf55a1d1faad70ab8cf1880",
+      "fcb7e4fcefcda2936d074f83568278f2ddfca061dfcb0a4158a322285306e289"
     ],
-    "meanAbsoluteRgbDifference": 0.08127455745939159,
+    "meanAbsoluteRgbDifference": 0.11383015352209665,
     "fractionPixelsWithChannelDifferenceOver16": 0.0003736784542471746
   }
 ]
