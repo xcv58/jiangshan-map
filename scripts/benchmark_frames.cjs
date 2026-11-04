@@ -15,11 +15,11 @@ if(process.argv.includes('--help')){
 const root=path.resolve(__dirname,'..');
 const git=(...args)=>execFileSync('git',args,{cwd:root,encoding:'utf8',maxBuffer:16*1024*1024}).trim();
 const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
-const urls={baseline:process.env.WEB_BASE_URL||'http://127.0.0.1:8770/',candidate:process.env.ATLAS_URL||'http://127.0.0.1:8771/'};
+const urls={baseline:process.env.WEB_BASE_URL||'http://127.0.0.1:8824/',candidate:process.env.ATLAS_URL||'http://127.0.0.1:8825/'};
 const variants=(process.env.FRAME_VARIANTS||'baseline,candidate').split(',');
 const runs=Number(process.env.FRAME_RUNS||3);
 const output=path.resolve(process.env.FRAME_OUTPUT||'/tmp/jiangshan-frames.json');
-const base=process.env.WEB_BASE_REF||git('merge-base','origin/main','HEAD');
+const base=process.env.WEB_BASE_REF||'d54411d';
 const traceDir=process.env.FRAME_TRACE_DIR;
 const scenarios=(process.env.FRAME_SCENARIOS||'pan,zoom,playback').split(',');
 const minimumFps=process.env.FRAME_MIN_FPS === undefined ? null : Number(process.env.FRAME_MIN_FPS);

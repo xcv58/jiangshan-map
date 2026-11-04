@@ -11,8 +11,8 @@ if (process.argv.length !== 4) {
 const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8',
   '.css':'text/css; charset=utf-8','.json':'application/json','.svg':'image/svg+xml',
   '.webp':'image/webp','.png':'image/png','.woff2':'font/woff2'};
-for (const [port,folder] of [[Number(process.env.WEB_BASE_PORT || 8770),process.argv[2]],
-  [Number(process.env.WEB_PORT || 8771),process.argv[3]]]) {
+for (const [port,folder] of [[Number(process.env.WEB_BASE_PORT || 8824),process.argv[2]],
+  [Number(process.env.WEB_PORT || 8825),process.argv[3]]]) {
   const root = path.resolve(folder);
   if (!fs.existsSync(path.join(root,'index.html'))) throw Error('Missing index.html in '+root);
   http.createServer((req,res)=>{

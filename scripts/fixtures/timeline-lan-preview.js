@@ -1,7 +1,7 @@
 'use strict';
 // Preview-only startup helper, identical on both origins. No permanent app edits.
 (() => {
- const comparison=window.timelineComparison={footerHidden:document.currentScript.dataset.footer==='hidden',automatic:new URLSearchParams(location.search).get('compareplay')==='1',ready:false,started:false};
+ const comparison=window.timelineComparison={automatic:new URLSearchParams(location.search).get('compareplay')==='1',ready:false,started:false};
  if(!comparison.automatic){comparison.ready=true;return}
  const until=async predicate=>{
   const deadline=performance.now()+90000;

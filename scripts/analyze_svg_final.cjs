@@ -10,8 +10,26 @@ const write=(n,v)=>{const bytes=Buffer.from(JSON.stringify(v,null,2)+'\n'),compr
 const archive=(file,name)=>fs.writeFileSync(path.join(out,'svg-final-'+name+'.gz'),z.gzipSync(fs.readFileSync(file),{level:9}));
 const stats=a=>{assert(a.length);const s=[...a].sort((a,b)=>a-b),i=Math.floor(s.length/2);return {count:s.length,median:s.length%2?s[i]:(s[i-1]+s[i])/2,min:s[0],max:s.at(-1)}};
 const parser=s=>s.slice(s.indexOf('function analyze(events){'),s.indexOf('\nasync function stopTrace('));
-assert.equal(parser(fs.readFileSync('scripts/benchmark_frames.cjs','utf8')),parser(git('show','7f425db:scripts/benchmark_frames.cjs').toString()));
-for(const f of ['scripts/capture_window_frames.swift','scripts/analyze_frame_delivery.cjs','js/app.js','css/style.css'])assert.equal(sha(fs.readFileSync(f)),sha(git('show','7f425db:'+f)),'Selected implementation changed: '+f);
+// Fixed fingerprints retain the measured implementation's integrity without
+// requiring any commit from the earlier experimental branches.
+assert.equal(sha(parser(fs.readFileSync('scripts/benchmark_frames.cjs','utf8'))),'f87076d0c643dccd7f1ab5831fa5b26e30e15b24073b68b40347d228a41dea43','FPS parser changed');
+const referenceFiles={
+ 'scripts/capture_window_frames.swift':'ad647a1a7a77f483cecfa128fd0e2a3a4905c2449903923207cfbd6a1f60dd68',
+ 'scripts/analyze_frame_delivery.cjs':'5f4c4ac53ebcd1cd72267c9b8d74216071231ad4b73032324968c489d6cba9aa',
+ 'js/app.js':'c41b76fb8bc8d616187de7c537fe953fd4cd09812640bb0c7efce4e3e087c2cf',
+ 'css/style.css':'eed7e3eb7d52e6254ed84421b0a0e21bb850151287c3dca4d9e26bb90f9ca51e',
+};
+for(const [f,digest]of Object.entries(referenceFiles))assert.equal(sha(fs.readFileSync(f)),digest,'Selected implementation changed: '+f);
+const verifiedScripts=new Set();
+function verifyRecordedScript(file,digest){
+ // Match exact historical contents in this branch. Patch application can
+ // change commit IDs while preserving those contents and recorded results.
+ const key=file+':'+digest;if(verifiedScripts.has(key))return;
+ const matches=ref=>sha(git('show',ref+':'+file))===digest;
+ const revisions=()=>git('log','--format=%H','HEAD','--',file).toString().trim().split('\n').filter(Boolean);
+ assert(matches('HEAD')||revisions().some(matches),'Recorded script version missing from branch: '+file);
+ verifiedScripts.add(key);
+}
 assert.equal(git('diff','--name-only',base,'--','ios','data','js/atlas_snapshots.js','js/atlas_boot.js','js/lore_data.js','js/map_data.js','js/china_geo_data.js','js/i18n_dict.js','js/zh_hant.js','js/atlas_quiz.js').toString().trim(),'');
 function verifyAssets(input){
  assert.equal(input.environment.applicationDiff,'');
@@ -20,7 +38,7 @@ function verifyAssets(input){
 const cohorts=[],hosts=[],captures=[];let playbackYears,traceCount=0;
 for(const name of ['frames','native']){
  const file=path.join(review,name,'frames.json'),input=read(file);assert(input.complete);assert.equal(input.runs.length,18);verifyAssets(input);
- assert.equal(input.environment.harnessSHA256,sha(fs.readFileSync('scripts/benchmark_frames.cjs')));
+ verifyRecordedScript('scripts/benchmark_frames.cjs',input.environment.harnessSHA256);
  const rows=[];
  for(const row of input.runs){
   const bytes=z.gunzipSync(fs.readFileSync(path.join(review,name,'traces',row.traceFile)));assert.equal(sha(bytes),row.traceSHA256);
@@ -41,12 +59,12 @@ for(const name of ['frames','native']){
  archive(file,name+'.json');write(name+'-analysis.json',{complete:true,inputSHA256:sha(fs.readFileSync(file)),groups,rows});
  cohorts.push({name,sourceCommit:input.environment.candidateCommit,baseCommit:input.environment.baseCommit,target:input.target,groups});console.log('Verified',name,rows.length,'traces');
 }
-const memoryFile=path.join(review,'memory.json'),memory=read(memoryFile);assert(memory.complete);assert.equal(memory.runs.length,6);verifyAssets(memory);assert.equal(memory.environment.harnessSHA256,sha(fs.readFileSync('scripts/benchmark_startup_memory.cjs')));
+const memoryFile=path.join(review,'memory.json'),memory=read(memoryFile);assert(memory.complete);assert.equal(memory.runs.length,6);verifyAssets(memory);verifyRecordedScript('scripts/benchmark_startup_memory.cjs',memory.environment.harnessSHA256);
 const memoryGroups=['baseline','candidate'].map(variant=>{const rows=memory.runs.filter(r=>r.variant===variant);assert.equal(rows.length,3);for(const r of rows){assert.deepEqual(r.errors,[]);assert.deepEqual(r.failed,[]);hosts.push(r.hostBefore,r.hostAfter)}return {variant,metrics:Object.fromEntries(Object.keys(rows[0].summary).map(k=>[k,stats(rows.map(r=>r.summary[k]))]))}});
 archive(memoryFile,'memory.json');
 const validation=read(path.join(review,'validation-checks.json')),measurement=read(path.join(review,'measure-checks.json'));assert(validation.complete&&measurement.complete);assert(validation.checks.every(r=>r.exitCode===0));
 const sourceHashes=Object.fromEntries(['js/app.js','css/style.css','index.html'].map(f=>[f,sha(fs.readFileSync(f))]));assert.deepEqual(validation.sources,sourceHashes);assert.deepEqual(measurement.sources,sourceHashes);
-const logs={};for(const r of [...validation.checks,...measurement.checks]){assert.equal(sha(fs.readFileSync(r.script)),r.scriptSHA256);const b=fs.readFileSync(path.join(review,r.name+'.log'));assert.equal(sha(b),r.logSHA256);logs[r.name]=b.toString();}
+const logs={};for(const record of [validation,measurement])for(const r of record.checks){verifyRecordedScript(r.script,r.scriptSHA256);const b=fs.readFileSync(path.join(review,r.name+'.log'));assert.equal(sha(b),r.logSHA256);logs[r.name]=b.toString();}
 const artifacts={};for(const f of ['geometry.json','worker.json','scenes.json','plane/checks.json','viewport/checks.json','callouts/checks.json','features/features.json','timeline/verification.json','responsive/checks.json','lan.json']){
  const v=read(path.join(review,f));if(v.complete!==undefined)assert(v.complete);artifacts[f]=v;
 }

@@ -2,7 +2,7 @@
 
 **The selected SVG implementation improves zoom and playback against current main, while preserving the tested features and onboarding. It does not meet 60 FPS in every run.** Work is prepared on local branch `codex/svg-performance-final`, based directly on fetched upstream main **`d54411d`** (2026-11-04). The production change is limited to `js/app.js`, `css/style.css` and the timeline wrapper/asset versions in `index.html`. No iOS, data, locale, quiz or topic-page source changes are introduced. The original dirty checkout and earlier experiments remain preserved; nothing is pushed.
 
-The measured implementation is commit **`f4a70c2`**. Controller `c41b76fb` and CSS `eed7e3eb` are byte-identical to selected SVG `7f425db`; the current main HTML/SEO and updated datasets are retained, with synchronized asset versions. Main now includes 190 snapshot entries, 189 concrete snapshots and 498 historical milestones. Both comparison roots use these same upstream data. These measurements are a new paired cohort, not a continuation or pooling of the earlier optimized-SVG/MapLibre comparisons.
+The measured implementation is commit **`f4a70c2`**. Controller `c41b76fb` and CSS `eed7e3eb` retain the selected SVG implementation; the current main HTML/SEO and updated datasets are retained, with synchronized asset versions. Main now includes 190 snapshot entries, 189 concrete snapshots and 498 historical milestones. Both comparison roots use these same upstream data. These measurements are a new paired cohort, not a continuation or pooling of the earlier optimized-SVG/MapLibre comparisons.
 
 **Local comparison.** The LAN server is detached from the terminal and binds only the current LAN address. Both pages include an identical preview-only startup helper, which waits for loaded fonts/snapshots and a settled camera, then starts real 4× playback from 750. Space pauses/resumes; reload restarts. Compare one foreground tab at a time. The helper is absent from measured loopback pages and the production HTML.
 
@@ -72,12 +72,19 @@ Six screenshots come from the final paired responsive run. They are full, unmask
 
 One-minute load: 4.04 (3.13–5.24). Jellyfin PID 36851 CPU: 0.20 (0.00–14.20)%; LogiPluginService PID 40427: 0.00 (0.00–11.80)%. These loads are observed, not causally isolated. Do not pool this cohort with prior tests whose data, controls and background-service load differed.
 
-**Reproduction.** Runtime sources are frozen before measurement, served assets verified at both ends and checked again offline. The offline assembler verifies all **36 trace digests**, recomputes FPS with the unchanged parser, aligns all **18 native captures**, retains all six startup/memory runs and checks every final validation script/log hash. Raw compressed traces, captures, all responsive screenshots and earlier failed validation logs remain in `../jiangshan-map-svg-final-review`. Every completed measurement is retained. Detailed raw/analysis/verification JSON is packaged as gzip archives; the [readable summary](performance/svg-final-summary.json) retains full ranges and acceptance results.
+**Reproduction.** Runtime sources are frozen before measurement, served assets verified at both ends and checked again offline. The offline assembler verifies all **36 trace digests**, recomputes FPS with the unchanged parser, aligns all **18 native captures**, retains all six startup/memory runs and checks each recorded validation/measurement script version and log against its recorded hash. Matching tool versions are resolved by content hash in this branch's history, so applying the patch with new commit IDs also works. Raw compressed traces, captures, all responsive screenshots and earlier failed validation logs remain in `../jiangshan-map-svg-final-review`. Every completed measurement is retained. Detailed raw/analysis/verification JSON is packaged as gzip archives; the [readable summary](performance/svg-final-summary.json) retains full ranges and acceptance results.
+
+The tooling cleanup removes the unused footer-hiding preview mode. Both benchmark tools now default to pinned main `d54411d` and loopback ports 8824/8825; the LAN server always compares main and optimized SVG with visible footers on 8826/8827. Fixed source/parser fingerprints replace the analyzer's dependency on experimental branch history. Historical tool hashes are matched against file versions committed in this branch; no original experimental commit ID is required. The cleaned analyzer reproduces all eight generated evidence artifacts byte-for-byte; measured application assets and results remain unchanged.
 
 ```sh
-# Separate unmodified current-main and optimized worktrees:
-WEB_BASE_PORT=8824 WEB_PORT=8825 node scripts/serve_web_benchmark.cjs MAIN_CHECKOUT OPTIMIZED_CHECKOUT
+# Terminal 1: unmodified current-main and optimized worktrees, ports 8824/8825:
+node scripts/serve_web_benchmark.cjs MAIN_CHECKOUT OPTIMIZED_CHECKOUT
 
+# Terminal 2: LAN comparison on ports 8826/8827:
+LAN_HOST=192.168.8.31 LAN_MAIN_ROOT=MAIN_CHECKOUT \
+node scripts/serve_timeline_comparison.cjs
+
+# Terminal 3: validation, then measurements:
 PLAYWRIGHT_PATH=/path/to/playwright \
 LAN_MAIN_URL=http://192.168.8.31:8826/ \
 LAN_CANDIDATE_URL=http://192.168.8.31:8827/ \
