@@ -1,0 +1,10 @@
+{
+  "baseCommit": "49ae5edeea316af1a223d7727554bc597ea314be",
+  "prCommit": "85354373aa6c69b89400ef8503e82b336f8fa30c",
+  "files": {
+    "js/app.js": "d20260917e042c79fb25cf5915358ebf35fe91c92558f6042158817c12e901c5",
+    "css/style.css": "ef139c48837850aa3caef702b2ac731bfe98794d995388067180dd86275afab2",
+    "index.html": "633c8be092dd09a22cf37fc7d5a824166dd215846f01057539381b797c385457",
+    "scripts/validate_atlas.js": "7ec0c7675d7330db45a1a742e1574a2c921f27b35e53d73df8cf7bd5d5536296"
+  }
+}

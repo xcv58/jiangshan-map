@@ -1,0 +1,149 @@
+{
+  "complete": true,
+  "rows": [
+    {
+      "viewport": "320x568",
+      "files": {
+        "baseline": {
+          "file": "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/responsive/baseline-320x568.png",
+          "sha256": "322a2405add937107b33aa3b612c47f98f004b5849953047d41041eea3d473d6"
+        },
+        "candidate": {
+          "file": "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/responsive/candidate-320x568.png",
+          "sha256": "386ffa557c634164626f8ff17c65786c505b231c07741d69ba0ee9d7e9634195"
+        }
+      },
+      "meanRgbAbsoluteDifference": 0.14682548415492958,
+      "pixelsWithAnyChannelDifferenceOver16Percent": 0.011003521126760564,
+      "method": "Full unmasked, unaligned screenshots from responsive validation; static animations disabled only for screenshots, never during FPS collection."
+    },
+    {
+      "viewport": "390x844",
+      "files": {
+        "baseline": {
+          "file": "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/responsive/baseline-390x844.png",
+          "sha256": "8f3c068253ed10bda783db74bf0517f358f0a3a1d79442a1e4d49225970a64dc"
+        },
+        "candidate": {
+          "file": "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/responsive/candidate-390x844.png",
+          "sha256": "fcb7e4fcefcda2936d074f83568278f2ddfca061dfcb0a4158a322285306e289"
+        }
+      },
+      "meanRgbAbsoluteDifference": 0.11384028030947463,
+      "pixelsWithAnyChannelDifferenceOver16Percent": 0.03736784542471746,
+      "method": "Full unmasked, unaligned screenshots from responsive validation; static animations disabled only for screenshots, never during FPS collection."
+    },
+    {
+      "viewport": "640x900",
+      "files": {
+        "baseline": {
+          "file": "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/responsive/baseline-640x900.png",
+          "sha256": "6689885b660ab23e1db51be814bc6f99429983c30e7c10f203ad7dbced08ad78"
+        },
+        "candidate": {
+          "file": "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/responsive/candidate-640x900.png",
+          "sha256": "b2eb050d2eca68fb0af621d0bbdeff42b4f1578f7398143f4c4a1ec9338a9fff"
+        }
+      },
+      "meanRgbAbsoluteDifference": 0.1922662037037037,
+      "pixelsWithAnyChannelDifferenceOver16Percent": 0.05017361111111111,
+      "method": "Full unmasked, unaligned screenshots from responsive validation; static animations disabled only for screenshots, never during FPS collection."
+    },
+    {
+      "viewport": "768x1024",
+      "files": {
+        "baseline": {
+          "file": "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/responsive/baseline-768x1024.png",
+          "sha256": "c10827cca8e3f001ebaa98c7cceaf7ba38101c0c292305026e71707127d01e05"
+        },
+        "candidate": {
+          "file": "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/responsive/candidate-768x1024.png",
+          "sha256": "8b89e21b8e0eb182f349d8c6d4480020a36cb00b6de4013781906c9c07763d4f"
+        }
+      },
+      "meanRgbAbsoluteDifference": 0.18014992607964408,
+      "pixelsWithAnyChannelDifferenceOver16Percent": 0.026067097981770832,
+      "method": "Full unmasked, unaligned screenshots from responsive validation; static animations disabled only for screenshots, never during FPS collection."
+    },
+    {
+      "viewport": "900x640",
+      "files": {
+        "baseline": {
+          "file": "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/responsive/baseline-900x640.png",
+          "sha256": "5bd80a705ba654fc9147802e1112fbb403888d56bf2f59f62faf220302630b20"
+        },
+        "candidate": {
+          "file": "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/responsive/candidate-900x640.png",
+          "sha256": "357da9865076b60cfad904ddad68d059a49e528ab9efe51cd02f78ad5c02f51f"
+        }
+      },
+      "meanRgbAbsoluteDifference": 0.0060648148148148145,
+      "pixelsWithAnyChannelDifferenceOver16Percent": 0.0008680555555555555,
+      "method": "Full unmasked, unaligned screenshots from responsive validation; static animations disabled only for screenshots, never during FPS collection."
+    },
+    {
+      "viewport": "1024x768",
+      "files": {
+        "baseline": {
+          "file": "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/responsive/baseline-1024x768.png",
+          "sha256": "9409c93c7c65dcf3f557bf145b1fe40dc1ab159e7e7ad2653de36b844be32735"
+        },
+        "candidate": {
+          "file": "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/responsive/candidate-1024x768.png",
+          "sha256": "3481050009373acb1e7eab08ebc7b0aedac157a46f9f73b2b68f997c6ea635e2"
+        }
+      },
+      "meanRgbAbsoluteDifference": 0.035419464111328125,
+      "pixelsWithAnyChannelDifferenceOver16Percent": 0.020090738932291664,
+      "method": "Full unmasked, unaligned screenshots from responsive validation; static animations disabled only for screenshots, never during FPS collection."
+    },
+    {
+      "viewport": "1280x720",
+      "files": {
+        "baseline": {
+          "file": "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/responsive/baseline-1280x720.png",
+          "sha256": "609bf97695c371c3166879cf68ad1b997cf4536890a050d55ba390f5d6d9e2eb"
+        },
+        "candidate": {
+          "file": "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/responsive/candidate-1280x720.png",
+          "sha256": "d39f29c67f3271466282cf795724d42e377dc6520d9d429636f6ff5fb0964c7a"
+        }
+      },
+      "meanRgbAbsoluteDifference": 0.08680374710648148,
+      "pixelsWithAnyChannelDifferenceOver16Percent": 0.035698784722222224,
+      "method": "Full unmasked, unaligned screenshots from responsive validation; static animations disabled only for screenshots, never during FPS collection."
+    },
+    {
+      "viewport": "1440x900",
+      "files": {
+        "baseline": {
+          "file": "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/responsive/baseline-1440x900.png",
+          "sha256": "b1f8d8bcfa5103796585ae6a24f1666ae1e263752dcbf182f008c853a89bffb0"
+        },
+        "candidate": {
+          "file": "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/responsive/candidate-1440x900.png",
+          "sha256": "820d80aeed4c301b3f96f4a7c8a30f9193e5705c38bbc209a3355b631d50ba64"
+        }
+      },
+      "meanRgbAbsoluteDifference": 0.11694727366255143,
+      "pixelsWithAnyChannelDifferenceOver16Percent": 0.016666666666666666,
+      "method": "Full unmasked, unaligned screenshots from responsive validation; static animations disabled only for screenshots, never during FPS collection."
+    },
+    {
+      "viewport": "1920x1080",
+      "files": {
+        "baseline": {
+          "file": "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/responsive/baseline-1920x1080.png",
+          "sha256": "5e5ef62567d2495dfa525fe42567a3cf1a7a5056b2898eb8cda52ce0938258be"
+        },
+        "candidate": {
+          "file": "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/responsive/candidate-1920x1080.png",
+          "sha256": "61c149394cef4914d786ad3d1f5fe0d17e09696bde72bf7c6b800b8d4f9bdc44"
+        }
+      },
+      "meanRgbAbsoluteDifference": 0.06209329989711934,
+      "pixelsWithAnyChannelDifferenceOver16Percent": 0.007667824074074073,
+      "method": "Full unmasked, unaligned screenshots from responsive validation; static animations disabled only for screenshots, never during FPS collection."
+    }
+  ]
+}

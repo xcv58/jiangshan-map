@@ -1,0 +1,30 @@
+{
+  "applicationChange": "Only remove #svg-stage-wrap will-change: transform; update CSS cache hash. PR 8535437. No JS/animation/onboarding changes in this follow-up.",
+  "calloutWidth": {
+    "observation": "Original strict callout check failed twice with opposite signed 0.03125 CSS-pixel width differences. Main produced 275.25 and 275.28125 across those invocations; eight additional same-main contexts all produced 275.25. The variability mechanism was not isolated.",
+    "comparison": "Content, caret, positions and height remain exact; width/right tolerate 0.05 CSS px. Failed logs and screenshots retained."
+  },
+  "webkitPausedAnimation": {
+    "observation": "The harness deliberately paused the timeline transition at 110 ms. WebKit retained that artificial override after stop; native diagnostic showed it still paused after roughly two seconds.",
+    "correction": "Cancel only test-paused scrubber transitions after measuring glide, before rail/resize checks. Duration and easing checks stay unchanged."
+  },
+  "webkitGeometry": {
+    "observation": "Percentage transform reference-width rounding caused a measured 0.46863 CSS-pixel thumb difference.",
+    "comparison": "Use the same 0.51 CSS-pixel budget as existing responsive checks, record absolute errors; do not change application rendering."
+  },
+  "webkitInput": {
+    "limitation": "Playwright cannot send mouse-wheel input to mobile WebKit.",
+    "coverage": "Use the existing trusted + keyboard shortcut for zoom in those contexts; desktop WebKit and Chromium still use trusted wheel input. This does not establish physical iPhone pinch or Safari FPS."
+  },
+  "rawRetained": [
+    "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/initial-validation",
+    "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/callouts-recheck.log",
+    "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/callouts-identical-main",
+    "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/callout-identical-widths.json",
+    "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/initial-webkit",
+    "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/second-webkit",
+    "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/third-webkit",
+    "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/webkit-resize-diagnostic.json",
+    "/Users/yihong/work/jiangshan-map-svg-stage-hint-ef139c48-review/webkit-timeline-debug"
+  ]
+}
