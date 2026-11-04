@@ -1,0 +1,954 @@
+{
+  "complete": true,
+  "experiments": {
+    "componentReversions": {
+      "input": "/Users/yihong/work/jiangshan-map-svg-zoom-cause-review/frames.json",
+      "inputSHA256": "e76cd61b8dc88cda44ff15d9de6c85fb31ff1d4797726c3adaa8d8500a45a6fc",
+      "traceDigestsAndPresentationReparseVerified": true,
+      "assetsAndSharedDataVerified": true,
+      "backgroundServicePIDsVerified": true,
+      "environment": {
+        "browser": "156.0.8078.79",
+        "cpu": "Apple M4",
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "dpr": 2,
+        "measuredAt": "2026-11-04T19:51:25.378Z"
+      },
+      "summary": {
+        "main": {
+          "presentedFps": {
+            "n": 6,
+            "median": 41.443005009594074,
+            "min": 36.70160462371249,
+            "max": 47.50424276883278
+          },
+          "frameIntervalP95Ms": {
+            "n": 6,
+            "median": 41.6665,
+            "min": 33.333,
+            "max": 50
+          }
+        },
+        "subset": {
+          "presentedFps": {
+            "n": 6,
+            "median": 38.49872151787326,
+            "min": 36.259025599118736,
+            "max": 45.08173096109816
+          },
+          "frameIntervalP95Ms": {
+            "n": 6,
+            "median": 49.999,
+            "min": 33.334,
+            "max": 50
+          }
+        },
+        "no_attributes": {
+          "presentedFps": {
+            "n": 6,
+            "median": 38.57621375106495,
+            "min": 35.91578486444866,
+            "max": 47.56900216500578
+          },
+          "frameIntervalP95Ms": {
+            "n": 6,
+            "median": 49.999,
+            "min": 33.333,
+            "max": 50
+          }
+        },
+        "no_timeline": {
+          "presentedFps": {
+            "n": 6,
+            "median": 38.553221587161914,
+            "min": 31.066704900082325,
+            "max": 46.42141508770067
+          },
+          "frameIntervalP95Ms": {
+            "n": 6,
+            "median": 49.999,
+            "min": 33.334,
+            "max": 50
+          }
+        },
+        "no_boundary": {
+          "presentedFps": {
+            "n": 6,
+            "median": 40.17326426011982,
+            "min": 37.19750545152845,
+            "max": 44.912322263186205
+          },
+          "frameIntervalP95Ms": {
+            "n": 6,
+            "median": 33.334,
+            "min": 33.334,
+            "max": 50
+          }
+        },
+        "no_dictionary": {
+          "presentedFps": {
+            "n": 6,
+            "median": 41.01081590162576,
+            "min": 30.87156096985108,
+            "max": 46.13239108130131
+          },
+          "frameIntervalP95Ms": {
+            "n": 6,
+            "median": 49.999,
+            "min": 33.334,
+            "max": 50
+          }
+        }
+      },
+      "rows": [
+        {
+          "variant": "main",
+          "repeat": 0,
+          "presentedFps": 47.48777374364082,
+          "frameIntervalP95Ms": 33.333,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset",
+          "repeat": 0,
+          "presentedFps": 36.259025599118736,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_attributes",
+          "repeat": 0,
+          "presentedFps": 35.91578486444866,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_timeline",
+          "repeat": 0,
+          "presentedFps": 46.42141508770067,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_boundary",
+          "repeat": 0,
+          "presentedFps": 44.912322263186205,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_dictionary",
+          "repeat": 0,
+          "presentedFps": 46.13239108130131,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset",
+          "repeat": 1,
+          "presentedFps": 40.71163945772096,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_attributes",
+          "repeat": 1,
+          "presentedFps": 37.31047329694368,
+          "frameIntervalP95Ms": 50,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_timeline",
+          "repeat": 1,
+          "presentedFps": 36.19397013381921,
+          "frameIntervalP95Ms": 50,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_boundary",
+          "repeat": 1,
+          "presentedFps": 38.67982076214522,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_dictionary",
+          "repeat": 1,
+          "presentedFps": 35.99720010818884,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main",
+          "repeat": 1,
+          "presentedFps": 42.66426234230253,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_attributes",
+          "repeat": 2,
+          "presentedFps": 39.94743706367596,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_timeline",
+          "repeat": 2,
+          "presentedFps": 45.7283006306326,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_boundary",
+          "repeat": 2,
+          "presentedFps": 37.9204709230015,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_dictionary",
+          "repeat": 2,
+          "presentedFps": 39.933778948292165,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main",
+          "repeat": 2,
+          "presentedFps": 47.50424276883278,
+          "frameIntervalP95Ms": 33.333,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset",
+          "repeat": 2,
+          "presentedFps": 45.08173096109816,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_timeline",
+          "repeat": 3,
+          "presentedFps": 37.20962324640409,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_boundary",
+          "repeat": 3,
+          "presentedFps": 44.61272946594373,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_dictionary",
+          "repeat": 3,
+          "presentedFps": 43.63339468303667,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main",
+          "repeat": 3,
+          "presentedFps": 36.70160462371249,
+          "frameIntervalP95Ms": 50,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset",
+          "repeat": 3,
+          "presentedFps": 37.99435216422245,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_attributes",
+          "repeat": 3,
+          "presentedFps": 37.95473281962999,
+          "frameIntervalP95Ms": 50,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_boundary",
+          "repeat": 4,
+          "presentedFps": 41.66670775809443,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_dictionary",
+          "repeat": 4,
+          "presentedFps": 30.87156096985108,
+          "frameIntervalP95Ms": 50,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main",
+          "repeat": 4,
+          "presentedFps": 40.22174767688562,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset",
+          "repeat": 4,
+          "presentedFps": 37.457816830289964,
+          "frameIntervalP95Ms": 50,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_attributes",
+          "repeat": 4,
+          "presentedFps": 47.56900216500578,
+          "frameIntervalP95Ms": 33.333,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_timeline",
+          "repeat": 4,
+          "presentedFps": 39.89681992791974,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_dictionary",
+          "repeat": 5,
+          "presentedFps": 42.08785285495935,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main",
+          "repeat": 5,
+          "presentedFps": 37.975173606958435,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset",
+          "repeat": 5,
+          "presentedFps": 39.003090871524066,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_attributes",
+          "repeat": 5,
+          "presentedFps": 39.19769468249991,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_timeline",
+          "repeat": 5,
+          "presentedFps": 31.066704900082325,
+          "frameIntervalP95Ms": 50,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "no_boundary",
+          "repeat": 5,
+          "presentedFps": 37.19750545152845,
+          "frameIntervalP95Ms": 50,
+          "nativeChangedHz": null
+        }
+      ]
+    },
+    "compositorControls": {
+      "input": "/Users/yihong/work/jiangshan-map-svg-zoom-cause-review/compositor-control/frames.json",
+      "inputSHA256": "61f2bbbbc1a1417349cd5043a5a68ca2b2b6bd3feb0d529af8dd135cf40386db",
+      "traceDigestsAndPresentationReparseVerified": true,
+      "assetsAndSharedDataVerified": true,
+      "backgroundServicePIDsVerified": true,
+      "environment": {
+        "browser": "156.0.8078.79",
+        "cpu": "Apple M4",
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "dpr": 2,
+        "measuredAt": "2026-11-04T20:01:24.004Z"
+      },
+      "summary": {
+        "main_a": {
+          "presentedFps": {
+            "n": 6,
+            "median": 41.47881044813719,
+            "min": 37.66672140240343,
+            "max": 47.96155991653213
+          },
+          "frameIntervalP95Ms": {
+            "n": 6,
+            "median": 49.999,
+            "min": 33.334,
+            "max": 50
+          }
+        },
+        "subset_a": {
+          "presentedFps": {
+            "n": 6,
+            "median": 41.12464903205364,
+            "min": 37.96686922237935,
+            "max": 43.19645897644633
+          },
+          "frameIntervalP95Ms": {
+            "n": 6,
+            "median": 49.999,
+            "min": 33.334,
+            "max": 50
+          }
+        },
+        "main_b": {
+          "presentedFps": {
+            "n": 6,
+            "median": 41.22686070546801,
+            "min": 38.67257971231542,
+            "max": 45.79268616942703
+          },
+          "frameIntervalP95Ms": {
+            "n": 6,
+            "median": 41.667,
+            "min": 33.334,
+            "max": 50
+          }
+        },
+        "subset_b": {
+          "presentedFps": {
+            "n": 6,
+            "median": 37.35697038320306,
+            "min": 35.95584425307398,
+            "max": 44.81403161802292
+          },
+          "frameIntervalP95Ms": {
+            "n": 6,
+            "median": 49.999,
+            "min": 33.334,
+            "max": 50
+          }
+        },
+        "main_unpromoted": {
+          "presentedFps": {
+            "n": 6,
+            "median": 57.224998116815435,
+            "min": 55.41967472345583,
+            "max": 57.8094261836357
+          },
+          "frameIntervalP95Ms": {
+            "n": 6,
+            "median": 25,
+            "min": 16.667,
+            "max": 33.333
+          }
+        },
+        "subset_unpromoted": {
+          "presentedFps": {
+            "n": 6,
+            "median": 56.62850407540044,
+            "min": 53.73955837915576,
+            "max": 57.859285233473294
+          },
+          "frameIntervalP95Ms": {
+            "n": 6,
+            "median": 25,
+            "min": 16.667,
+            "max": 33.333
+          }
+        }
+      },
+      "rows": [
+        {
+          "variant": "main_a",
+          "repeat": 0,
+          "presentedFps": 40.37361348025718,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset_a",
+          "repeat": 0,
+          "presentedFps": 37.96686922237935,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main_b",
+          "repeat": 0,
+          "presentedFps": 40.437853183963135,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset_b",
+          "repeat": 0,
+          "presentedFps": 37.72910257753885,
+          "frameIntervalP95Ms": 50,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main_unpromoted",
+          "repeat": 0,
+          "presentedFps": 56.95380011287208,
+          "frameIntervalP95Ms": 33.332,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset_unpromoted",
+          "repeat": 0,
+          "presentedFps": 53.73955837915576,
+          "frameIntervalP95Ms": 33.333,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset_a",
+          "repeat": 1,
+          "presentedFps": 41.15022518043881,
+          "frameIntervalP95Ms": 50,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main_b",
+          "repeat": 1,
+          "presentedFps": 41.83346736448171,
+          "frameIntervalP95Ms": 50,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset_b",
+          "repeat": 1,
+          "presentedFps": 44.616413466466085,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main_unpromoted",
+          "repeat": 1,
+          "presentedFps": 55.41967472345583,
+          "frameIntervalP95Ms": 33.333,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset_unpromoted",
+          "repeat": 1,
+          "presentedFps": 55.933992960201856,
+          "frameIntervalP95Ms": 33.332,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main_a",
+          "repeat": 1,
+          "presentedFps": 42.5840074160172,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main_b",
+          "repeat": 2,
+          "presentedFps": 40.620254046454306,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset_b",
+          "repeat": 2,
+          "presentedFps": 36.98483818886727,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main_unpromoted",
+          "repeat": 2,
+          "presentedFps": 57.8094261836357,
+          "frameIntervalP95Ms": 16.668,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset_unpromoted",
+          "repeat": 2,
+          "presentedFps": 55.38956465525412,
+          "frameIntervalP95Ms": 33.333,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main_a",
+          "repeat": 2,
+          "presentedFps": 42.96663369265621,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset_a",
+          "repeat": 2,
+          "presentedFps": 43.19645897644633,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset_b",
+          "repeat": 3,
+          "presentedFps": 35.95584425307398,
+          "frameIntervalP95Ms": 50,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main_unpromoted",
+          "repeat": 3,
+          "presentedFps": 56.90156915314208,
+          "frameIntervalP95Ms": 33.332,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset_unpromoted",
+          "repeat": 3,
+          "presentedFps": 57.354170866690446,
+          "frameIntervalP95Ms": 16.668,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main_a",
+          "repeat": 3,
+          "presentedFps": 37.66672140240343,
+          "frameIntervalP95Ms": 50,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset_a",
+          "repeat": 3,
+          "presentedFps": 41.358142310413534,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main_b",
+          "repeat": 3,
+          "presentedFps": 43.08380588061945,
+          "frameIntervalP95Ms": 33.335,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main_unpromoted",
+          "repeat": 4,
+          "presentedFps": 57.59390390678649,
+          "frameIntervalP95Ms": 16.667,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset_unpromoted",
+          "repeat": 4,
+          "presentedFps": 57.32301519059903,
+          "frameIntervalP95Ms": 16.668,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main_a",
+          "repeat": 4,
+          "presentedFps": 47.96155991653213,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset_a",
+          "repeat": 4,
+          "presentedFps": 41.09907288366846,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main_b",
+          "repeat": 4,
+          "presentedFps": 38.67257971231542,
+          "frameIntervalP95Ms": 50,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset_b",
+          "repeat": 4,
+          "presentedFps": 44.81403161802292,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset_unpromoted",
+          "repeat": 5,
+          "presentedFps": 57.859285233473294,
+          "frameIntervalP95Ms": 16.667,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main_a",
+          "repeat": 5,
+          "presentedFps": 38.669350697267504,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset_a",
+          "repeat": 5,
+          "presentedFps": 38.17017594234776,
+          "frameIntervalP95Ms": 50,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main_b",
+          "repeat": 5,
+          "presentedFps": 45.79268616942703,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "subset_b",
+          "repeat": 5,
+          "presentedFps": 36.454863091052175,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": null
+        },
+        {
+          "variant": "main_unpromoted",
+          "repeat": 5,
+          "presentedFps": 57.49619612075879,
+          "frameIntervalP95Ms": 16.668,
+          "nativeChangedHz": null
+        }
+      ]
+    },
+    "sameOriginNative": {
+      "input": "/Users/yihong/work/jiangshan-map-svg-zoom-cause-review/compositor-control/native-confirmation/frames.json",
+      "inputSHA256": "04a4e9745a17e34bdb9e9c7c0c2e16eaa0528744ca82858891d8266c84aacf8a",
+      "traceDigestsAndPresentationReparseVerified": true,
+      "assetsAndSharedDataVerified": true,
+      "backgroundServicePIDsVerified": true,
+      "environment": {
+        "browser": "156.0.8078.79",
+        "cpu": "Apple M4",
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "dpr": 2,
+        "measuredAt": "2026-11-04T20:06:40.923Z"
+      },
+      "summary": {
+        "subset_a": {
+          "presentedFps": {
+            "n": 6,
+            "median": 39.185324643496244,
+            "min": 36.92902192746845,
+            "max": 43.642830037806526
+          },
+          "frameIntervalP95Ms": {
+            "n": 6,
+            "median": 49.9995,
+            "min": 33.334,
+            "max": 50
+          },
+          "nativeChangedHz": {
+            "n": 6,
+            "median": 38.34979237982954,
+            "min": 36.73404281808784,
+            "max": 41.91684240919271
+          },
+          "nativeCompleteSampleHz": {
+            "n": 6,
+            "median": 52.419508770802324,
+            "min": 51.27973762525014,
+            "max": 53.50561648702834
+          },
+          "dawnWaitMaxMs": 0.453,
+          "swapMaxMs": 0.878,
+          "gapsOverlappingDawnWait8Ms": 0
+        },
+        "subset_b": {
+          "presentedFps": {
+            "n": 6,
+            "median": 39.31456203503871,
+            "min": 37.482054233573365,
+            "max": 43.09776913633302
+          },
+          "frameIntervalP95Ms": {
+            "n": 6,
+            "median": 49.999,
+            "min": 33.334,
+            "max": 50
+          },
+          "nativeChangedHz": {
+            "n": 6,
+            "median": 38.944935965052736,
+            "min": 36.9888693094474,
+            "max": 41.3738583708797
+          },
+          "nativeCompleteSampleHz": {
+            "n": 6,
+            "median": 52.161543987464654,
+            "min": 48.02373702497136,
+            "max": 57.083776839832275
+          },
+          "dawnWaitMaxMs": 0.436,
+          "swapMaxMs": 1.131,
+          "gapsOverlappingDawnWait8Ms": 0
+        },
+        "subset_unpromoted": {
+          "presentedFps": {
+            "n": 6,
+            "median": 56.56722277142728,
+            "min": 40.97548308490096,
+            "max": 57.616650325534074
+          },
+          "frameIntervalP95Ms": {
+            "n": 6,
+            "median": 33.332499999999996,
+            "min": 16.668,
+            "max": 33.334
+          },
+          "nativeChangedHz": {
+            "n": 6,
+            "median": 52.72389130913612,
+            "min": 40.97548308490095,
+            "max": 55.88803877792802
+          },
+          "nativeCompleteSampleHz": {
+            "n": 6,
+            "median": 56.788690095752216,
+            "min": 50.35541294770961,
+            "max": 59.33487817392358
+          },
+          "dawnWaitMaxMs": 1.399,
+          "swapMaxMs": 1.635,
+          "gapsOverlappingDawnWait8Ms": 0
+        }
+      },
+      "rows": [
+        {
+          "variant": "subset_a",
+          "repeat": 0,
+          "presentedFps": 43.642830037806526,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": 41.91684240919271
+        },
+        {
+          "variant": "subset_b",
+          "repeat": 0,
+          "presentedFps": 38.97875657766517,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": 38.73205558666729
+        },
+        {
+          "variant": "subset_unpromoted",
+          "repeat": 0,
+          "presentedFps": 40.97548308490096,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": 40.97548308490095
+        },
+        {
+          "variant": "subset_b",
+          "repeat": 1,
+          "presentedFps": 41.68550530848877,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": 39.4655671559657
+        },
+        {
+          "variant": "subset_unpromoted",
+          "repeat": 1,
+          "presentedFps": 56.626647219927065,
+          "frameIntervalP95Ms": 33.332,
+          "nativeChangedHz": 55.88803877792802
+        },
+        {
+          "variant": "subset_a",
+          "repeat": 1,
+          "presentedFps": 37.28146518627153,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": 37.28146518627153
+        },
+        {
+          "variant": "subset_unpromoted",
+          "repeat": 2,
+          "presentedFps": 56.44609471901184,
+          "frameIntervalP95Ms": 33.333,
+          "nativeChangedHz": 52.00928378039955
+        },
+        {
+          "variant": "subset_a",
+          "repeat": 2,
+          "presentedFps": 41.4059488518229,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": 40.420092926779496
+        },
+        {
+          "variant": "subset_b",
+          "repeat": 2,
+          "presentedFps": 38.629969671783044,
+          "frameIntervalP95Ms": 50,
+          "nativeChangedHz": 38.13786814730173
+        },
+        {
+          "variant": "subset_a",
+          "repeat": 3,
+          "presentedFps": 36.92902192746845,
+          "frameIntervalP95Ms": 50,
+          "nativeChangedHz": 37.175215406984904
+        },
+        {
+          "variant": "subset_b",
+          "repeat": 3,
+          "presentedFps": 37.482054233573365,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": 36.9888693094474
+        },
+        {
+          "variant": "subset_unpromoted",
+          "repeat": 3,
+          "presentedFps": 57.19334506125604,
+          "frameIntervalP95Ms": 16.668,
+          "nativeChangedHz": 52.50940731917042
+        },
+        {
+          "variant": "subset_b",
+          "repeat": 4,
+          "presentedFps": 43.09776913633302,
+          "frameIntervalP95Ms": 33.334,
+          "nativeChangedHz": 41.3738583708797
+        },
+        {
+          "variant": "subset_unpromoted",
+          "repeat": 4,
+          "presentedFps": 57.616650325534074,
+          "frameIntervalP95Ms": 16.668,
+          "nativeChangedHz": 52.93837529910182
+        },
+        {
+          "variant": "subset_a",
+          "repeat": 4,
+          "presentedFps": 38.45980321893761,
+          "frameIntervalP95Ms": 50,
+          "nativeChangedHz": 36.73404281808784
+        },
+        {
+          "variant": "subset_unpromoted",
+          "repeat": 5,
+          "presentedFps": 56.507798322927506,
+          "frameIntervalP95Ms": 33.333,
+          "nativeChangedHz": 53.54669098722825
+        },
+        {
+          "variant": "subset_a",
+          "repeat": 5,
+          "presentedFps": 39.91084606805489,
+          "frameIntervalP95Ms": 50,
+          "nativeChangedHz": 39.41811957338755
+        },
+        {
+          "variant": "subset_b",
+          "repeat": 5,
+          "presentedFps": 39.65036749241225,
+          "frameIntervalP95Ms": 49.999,
+          "nativeChangedHz": 39.157816343438185
+        }
+      ]
+    }
+  },
+  "caution": "Zoom diagnosis only; native changed-pixel Hz is not physical display FPS. Retain every sample, including the 40.98 FPS intervention run. No PR source changes or universal 58/60 FPS claim."
+}
