@@ -1,0 +1,75 @@
+{
+  "commit": "011782da0e40a72dc4080816d2a96fc8f4effbf1",
+  "mainCommit": "d1a23d3c59bf700884d293f94148c1f7369bdac9",
+  "sourceSHA256": "d6d97c78a8170990b995f36056f5f405d50a98df4ffdde5e2c7699646cf735bc",
+  "cursorSizeSetting": 4,
+  "method": "Visible Chrome and Safari with native macOS mouse input; paired screencapture images with and without the cursor. Displayed cursor bounds use a 3% RGB difference threshold. Values include visible cursor edges and shadow and are approximate. OS cursor preferences were unchanged.",
+  "nativeChecks": [
+    {
+      "browser": "chrome",
+      "case": "live-48",
+      "visibleClearancePx": 9,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+      "screenshotSHA256": "f45f9e2ab7d04b8c380c2bc87ef6a8ffefee2fe83093aa46a0eb83bec562d7bc"
+    },
+    {
+      "browser": "chrome",
+      "case": "live-48-top-area",
+      "visibleClearancePx": 10,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+      "screenshotSHA256": "88ac6d3ec67386753fc0cad1b6d82d8d9caf292852237290ecd0d2f9bc564a25"
+    },
+    {
+      "browser": "chrome",
+      "case": "live-48-top-city90",
+      "visibleClearancePx": 9,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+      "screenshotSHA256": "2e4690d6d38d0cfc4eb750696394193900fea1a0348a2f8dd12c94e8b4eaab70"
+    },
+    {
+      "browser": "safari",
+      "case": "live-48",
+      "visibleClearancePx": 9,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "screenshotSHA256": "357a90c0e60c025f1e5cb677f715820dc3c1babe43064b8e586dde40166f741e"
+    },
+    {
+      "browser": "safari",
+      "case": "live-48-top-area",
+      "visibleClearancePx": 10,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "screenshotSHA256": "767ae552d3004ddf78f333f15c365c2c741cedd0bb316c350016e02ba7ac577e"
+    },
+    {
+      "browser": "safari",
+      "case": "live-48-top-city90",
+      "visibleClearancePx": 9,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "screenshotSHA256": "d5210bfb0eff9d4461cae900d5065749d85dbb84822ee34f48170d6e272f78ec"
+    }
+  ],
+  "functionalChecks": {
+    "chromium": 34,
+    "webkit": 34
+  },
+  "touchTop": [
+    {
+      "engine": "chromium",
+      "gap": 56,
+      "interactive": true,
+      "trace": [
+        114.311,
+        34.801
+      ]
+    },
+    {
+      "engine": "webkit",
+      "gap": 56,
+      "interactive": true,
+      "trace": [
+        114.311,
+        34.801
+      ]
+    }
+  ]
+}
