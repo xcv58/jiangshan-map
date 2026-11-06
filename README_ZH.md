@@ -1,3 +1,15 @@
+# 江山影像 · Jiangshan Scenes
+
+[**打开江山影像 → js-scenes.vercel.app**](https://js-scenes.vercel.app/) · [English / 分支与开发说明](README.md)
+
+这是基于 DeanChensj 与贡献者的 [江山时序](https://github.com/DeanChensj/jiangshan-map) 独立维护的 Web 分支，将历史与文学视频放回地图、时代和史料背景中。保留地图、时间轴、古今沿革、人物路线、问答、雅乐、多语言与原有引导。视频仅通过原平台嵌入，明确区分 AI 演绎、文学虚构和历史依据，不复制或托管视频文件。
+
+`scenes` 是默认产品与部署分支；`main` 仅同步上游；原型分支 `codex/web-history-scenes` 保留。本次发布不修改 iOS。通用地图修复可独立贡献上游，影像内容与界面在此分支维护。开发、验证与同步流程见 [贡献指南](CONTRIBUTING_ZH.md)。
+
+以下保留原地图的功能介绍、署名及数据来源与许可说明；其中原站链接指向上游作品。
+
+---
+
 # 江山时序 · Chronicles of the Realm
 
 <p align="left">

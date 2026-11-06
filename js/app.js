@@ -4,6 +4,8 @@
 (function () {
   'use strict';
 
+  const SITE = window.ATLAS_SITE;
+
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const RAD_TO_DEG = 180 / Math.PI;
   const DEG_TO_RAD = Math.PI / 180;
@@ -1601,12 +1603,14 @@
       frame.appendChild(shield);
 
       const badge = make('div', 'embed-badge', 'embed-chip');
-      badge.appendChild(make('span', '', 'embed-seal', this.uiStr('brand_seal', '江山时序')));
+      badge.appendChild(make('span', '', 'embed-seal', SITE ? SITE.name : this.uiStr('brand_seal', '江山时序')));
       badge.appendChild(make('span', '', 'embed-sep'));
       badge.appendChild(make('span', 'embed-badge-title', 'embed-title'));
       frame.appendChild(badge);
 
-      const open = make('a', 'embed-open', 'embed-chip', en ? 'Open in Jiangshan Atlas ↗' : this._zh('在江山时序中打开 ↗'));
+      const open = make('a', 'embed-open', 'embed-chip', en
+        ? `Open in ${SITE ? SITE.nameEn : 'Jiangshan Atlas'} ↗`
+        : this._zh(`在${SITE ? SITE.name : '江山时序'}中打开 ↗`));
       open.target = '_blank';
       open.rel = 'noopener';
       const refreshHref = () => {
@@ -1653,7 +1657,7 @@
       this._syncDocumentSeoMeta();
       this._syncSeoDirectoryLocale();
 
-      this._id('txt-seal').textContent = this.uiStr('brand_seal', '江山时序');
+      this._id('txt-seal').textContent = SITE ? SITE.name : this.uiStr('brand_seal', '江山时序');
       const homeLink = this._id('act-home');
       if (homeLink) {
         // Home = a clean URL in the current language; this is the "reset" entry point.
@@ -1753,10 +1757,11 @@
       }
       const ghBtn = this._id('act-github-star');
       if (ghBtn) {
+        if (SITE) ghBtn.href = SITE.repository;
         ghBtn.title =
           this.locale === 'en'
-            ? 'Star DeanChensj/jiangshan-map on GitHub'
-            : this._zh('在 GitHub 上为「江山时序」点亮 Star');
+            ? `Star ${SITE ? SITE.nameEn : 'DeanChensj/jiangshan-map'} on GitHub`
+            : this._zh(`在 GitHub 上为「${SITE ? SITE.name : '江山时序'}」点亮 Star`);
       }
       const moreBtn = this._id('act-more-menu');
       if (moreBtn) {
@@ -1773,7 +1778,7 @@
       };
       setMoreCopy('lbl-more-story', 'Making-Of Essay (ZH)', '创作手记 · 幕后故事');
       setMoreCopy('sub-more-story', 'From textbook maps to Jiangshan', '从课本插图到开源历史地图');
-      setMoreCopy('lbl-more-about', 'About & More Projects', '作者博客 · 更多作品');
+      setMoreCopy('lbl-more-about', 'Original Atlas Author', '原地图作者 · 更多作品');
       setMoreCopy('sub-more-about', 'deanchen.me', 'deanchen.me');
       this._updateMusicUi();
       this._updateAutoplayUi();
@@ -5518,10 +5523,11 @@
     // ---------------- Chronicle Sidebar ----------------
     _syncDocumentSeoMeta() {
       if (typeof document === 'undefined') return;
-      const baseSiteUrl = 'https://deanchen.me/jiangshan-map/';
+      const baseSiteUrl = SITE ? SITE.baseUrl : 'https://deanchen.me/jiangshan-map/';
       const isEn = this.locale === 'en';
+      const siteName = SITE ? (isEn ? SITE.nameEn : SITE.name) : (isEn ? 'Jiangshan Historical Atlas of China' : '江山时序');
       const cur = this.dynasties && this.dynasties[this.dynastyIdx];
-      let pageTitle = isEn
+      let pageTitle = SITE ? `${siteName} · ${isEn ? 'History on the Map, Stories on Screen' : '地图读史，影像入境'}` : isEn
         ? this.uiStr('title', 'Jiangshan Atlas · Interactive Historical Atlas of China (403 BCE – Present)')
         : '江山时序 · 中国历史地图时间轴（战国至现代历代疆域、州郡政区与古今地名沿革）';
       let pageDesc = isEn
@@ -5533,8 +5539,8 @@
         const p = this.activePerson.profile;
         const pName = isEn ? p.en : p.zh;
         pageTitle = isEn
-          ? `${pName} — Historical Events Map · Jiangshan Atlas of China`
-          : `${pName}生平纪事地图 · 江山时序中国历史地图`;
+          ? `${pName} — Historical Events Map · ${siteName}`
+          : `${pName}生平纪事地图 · ${siteName}`;
         pageDesc = isEn
           ? `Interactive spatio-temporal chronicle of ${pName} across ${this.activePerson.events.length} historical sites in the Jiangshan Atlas of China.`
           : `${pName}生平 ${this.activePerson.events.length} 处历史事件时空落点、历代疆域与古今地名对照。`;
@@ -5545,8 +5551,8 @@
         const dSeat = this.dynastySeat(cur);
         const dSum = this.dynastySummary(cur);
         pageTitle = isEn
-          ? `${dName} (${dSpan}) Map · Jiangshan Historical Atlas of China`
-          : `${dName}历史地图（${dSpan}）疆域政区与古今地名 · 江山时序`;
+          ? `${dName} (${dSpan}) Map · ${siteName}`
+          : `${dName}历史地图（${dSpan}）疆域政区与古今地名 · ${siteName}`;
         pageDesc = isEn
           ? `${dName} (${dSpan}) historical territory, administrative divisions & cities. Capital: ${dSeat}. ${dSum}`
           : `${dName}（${dSpan}）历史疆域与州郡政区地图。都城：${dSeat}。${dSum}`;
@@ -5558,6 +5564,7 @@
         }
       }
 
+      if (SITE) pageDesc = `${isEn ? SITE.descriptionEn : SITE.description} ${pageDesc}`;
       document.title = pageTitle;
       const setMeta = (id, attr, val) => {
         const el = this._id(id);
@@ -5591,7 +5598,7 @@
         'aria-label',
         'Historical Dynasties, Person Chronicles & Strategic Passes Directory'
       );
-      const baseSiteUrl = 'https://deanchen.me/jiangshan-map/';
+      const baseSiteUrl = SITE ? SITE.baseUrl : 'https://deanchen.me/jiangshan-map/';
       const dynItems = (this.dynasties || [])
         .map((d) => {
           const dName = this.dynastyName(d);

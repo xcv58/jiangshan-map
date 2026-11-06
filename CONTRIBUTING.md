@@ -1,3 +1,28 @@
+# Contributing to Jiangshan Scenes
+
+Send video, curation and viewing-room changes to **xcv58/jiangshan-map**, targeting **`scenes`**. Start topic branches from `scenes`. Keep this product web-only; leave onboarding and inherited atlas behavior intact. Video entries need a working official embed, creator/source link, date/place uncertainty, historical references and clear AI/literary labels. Do not download or rehost clips. Test actual playback on desktop and mobile; automated lifecycle tests alone cannot verify external providers.
+
+Before submitting:
+
+```sh
+node scripts/build_atlas.js --check
+node scripts/audit_topology.js --check
+node scripts/audit_prefectures.js --check
+node scripts/validate_atlas.js
+node --test tests/history_scenes.test.cjs tests/site_config.test.cjs
+node scripts/build_web.js
+```
+
+When assets change, run `node scripts/sync_version.js` before validation. Product identity lives in `js/site_config.js`; static topic URLs use it too. Regenerate inherited topic pages with `node scripts/build_seo_topics.js` when changing their data or URLs.
+
+To sync upstream, use a clean checkout of `main`, fetch the original repository, and advance with `git merge --ff-only upstream/main`. Push that mirror, then merge `main` into `scenes`, resolve any conflicts, and rerun validation. Never force-push the upstream mirror or mix in fork features. The upstream remote in a fresh clone can be added with `git remote add upstream https://github.com/DeanChensj/jiangshan-map.git`.
+
+General bug fixes, accessibility and performance work may be offered to the original atlas as separate, focused PRs without scene content or fork branding. The original license and per-layer source restrictions continue to apply; embedded media belongs to its creators. This fork's use of AI videos does not imply endorsement by the original atlas author.
+
+## Inherited atlas contribution guidance
+
+The atlas-specific data guidance below is retained from upstream. Use this fork and the `scenes` branch for fork submissions.
+
 # Contributing to Chronicles of the Realm (江山时序)
 
 <p align="left">
@@ -48,7 +73,7 @@ We welcome contributions of all kinds, including:
 1. **Clone and Serve Locally**:
    Built with vanilla ES6 and SVG with zero runtime or npm dependencies—simply serve the repository root with any static HTTP server:
    ```bash
-   git clone https://github.com/DeanChensj/jiangshan-map.git
+   git clone https://github.com/xcv58/jiangshan-map.git
    cd jiangshan-map
    python3 -m http.server 8000
    ```

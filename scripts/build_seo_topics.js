@@ -20,7 +20,8 @@ const { CONTROLLER_SCRIPTS } = require('./sync_version');
 const ROOT = path.resolve(__dirname, '..');
 const JS_DIR = path.join(ROOT, 'js');
 const TOPICS_DIR = path.join(ROOT, 'topics');
-const BASE_URL = 'https://deanchen.me/jiangshan-map';
+const SITE = require('../js/site_config');
+const BASE_URL = SITE.baseUrl.replace(/\/$/, '');
 const LASTMOD = '2026-10-21';
 
 function escHtml(str) {
@@ -696,7 +697,7 @@ function renderFooter(allDynasties) {
       </div>
     </section>
     <footer class="page-footer">
-      <div>© 江山时序（Jiangshan Historical Atlas）· <a href="${BASE_URL}/">deanchen.me/jiangshan-map</a> · 历史疆域与政区为示意性近似</div>
+      <div>原地图与文章：<a href="https://deanchen.me/jiangshan-map/">江山时序 / Jiangshan Atlas</a> · 本分支：<a href="${BASE_URL}/">${escHtml(SITE.nameEn)}</a> · <a href="${BASE_URL}/LICENSE">License</a> · 历史疆域与政区为示意性近似</div>
       <div><a href="${BASE_URL}/topics/index.html">专题图志总览</a> · <a href="${BASE_URL}/sitemap.xml">Sitemap</a> · <a href="${BASE_URL}/llms.txt">LLMs.txt</a></div>
     </footer>`;
 }
@@ -807,7 +808,7 @@ function buildDynastyPage(d, idx, allDynasties, snapshots, enLocale, ctrl, provi
         author: {
           '@type': 'Organization',
           name: '江山时序 (Jiangshan Historical Atlas)',
-          url: `${BASE_URL}/`,
+          url: 'https://deanchen.me/jiangshan-map/',
         },
         isPartOf: {
           '@type': 'WebSite',
@@ -1006,7 +1007,7 @@ function buildJourneyPage(j, idx, allJourneys, allDynasties) {
         author: {
           '@type': 'Organization',
           name: '江山时序 (Jiangshan Historical Atlas)',
-          url: `${BASE_URL}/`,
+          url: 'https://deanchen.me/jiangshan-map/',
         },
       },
       {
@@ -1260,7 +1261,7 @@ ${genRows}
         author: {
           '@type': 'Organization',
           name: '江山时序 (Jiangshan Historical Atlas)',
-          url: `${BASE_URL}/`,
+          url: 'https://deanchen.me/jiangshan-map/',
         },
       },
       {
@@ -1477,7 +1478,7 @@ function updateSitemapXml(dynMeta, journeyMeta, featuredMeta) {
 
   // Remove any previously injected /topics/ URLs so this script is idempotent
   const cleanedXml = existingXml.replace(
-    /\s*<url>\s*<loc>https:\/\/deanchen\.me\/jiangshan-map\/topics\/[^<]*<\/loc>[\s\S]*?<\/url>/g,
+    /\s*<url>\s*<loc>https:\/\/[^<]*\/topics\/[^<]*<\/loc>[\s\S]*?<\/url>/g,
     ''
   );
 
@@ -1507,6 +1508,7 @@ function updateSitemapXml(dynMeta, journeyMeta, featuredMeta) {
 function computeCalligraphySubsetText(dynasties, enLocale) {
   const sources = [
     '江山时序',
+    SITE.name,
     ...dynasties.map((d) => d.title || ''),
     ...dynasties.map((d) => (enLocale.dynasties[d.key] && enLocale.dynasties[d.key].name) || ''),
   ];

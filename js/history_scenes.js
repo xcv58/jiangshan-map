@@ -557,10 +557,10 @@
       this.label('history-scenes-trigger-label', '影像', 'Scenes');
       this.trigger.setAttribute('aria-label', this.text({ zh: '打开历史影像放映室', en: 'Open historical scenes' }));
       this.list.setAttribute('aria-label', this.text({ zh: '历史影像', en: 'Historical scenes' }));
-      this.label('history-scenes-kicker', '江山 · 影像原型', 'JIANGSHAN · SCENES PROTOTYPE');
+      this.label('history-scenes-kicker', '江山影像', 'JIANGSHAN SCENES');
       this.label('history-scenes-heading', '让历史，在地图上发生', 'History, with a sense of place');
       this.label('history-scenes-intro', this.scenes.length + ' 段创作者影像，让历史与故事在地图旁展开。', this.scenes.length + ' creator-made films. Explore history and stories beside the map.');
-      this.label('history-scenes-prototype-credit', '影像体验交流原型 · 基于 ', 'A video-experience prototype built on ');
+      this.label('history-scenes-prototype-credit', '独立维护的影像分支 · 地图源自 ', 'An independently maintained video fork, built on ');
       this.label('history-scenes-close', '返回探索 ×', 'Back to exploring ×');
       this.label('lbl-history-scenes-layer', '影像标记', 'Scene markers');
       this.label('history-scene-context-label', '史实与演绎', 'History & dramatization');

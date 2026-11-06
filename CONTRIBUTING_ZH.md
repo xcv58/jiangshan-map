@@ -1,3 +1,13 @@
+# 参与江山影像
+
+影像、选片和观看界面改动提交到 **xcv58/jiangshan-map** 的 **`scenes`** 分支，从 `scenes` 新建功能分支。保留原地图功能与引导，本次产品维护范围仅为 Web。视频需提供官方可嵌入播放器、创作者与原链接、日期地点的不确定性、史料参考及 AI / 文学虚构标注，不下载或重新托管视频。需要在桌面和移动浏览器实际验证播放。
+
+验证命令、站点配置和上游同步流程见 [English development guide](CONTRIBUTING.md)。`main` 只允许快进同步原仓库，随后合并到 `scenes` 并验证；不要强制覆盖或向 `main` 添加影像功能。通用地图修复可另开小 PR 回馈原仓库。保留原许可证与分层数据限制，嵌入媒体的权利归原作者；此分支不代表原地图作者的背书。
+
+## 原地图贡献指南
+
+以下保留上游数据与贡献规范，分支提交目标以本页前述说明为准。
+
 # 贡献指南 · Contributing to Chronicles of the Realm (江山时序)
 
 <p align="left">
@@ -48,7 +58,7 @@
 1. **克隆仓库并启动本地预览**：
    本项目采用纯原生 ES6 + SVG 构建，无需安装任何 npm 依赖即可直接运行：
    ```bash
-   git clone https://github.com/DeanChensj/jiangshan-map.git
+   git clone https://github.com/xcv58/jiangshan-map.git
    cd jiangshan-map
    python3 -m http.server 8000
    ```

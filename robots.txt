@@ -31,4 +31,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://deanchen.me/jiangshan-map/sitemap.xml
+Sitemap: https://js-scenes.vercel.app/sitemap.xml

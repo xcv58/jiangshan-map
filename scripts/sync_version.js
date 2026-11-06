@@ -23,6 +23,7 @@ const CONTROLLER_SCRIPTS = [
 ];
 
 const STATIC_TAG_ASSETS = [
+  'js/site_config.js',
   'css/style.css',
   'css/history_scenes.css',
   'js/history_scenes_data.js',

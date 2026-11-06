@@ -1,20 +1,35 @@
-# Chronicles of the Realm · 江山时序
+# 江山影像 · Jiangshan Scenes
 
-<p align="left">
-  <strong>English</strong> · <a href="README_ZH.md">简体中文 (Chinese)</a> · <a href="README_JA.md">日本語 (Japanese)</a>
-</p>
+<p><strong>English</strong> · <a href="README_ZH.md">简体中文</a> · <a href="README_JA.md">日本語</a></p>
 
-**An Interactive Historical Atlas of China from the Warring States (403 BCE) to the Present — Scrub Through Time, Trace Ancient Cities, and Walk in the Footsteps of History**
+[**Open Jiangshan Scenes → js-scenes.vercel.app**](https://js-scenes.vercel.app/) · [简体中文](README_ZH.md) · [Original atlas](https://github.com/DeanChensj/jiangshan-map)
 
-[**Play Live Demo (English UI) → https://deanchen.me/jiangshan-map/?lang=en**](https://deanchen.me/jiangshan-map/?lang=en)
+An independently maintained web fork of **江山时序 / Jiangshan Atlas** by DeanChensj and contributors. Explore historical and literary videos in their map, era and source context. The original atlas remains available at [deanchen.me/jiangshan-map](https://deanchen.me/jiangshan-map/).
 
-*The story behind it (in Chinese): [From textbook maps to 1k GitHub stars](https://deanchen.me/history/atlas/2026/10/25/jiangshan-map-story.html)*
+The fork retains the atlas's map, timeline, place genealogy, people, routes, quiz, music, languages and onboarding. Video curation and its interface live here; general atlas fixes can be proposed upstream separately. This release makes no iOS changes. Videos remain on their original platforms: an embed is not ownership or a license to reuse the media. AI dramatizations and fictional elements are explicitly labeled and kept separate from historical references.
 
-### Fork prototype: historical scenes
+## Branches and development
 
-[**Try the prototype → js-scenes.vercel.app**](https://js-scenes.vercel.app/?year=-206#scene=hongmen-film) · [Original atlas project](https://github.com/DeanChensj/jiangshan-map)
+- **`scenes`**: the default product branch and Vercel production source. Open fork PRs against this branch.
+- **`main`**: upstream mirror, advanced only with fast-forward updates; no fork features.
+- **`codex/web-history-scenes`**: the preserved prototype history.
 
-This web-only branch adds **Scenes / 影像**: a viewing room beside the existing map with eight official embeds from **X and YouTube**. Historical scenes are ordered by the event's date, with literary stories grouped separately by their setting. Era and length filters distinguish clips of three minutes or less from longer films. Selecting a scene sets the map's era and region; closing returns to the previous year, camera and exploration context, with playback paused. No video files are copied or rehosted, and provider scripts and players load only after a scene is selected.
+Clone this fork, then branch from `scenes`. No dependencies or API keys are required:
+
+```sh
+git clone https://github.com/xcv58/jiangshan-map.git
+cd jiangshan-map
+git switch scenes
+python3 -m http.server 8900 --bind 0.0.0.0
+```
+
+Visit `http://localhost:8900/`. For a static release run `node scripts/build_web.js`; Vercel reads the checked-in `vercel.json`. Product identity and the public base URL are in `js/site_config.js`. The generated `public/` directory is ignored. See [contributing](CONTRIBUTING.md) for validation and upstream synchronization.
+
+## Historical scenes
+
+[**Explore Jiangshan Scenes → js-scenes.vercel.app**](https://js-scenes.vercel.app/?year=-206#scene=hongmen-film) · [Original atlas project](https://github.com/DeanChensj/jiangshan-map)
+
+This web-only fork adds **Scenes / 影像**: a viewing room beside the existing map with eight official embeds from **X and YouTube**. Historical scenes are ordered by the event's date, with literary stories grouped separately by their setting. Era and length filters distinguish clips of three minutes or less from longer films. Selecting a scene sets the map's era and region; closing returns to the previous year, camera and exploration context, with playback paused. No video files are copied or rehosted, and provider scripts and players load only after a scene is selected.
 
 Open it through the header, **related-video buttons in city details**, the current era's chronicle, watch buttons on matching events, or clustered play markers on the timeline. **Layers → Scene markers / 图层 → 影像标记** enables an optional map layer, off by default: documented events appear only during their era and at zoom 3.2 or above. Coincident clips open a chooser. Uncertain locations and literary incidents receive no map pin; uncertain browsing-reference dates receive no timeline marker. Date and coordinate matching keeps unrelated events apart. The atlas renderer, quiz and onboarding code remain unchanged.
 
@@ -29,9 +44,15 @@ Run `python3 -m http.server 8900 --bind 0.0.0.0` and visit `http://localhost:890
 
 Every scene includes attribution, source references and an AI-dramatization label. Jing Ke is dated **227 BCE**, separately from the atlas's **226 BCE** Ji campaign. Sima Guang's **1026** and Wu Song's **1115** are browsing references, not established incident dates. Three Visits keeps both Nanyang and Xiangyang traditions without a precise cottage pin. Wu Song is labeled as a **literary story**. The Yehuling film's prince and family narrative are explicitly fictional. Unverified original creators remain identified as such.
 
-Only one player is owned at a time. Switching, closing or hiding the page destroys it; choosing video pauses map music, and choosing map music stops video. Starting another city, person, route or quiz workflow closes the viewing room and keeps that new workflow's view. Official iframe embeds disable autoplay. Provider branding and controls remain intact. Reload and original-source actions sit together below the player; reloading is disabled while a player is loading. The ready message asks the viewer to use the provider's play control, without claiming that playback has started. Bilibili videos are excluded for now after all four mobile embeds returned HTTP 412 during browser verification. This prototype needs no backend or API key and makes no iOS changes.
+Only one player is owned at a time. Switching, closing or hiding the page destroys it; choosing video pauses map music, and choosing map music stops video. Starting another city, person, route or quiz workflow closes the viewing room and keeps that new workflow's view. Official iframe embeds disable autoplay. Provider branding and controls remain intact. Reload and original-source actions sit together below the player; reloading is disabled while a player is loading. The ready message asks the viewer to use the provider's play control, without claiming that playback has started. Bilibili videos are excluded for now after all four mobile embeds returned HTTP 412 during browser verification. This fork needs no backend or API key and makes no iOS changes.
 
 Validate the new catalog, return-state handling and asynchronous player cleanup with `node --test tests/history_scenes.test.cjs`, alongside the existing atlas integrity checks in CI. These tests do not establish that the remote videos play on a particular browser; actual provider playback and responsive layout still need browser verification.
+
+---
+
+## Original atlas documentation and credits
+
+The following atlas feature guide, illustrations and source/license tables are retained from upstream. Its demo links identify the original atlas.
 
 <p align="center">
   <a href="https://www.star-history.com/deanchensj/jiangshan-map">

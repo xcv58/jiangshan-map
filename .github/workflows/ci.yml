@@ -2,9 +2,9 @@ name: Atlas Integrity CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, scenes]
   pull_request:
-    branches: [main]
+    branches: [main, scenes]
 
 jobs:
   validate:
@@ -31,4 +31,7 @@ jobs:
       - name: Run Atlas Validation Suite
         run: node scripts/validate_atlas.js
       - name: Check viewing-room state and player lifecycle
-        run: node --test tests/history_scenes.test.cjs
+        run: node --test tests/history_scenes.test.cjs tests/site_config.test.cjs
+
+      - name: Build static web release
+        run: node scripts/build_web.js

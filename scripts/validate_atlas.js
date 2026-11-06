@@ -14,6 +14,7 @@ const { CONTROLLER_SCRIPTS, verifyIndexHtmlAssetHashes } = require('./sync_versi
 
 const ROOT = path.resolve(__dirname, '..');
 const JS_DIR = path.join(ROOT, 'js');
+const SITE = require('../js/site_config');
 const CLI_ARGS = new Set(process.argv.slice(2));
 if (CLI_ARGS.has('--help') || CLI_ARGS.has('-h')) {
   console.log(
@@ -665,17 +666,17 @@ function main() {
   const sitemapXml = fs.readFileSync(path.join(ROOT, 'sitemap.xml'), 'utf8');
   const robotsTxt = fs.readFileSync(path.join(ROOT, 'robots.txt'), 'utf8');
   assert(
-    indexHtml.includes('href="https://deanchen.me/jiangshan-map/"') &&
+    indexHtml.includes(`rel="canonical" id="lnk-canonical" href="${SITE.baseUrl}"`) &&
       indexHtml.includes('"@type": "FAQPage"') &&
-      sitemapXml.includes('<loc>https://deanchen.me/jiangshan-map/</loc>') &&
+      sitemapXml.includes(`<loc>${SITE.baseUrl}</loc>`) &&
       robotsTxt.includes('User-agent: Baiduspider') &&
       robotsTxt.includes('User-agent: Bytespider') &&
-      robotsTxt.includes('Sitemap: https://deanchen.me/jiangshan-map/sitemap.xml') &&
+      robotsTxt.includes(`Sitemap: ${SITE.baseUrl}sitemap.xml`) &&
       !indexHtml.toLowerCase().includes('deanchensj.github.io') &&
       !sitemapXml.toLowerCase().includes('deanchensj.github.io') &&
       !robotsTxt.toLowerCase().includes('deanchensj.github.io') &&
       !appCode.toLowerCase().includes('deanchensj.github.io'),
-    'SEO/GEO files (index.html, sitemap.xml, robots.txt, app.js) must canonicalize to https://deanchen.me/jiangshan-map/ and allow Baiduspider/Bytespider'
+    'SEO/GEO files must use the configured site URL and allow Baiduspider/Bytespider'
   );
   const topicsDir = path.join(ROOT, 'topics');
   assert(
@@ -700,7 +701,7 @@ function main() {
     const tfPath = path.join(topicsDir, tf);
     assert(fs.existsSync(tfPath), `Missing static SEO topic page: topics/${tf}`);
     const tfHtml = fs.readFileSync(tfPath, 'utf8');
-    const expectedCanon = `https://deanchen.me/jiangshan-map/topics/${tf}`;
+    const expectedCanon = `${SITE.baseUrl}topics/${tf}`;
     assert(
       tfHtml.includes(`rel="canonical" href="${expectedCanon}"`) &&
         tfHtml.includes('application/ld+json') &&
