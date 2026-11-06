@@ -309,6 +309,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&text=%20%26%27CDEFHJKMNPQRSTWYabcdefghilmnoprstuvxy%E4%B8%89%E4%B8%9C%E4%B8%AD%E4%BA%94%E4%BA%BA%E4%BB%A3%E5%85%83%E5%85%AD%E5%85%B1%E5%8C%97%E5%8D%81%E5%8D%8E%E5%8D%97%E5%92%8C%E5%94%90%E5%9B%BD%E5%AE%8B%E5%B1%B1%E5%BA%8F%E6%88%98%E6%97%B6%E6%98%8E%E6%99%8B%E6%9C%9D%E6%B0%91%E6%B1%89%E6%B1%9F%E6%B8%85%E7%A7%A6%E8%A5%BF%E9%9A%8B&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css?v=7955b8e8" />
+  <link rel="stylesheet" href="css/history_scenes.css?v=f202b2c7" />
   <!-- Analytics: Vercount & Cloudflare Web Analytics -->
   <script defer src="https://events.vercount.one/js"></script>
   <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "dc645937f75341b2a7416bd1fb81b635", "spa": false}'></script>
@@ -323,6 +324,10 @@
         </h1>
       </div>
       <div class="control-strip" role="toolbar" aria-label="地图图层与交互模式">
+        <button id="act-history-scenes" class="action-btn subtle" type="button" aria-expanded="false" aria-controls="history-scenes" aria-label="打开历史影像放映室">
+          <svg class="btn-svg" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M6.5 5l4 3-4 3Z" fill="currentColor"/></svg>
+          <span id="history-scenes-trigger-label">影像</span>
+        </button>
         <button id="act-layers-menu" class="action-btn subtle layers-trigger-btn" type="button" aria-expanded="false" aria-controls="layers-popover" title="展开或收起地图图层开关">
           <svg class="btn-svg" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path d="M8 1.8L1.5 5.2 8 8.6l6.5-3.4L8 1.8zM1.5 8.2L8 11.6l6.5-3.4M1.5 11.2L8 14.6l6.5-3.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span id="lbl-layers-btn">图层</span>
@@ -538,6 +543,37 @@
 
         <div id="gesture-guide">滚轮缩放 · 拖拽平移 · 点击城名或双击任意处查沿革 · ← → 逐事件跳转（Shift+← → ±10年） · 空格播放</div>
       </div>
+
+      <aside id="history-scenes" aria-labelledby="history-scenes-heading" hidden>
+        <header class="history-scenes-header">
+          <span id="history-scenes-kicker" class="history-scenes-kicker">江山 · 放映室</span>
+          <button id="history-scenes-close" type="button">返回探索 ×</button>
+          <h2 id="history-scenes-heading">让历史，在地图上发生</h2>
+          <p id="history-scenes-intro">三段创作者影像，三个历史片刻。选一段，在地图旁观看。</p>
+        </header>
+        <nav id="history-scene-list" aria-label="历史影像"></nav>
+        <p id="history-scene-empty">选择一个历史片刻</p>
+        <article id="history-scene-detail" hidden>
+          <div class="history-scene-meta"><span id="history-scene-date"></span><span id="history-scene-badge">AI 演绎 · 非史料影像</span></div>
+          <h3 id="history-scene-title"></h3>
+          <p id="history-scene-place" class="history-scene-place"></p>
+          <div id="history-scene-player" aria-busy="false"></div>
+          <div class="history-scene-playback">
+            <p id="history-scene-status" role="status" aria-live="polite"></p>
+            <button id="history-scene-retry" type="button" hidden>重新载入播放器</button>
+          </div>
+          <div class="history-scene-attribution"><span id="history-scene-credit"></span><a id="history-scene-source" target="_blank" rel="noopener noreferrer">查看原帖 ↗</a></div>
+          <p id="history-scene-summary"></p>
+          <button id="history-scene-focus" type="button" hidden>回到影片年代与区域</button>
+          <section class="history-scene-context" aria-labelledby="history-scene-context-label">
+            <h4 id="history-scene-context-label">史实与演绎</h4>
+            <p id="history-scene-history"></p>
+            <p id="history-scene-caveat"></p>
+            <h4 id="history-scene-sources-label">历史背景参考</h4>
+            <div id="history-scene-sources"></div>
+          </section>
+        </article>
+      </aside>
 
       <aside id="chronicle-pane" aria-label="历史时期详情">
         <button id="polity-backbar" class="polity-backbar is-hidden" type="button"></button>
@@ -758,5 +794,7 @@
   <script src="js/zh_hant.js?v=e97ea63f"></script>
   <script id="atlas-app-script" src="js/app.js?v=ea34709c" data-v-snapshots="15063e46" data-v-i18n="3f011a54"></script>
   <script src="js/atlas_quiz.js?v=3d1c930b"></script>
+  <script src="js/history_scenes_data.js?v=f7aa9416"></script>
+  <script src="js/history_scenes.js?v=dc59fc77"></script>
 </body>
 </html>

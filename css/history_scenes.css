@@ -1,0 +1,80 @@
+/* Viewing room: no layout or paint changes until explicitly opened. */
+#history-scenes[hidden], #history-scenes [hidden] { display: none !important; }
+#atlas-shell #workspace-body.has-history-scenes {
+  grid-template-columns: minmax(0, 1fr) minmax(370px, min(43vw, 580px));
+}
+#workspace-body.has-history-scenes #chronicle-pane,
+#workspace-body.has-history-scenes #act-toggle-pane,
+#workspace-body.has-history-scenes #genealogy-card,
+#workspace-body.has-history-scenes #journey-card,
+#workspace-body.has-history-scenes #milestone-balloon,
+#workspace-body.has-history-scenes #hover-tip,
+#workspace-body.has-history-scenes #grp-journey,
+#workspace-body.has-history-scenes #grp-genealogy { display: none !important; }
+#history-scenes {
+  min-width: 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  border-left: 1px solid var(--border-light, #d7cbb8);
+  padding: 24px; color: var(--text-main, #2b2622);
+  background: linear-gradient(150deg, #faf7ef, #efe6d6);
+  scrollbar-gutter: stable;
+}
+.history-scenes-header { display: grid; grid-template-columns: 1fr auto; gap: 12px; }
+.history-scenes-kicker { align-self: center; color: var(--vermilion, #b5452f); font-size: 11px; letter-spacing: .18em; font-weight: 700; }
+#history-scenes-heading { grid-column: 1 / -1; margin: 8px 0 0; font-size: clamp(23px, 2.1vw, 32px); line-height: 1.35; font-weight: 600; }
+#history-scenes-intro { grid-column: 1 / -1; margin: 0 0 18px; font-size: 13px; line-height: 1.75; color: var(--text-secondary, #6b6259); }
+#history-scenes button { font: inherit; cursor: pointer; }
+#history-scenes-close { border: 1px solid #d9cfbf; border-radius: 999px; background: transparent; color: #6b6259; padding: 6px 11px; font-size: 12px !important; }
+#history-scene-list { display: grid; gap: 8px; margin-bottom: 24px; }
+#history-scenes.has-scene #history-scenes-heading,
+#history-scenes.has-scene #history-scenes-intro { display: none; }
+#history-scenes.has-scene #history-scene-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 16px; margin-bottom: 18px; }
+#history-scenes.has-scene .history-scene-choice { padding: 10px; }
+#history-scenes.has-scene .history-scene-number { display: none; }
+#history-scenes.has-scene .history-scene-choice strong { font-size: 12px; line-height: 1.5; }
+.history-scene-choice { width: 100%; display: flex; align-items: center; gap: 14px; text-align: left; padding: 12px 14px; border-radius: 9px; border: 1px solid #ddd2c1; background: #fffdf7; color: inherit; }
+.history-scene-choice:hover, .history-scene-choice[aria-pressed="true"] { background: #f6e8da; border-color: #b5452f; }
+.history-scene-number { color: #b9a48a; font-size: 25px; font-style: italic; }
+.history-scene-choice[aria-pressed="true"] .history-scene-number { color: #b5452f; }
+.history-scene-choice strong, .history-scene-choice small { display: block; }
+.history-scene-choice strong { font-size: 15px; font-weight: 600; }
+.history-scene-choice small { margin-top: 4px; font-size: 11px; color: #776b5e; line-height: 1.5; }
+#history-scenes button:focus-visible, #history-scenes a:focus-visible { outline: 2px solid #b5452f; outline-offset: 3px; }
+#history-scene-empty { padding: 30px 0; text-align: center; color: #8d7d68; font-size: 15px; }
+.history-scene-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 12px; color: #8a4c37; }
+#history-scene-badge { border: 1px solid #d9b99c; border-radius: 4px; padding: 3px 6px; font-size: 10px; }
+#history-scene-title { font-size: 27px; font-weight: 600; line-height: 1.3; margin: 12px 0 8px; }
+#history-scene-place { font-size: 12px; color: #88745c; margin: 0 0 14px; }
+#history-scene-summary { line-height: 1.8; font-size: 14px; margin: 0 0 18px; }
+#history-scene-player { min-height: 100px; background: #f1eee5; border-radius: 9px; overflow: hidden; }
+#history-scene-player[aria-busy="true"] { min-height: 180px; background: linear-gradient(135deg, #e7dfd0, #f6f1e8); }
+.history-scene-embed { display: flex; justify-content: center; width: 100%; }
+.history-scene-embed > iframe { max-width: 100% !important; margin: 0 !important; }
+.history-scene-playback { padding: 8px 0; }
+#history-scene-status { margin: 0; color: #817565; font-size: 11px; line-height: 1.6; }
+#history-scene-retry, #history-scene-focus { padding: 8px 13px; margin-top: 8px; border: 1px solid #c49a7b; background: #faf3e9; color: #8f442d; border-radius: 5px; font-size: 12px !important; }
+.history-scene-attribution { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin: 5px 0 20px; font-size: 11px; color: #817565; }
+#history-scenes a { color: #99523c; text-underline-offset: 3px; }
+.history-scene-context { margin-top: 20px; border-top: 1px solid #d8c9b3; padding-top: 18px; }
+.history-scene-context h4 { margin: 0 0 9px; color: #7b5238; font-size: 12px; letter-spacing: .1em; }
+.history-scene-context p { font-size: 13px; line-height: 1.85; margin: 0 0 14px; }
+#history-scene-caveat { padding: 12px 14px; background: #eae1d0; border-radius: 5px; color: #78684e; }
+#history-scene-sources { display: grid; gap: 9px; font-size: 11px; line-height: 1.7; padding-bottom: 16px; }
+.history-scene-pin { pointer-events: none; }
+.history-scene-pin circle { fill: #fff9ea; stroke: #b5452f; stroke-width: 2.5; }
+.history-scene-pin path { fill: #b5452f; }
+.is-embed #act-history-scenes { display: none; }
+@media (max-width: 900px) {
+  #atlas-shell #workspace-body.has-history-scenes { grid-template-columns: 1fr !important; grid-template-rows: minmax(150px, 36%) minmax(0, 1fr) !important; transition: none; }
+  #history-scenes { border-left: 0; border-top: 1px solid #d7cbb8; padding: 16px 18px; }
+  #history-scenes-heading { font-size: 24px; }
+  #history-scenes-intro { margin-bottom: 12px; }
+  #history-scene-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 20px; }
+  .history-scene-choice { padding: 10px; gap: 6px; align-items: start; }
+  .history-scene-number { display: none; }
+  .history-scene-choice strong { font-size: 12px; line-height: 1.5; }
+  .history-scene-choice small { font-size: 10px; }
+}
+@media (max-width: 640px) {
+  #history-scenes-trigger-label { display: none; }
+  #act-history-scenes { padding-left: 10px; padding-right: 10px; }
+}

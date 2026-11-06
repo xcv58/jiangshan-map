@@ -24,6 +24,9 @@ const CONTROLLER_SCRIPTS = [
 
 const STATIC_TAG_ASSETS = [
   'css/style.css',
+  'css/history_scenes.css',
+  'js/history_scenes_data.js',
+  'js/history_scenes.js',
   'js/china_geo_data.js',
   'js/atlas_boot.js',
   'js/map_data.js',

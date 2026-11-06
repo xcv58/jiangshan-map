@@ -10,6 +10,16 @@
 
 *The story behind it (in Chinese): [From textbook maps to 1k GitHub stars](https://deanchen.me/history/atlas/2026/10/25/jiangshan-map-story.html)*
 
+### Fork prototype: historical scenes
+
+This web-only branch adds **Scenes / 影像** in the header: a viewing room beside the existing map, with official X embeds for [Jing Ke](https://x.com/LuBtc888/status/2117479382197698865), [the Xuanwu Gate incident](https://x.com/PixelAigc/status/2118349031751717306), and [Sima Guang breaking the jar](https://x.com/0xmomonifty/status/2118162217447403703). Selecting a scene sets the map's era and region; closing returns to the previous year, camera and exploration context, with playback paused. No video files are copied or rehosted, and the external player loads only after a scene is selected.
+
+Run `python3 -m http.server 8900 --bind 0.0.0.0` and visit `http://localhost:8900/?year=-227#scene=jing-ke`. The other scene hashes are `#scene=xuanwu-gate` and `#scene=sima-guang`; add `&lang=en` before the hash for English. The interface also follows the atlas's Traditional Chinese setting. Desktop places the viewing room next to the map; narrow screens stack it below the map.
+
+Each scene includes uploader/creator attribution, historical references, and a clear AI-dramatization label. Jing Ke is placed in the Xianyang region in **227 BCE**, separately from the atlas's **226 BCE** campaign at Ji. The original creator of that upload is unverified. Sima Guang's exact incident date and location remain uncertain: **1026 is only an era-browsing reference**, with no incident pin. X controls its player, post text, attribution and availability; deleted/restricted posts or blocked third-party access show a retry and original-post link. This prototype requires no backend or API key and makes no iOS changes.
+
+Validate the new catalog, return-state handling and asynchronous player cleanup with `node --test tests/history_scenes.test.cjs`, alongside the existing atlas integrity checks in CI. These tests do not establish that the remote videos play on a particular browser; actual provider playback and responsive layout still need browser verification.
+
 <p align="center">
   <a href="https://www.star-history.com/deanchensj/jiangshan-map">
     <picture>
