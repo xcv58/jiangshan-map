@@ -4,7 +4,7 @@
   const site = Object.freeze({
     name: '江山影像',
     nameEn: 'Jiangshan Scenes',
-    baseUrl: 'https://js-scenes.vercel.app/',
+    baseUrl: 'https://jiangshan-scenes.vercel.app/',
     repository: 'https://github.com/xcv58/jiangshan-map',
     upstream: 'https://github.com/DeanChensj/jiangshan-map',
     description: '在中国历史地图中观看历史与文学影像，结合时代、地点与史料探索故事。AI 演绎与文学虚构均有明确标注。',

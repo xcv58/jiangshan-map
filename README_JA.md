@@ -1,6 +1,6 @@
 # 江山影像 · Jiangshan Scenes
 
-[**Jiangshan Scenes → js-scenes.vercel.app**](https://js-scenes.vercel.app/) · [Fork development guide](README.md)
+[**Jiangshan Scenes → jiangshan-scenes.vercel.app**](https://jiangshan-scenes.vercel.app/) · [Fork development guide](README.md)
 
 [江山时序 / Jiangshan Atlas](https://github.com/DeanChensj/jiangshan-map) をもとに、地図・年代・史料とともに歴史や文学の動画を鑑賞する独立した Web フォークです。AI による脚色やフィクションを明示し、動画は元のプラットフォームから埋め込みます。既存の地図機能とオンボーディングを維持します。製品ブランチは `scenes`、上流同期専用ブランチは `main` です。
 

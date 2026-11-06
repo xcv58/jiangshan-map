@@ -31,4 +31,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://js-scenes.vercel.app/sitemap.xml
+Sitemap: https://jiangshan-scenes.vercel.app/sitemap.xml

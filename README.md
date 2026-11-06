@@ -2,7 +2,7 @@
 
 <p><strong>English</strong> · <a href="README_ZH.md">简体中文</a> · <a href="README_JA.md">日本語</a></p>
 
-[**Open Jiangshan Scenes → js-scenes.vercel.app**](https://js-scenes.vercel.app/) · [简体中文](README_ZH.md) · [Original atlas](https://github.com/DeanChensj/jiangshan-map)
+[**Open Jiangshan Scenes → jiangshan-scenes.vercel.app**](https://jiangshan-scenes.vercel.app/) · [简体中文](README_ZH.md) · [Original atlas](https://github.com/DeanChensj/jiangshan-map)
 
 An independently maintained web fork of **江山时序 / Jiangshan Atlas** by DeanChensj and contributors. Explore historical and literary videos in their map, era and source context. The original atlas remains available at [deanchen.me/jiangshan-map](https://deanchen.me/jiangshan-map/).
 
@@ -27,7 +27,7 @@ Visit `http://localhost:8900/`. For a static release run `node scripts/build_web
 
 ## Historical scenes
 
-[**Explore Jiangshan Scenes → js-scenes.vercel.app**](https://js-scenes.vercel.app/?year=-206#scene=hongmen-film) · [Original atlas project](https://github.com/DeanChensj/jiangshan-map)
+[**Explore Jiangshan Scenes → jiangshan-scenes.vercel.app**](https://jiangshan-scenes.vercel.app/?year=-206#scene=hongmen-film) · [Original atlas project](https://github.com/DeanChensj/jiangshan-map)
 
 This web-only fork adds **Scenes / 影像**: a viewing room beside the existing map with eight official embeds from **X and YouTube**. Historical scenes are ordered by the event's date, with literary stories grouped separately by their setting. Era and length filters distinguish clips of three minutes or less from longer films. Selecting a scene sets the map's era and region; closing returns to the previous year, camera and exploration context, with playback paused. No video files are copied or rehosted, and provider scripts and players load only after a scene is selected.
 
