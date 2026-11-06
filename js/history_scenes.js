@@ -557,9 +557,10 @@
       this.label('history-scenes-trigger-label', '影像', 'Scenes');
       this.trigger.setAttribute('aria-label', this.text({ zh: '打开历史影像放映室', en: 'Open historical scenes' }));
       this.list.setAttribute('aria-label', this.text({ zh: '历史影像', en: 'Historical scenes' }));
-      this.label('history-scenes-kicker', '江山 · 放映室', 'JIANGSHAN · VIEWING ROOM');
+      this.label('history-scenes-kicker', '江山 · 影像原型', 'JIANGSHAN · SCENES PROTOTYPE');
       this.label('history-scenes-heading', '让历史，在地图上发生', 'History, with a sense of place');
       this.label('history-scenes-intro', this.scenes.length + ' 段创作者影像，让历史与故事在地图旁展开。', this.scenes.length + ' creator-made films. Explore history and stories beside the map.');
+      this.label('history-scenes-prototype-credit', '影像体验交流原型 · 基于 ', 'A video-experience prototype built on ');
       this.label('history-scenes-close', '返回探索 ×', 'Back to exploring ×');
       this.label('lbl-history-scenes-layer', '影像标记', 'Scene markers');
       this.label('history-scene-context-label', '史实与演绎', 'History & dramatization');
@@ -568,6 +569,13 @@
       this.label('history-scene-empty', '选择一个历史片刻', 'Choose a historical moment');
       const isLiterary = this.scene && literary(this.scene);
       this.label('history-scene-badge', isLiterary ? 'AI 文学演绎 · 小说故事' : 'AI 演绎 · 非史料影像', isLiterary ? 'AI literary dramatization · fictional story' : 'AI dramatization · not historical footage');
+      const current = document.getElementById('history-scene-current');
+      current.hidden = !this.scene;
+      if (this.scene) {
+        const title = document.getElementById('history-scene-current-title');
+        title.textContent = title.title = this.text(this.scene.title);
+        document.getElementById('history-scene-current-badge').textContent = document.getElementById('history-scene-badge').textContent;
+      }
       this.label('history-scene-sources-label', isLiterary ? '文学原作' : '历史背景参考', isLiterary ? 'Literary source' : 'Historical references');
       if (isLiterary) this.label('history-scene-context-label', '故事背景与演绎', 'Story & dramatization');
       this.renderFilters();
@@ -628,7 +636,7 @@
     renderStatus() {
       const provider = this.scene ? PROVIDERS[this.scene.provider] : '';
       const labels = {
-        idle: { zh: '', en: '' }, ready: { zh: provider + ' 播放器已载入 · 点击播放', en: provider + ' player loaded · press play' },
+        idle: { zh: '', en: '' }, ready: { zh: '在 ' + provider + ' 播放器中点击播放', en: 'Press play in the ' + provider + ' player' },
         loading: { zh: '正在载入原帖播放器…', en: 'Loading the original player…' },
         error: { zh: '播放器未能载入。可重试，或查看原帖；历史背景仍可阅读。', en: 'The player could not load. Retry or open the original; the historical context remains available.' },
         stopped: { zh: '已停止播放', en: 'Playback stopped' },
@@ -636,7 +644,8 @@
       };
       document.getElementById('history-scene-status').textContent = this.text(labels[this.status]);
       const retry = document.getElementById('history-scene-retry');
-      retry.hidden = !['error', 'stopped'].includes(this.status);
+      retry.hidden = !this.scene || this.status === 'map-error';
+      retry.disabled = this.status === 'loading';
       retry.textContent = this.text(this.status === 'stopped' ? { zh: '重新播放', en: 'Play again' } : { zh: '重新载入播放器', en: 'Retry player' });
       this.host.setAttribute('aria-busy', String(this.status === 'loading'));
     }

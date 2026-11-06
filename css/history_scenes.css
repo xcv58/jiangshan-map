@@ -15,14 +15,19 @@
 #history-scenes {
   min-width: 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
   border-left: 1px solid var(--border-light, #d7cbb8);
-  padding: 24px; color: var(--text-main, #2b2622);
+  padding: 0; color: var(--text-main, #2b2622);
   background: linear-gradient(150deg, #faf7ef, #efe6d6);
-  scrollbar-gutter: stable;
+  scrollbar-gutter: stable; scroll-padding-top: 108px;
 }
-.history-scenes-header { display: grid; grid-template-columns: 1fr auto; gap: 12px; }
+.history-scenes-header { position: sticky; top: 0; z-index: 2; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; padding: 16px 24px 12px; background: #faf7ef; border-bottom: 1px solid #e4dacb; }
+.history-scenes-body { padding: 0 24px 24px; }
+.history-scene-current { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; min-width: 0; }
+#history-scene-current-title { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 13px; font-weight: 600; line-height: 1.6; }
+#history-scene-current-badge { flex-shrink: 0; max-width: 62%; color: #8a4c37; }
+.history-scenes-about { margin: 0 0 18px; font-size: 11px; line-height: 1.7; color: #817565; }
 .history-scenes-kicker { align-self: center; color: var(--vermilion, #b5452f); font-size: 11px; letter-spacing: .18em; font-weight: 700; }
-#history-scenes-heading { grid-column: 1 / -1; margin: 8px 0 0; font-size: clamp(23px, 2.1vw, 32px); line-height: 1.35; font-weight: 600; }
-#history-scenes-intro { grid-column: 1 / -1; margin: 0 0 18px; font-size: 13px; line-height: 1.75; color: var(--text-secondary, #6b6259); }
+#history-scenes-heading { margin: 16px 0 8px; font-size: clamp(23px, 2.1vw, 32px); line-height: 1.35; font-weight: 600; }
+#history-scenes-intro { margin: 0 0 12px; font-size: 13px; line-height: 1.75; color: var(--text-secondary, #6b6259); }
 #history-scenes button { font: inherit; cursor: pointer; }
 .history-scene-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin: 14px 0 8px; }
 .history-scene-filters label { display: grid; gap: 5px; flex: 1; min-width: 110px; font-size: 11px; color: #786957; }
@@ -35,7 +40,8 @@
 #history-scenes-close { border: 1px solid #d9cfbf; border-radius: 999px; background: transparent; color: #6b6259; padding: 6px 11px; font-size: 12px !important; }
 #history-scene-list { position: relative; display: grid; gap: 8px; margin-bottom: 24px; }
 #history-scenes.has-scene #history-scenes-heading,
-#history-scenes.has-scene #history-scenes-intro { display: none; }
+#history-scenes.has-scene #history-scenes-intro,
+#history-scenes.has-scene #history-scenes-about { display: none; }
 #history-scenes.has-scene #history-scene-list { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(130px, 31%); overflow-x: auto; scrollbar-width: thin; scroll-snap-type: x proximity; gap: 6px; margin-top: 16px; margin-bottom: 18px; padding: 4px 2px 8px; }
 #history-scenes.has-scene .history-scene-choice { padding: 10px; scroll-snap-align: start; }
 #history-scenes.has-scene .history-scene-number { display: none; }
@@ -50,7 +56,7 @@
 #history-scenes button:focus-visible, #history-scenes a:focus-visible { outline: 2px solid #b5452f; outline-offset: 3px; }
 #history-scene-empty { padding: 30px 0; text-align: center; color: #8d7d68; font-size: 15px; }
 .history-scene-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 12px; color: #8a4c37; }
-#history-scene-badge { border: 1px solid #d9b99c; border-radius: 4px; padding: 3px 6px; font-size: 10px; }
+.history-scene-badge { border: 1px solid #d9b99c; border-radius: 4px; padding: 3px 6px; font-size: 10px; line-height: 1.5; }
 #history-scene-title { font-size: 27px; font-weight: 600; line-height: 1.3; margin: 12px 0 8px; }
 #history-scene-place { font-size: 12px; color: #88745c; margin: 0 0 14px; }
 #history-scene-summary { line-height: 1.8; font-size: 14px; margin: 0 0 18px; }
@@ -59,9 +65,12 @@
 .history-scene-embed { display: flex; justify-content: center; width: 100%; }
 .history-scene-embed > iframe { max-width: 100% !important; margin: 0 !important; }
 .history-scene-embed > iframe.history-scene-frame { display: block; width: 100%; min-height: 200px; aspect-ratio: 16 / 9; border: 0; }
-.history-scene-playback { padding: 8px 0; }
-#history-scene-status { margin: 0; color: #817565; font-size: 11px; line-height: 1.6; }
+.history-scene-playback { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; padding: 10px 0; }
+#history-scene-status { flex-basis: 100%; margin: 0; color: #817565; font-size: 11px; line-height: 1.6; }
+#history-scene-source { margin-left: auto; font-size: 11px; }
 #history-scene-retry, #history-scene-focus { padding: 8px 13px; margin-top: 8px; border: 1px solid #c49a7b; background: #faf3e9; color: #8f442d; border-radius: 5px; font-size: 12px !important; }
+#history-scene-retry { margin-top: 0; }
+#history-scene-retry:disabled { opacity: .55; cursor: wait; }
 .history-scene-attribution { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin: 5px 0 20px; font-size: 11px; color: #817565; }
 #history-scenes a { color: #99523c; text-underline-offset: 3px; }
 .history-scene-context { margin-top: 20px; border-top: 1px solid #d8c9b3; padding-top: 18px; }
@@ -87,7 +96,11 @@
 .is-embed #act-history-scenes { display: none; }
 @media (max-width: 900px) {
   #atlas-shell #workspace-body.has-history-scenes { grid-template-columns: 1fr !important; grid-template-rows: minmax(150px, 36%) minmax(0, 1fr) !important; transition: none; }
-  #history-scenes { border-left: 0; border-top: 1px solid #d7cbb8; padding: 16px 18px; }
+  #history-scenes { border-left: 0; border-top: 1px solid #d7cbb8; }
+  .history-scenes-header { padding: 10px 18px; }
+  .history-scenes-body { padding: 0 18px 18px; }
+  #history-scenes-close { min-height: 40px; }
+  #history-scene-retry, #history-scene-source { min-height: 40px; display: inline-flex; align-items: center; }
   #history-scenes-heading { font-size: 24px; }
   #history-scenes-intro { margin-bottom: 12px; }
   #history-scene-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 20px; }
