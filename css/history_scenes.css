@@ -24,11 +24,11 @@
 #history-scenes-intro { grid-column: 1 / -1; margin: 0 0 18px; font-size: 13px; line-height: 1.75; color: var(--text-secondary, #6b6259); }
 #history-scenes button { font: inherit; cursor: pointer; }
 #history-scenes-close { border: 1px solid #d9cfbf; border-radius: 999px; background: transparent; color: #6b6259; padding: 6px 11px; font-size: 12px !important; }
-#history-scene-list { display: grid; gap: 8px; margin-bottom: 24px; }
+#history-scene-list { position: relative; display: grid; gap: 8px; margin-bottom: 24px; }
 #history-scenes.has-scene #history-scenes-heading,
 #history-scenes.has-scene #history-scenes-intro { display: none; }
-#history-scenes.has-scene #history-scene-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 16px; margin-bottom: 18px; }
-#history-scenes.has-scene .history-scene-choice { padding: 10px; }
+#history-scenes.has-scene #history-scene-list { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(130px, 31%); overflow-x: auto; scrollbar-width: thin; scroll-snap-type: x proximity; gap: 6px; margin-top: 16px; margin-bottom: 18px; padding: 4px 2px 8px; }
+#history-scenes.has-scene .history-scene-choice { padding: 10px; scroll-snap-align: start; }
 #history-scenes.has-scene .history-scene-number { display: none; }
 #history-scenes.has-scene .history-scene-choice strong { font-size: 12px; line-height: 1.5; }
 .history-scene-choice { width: 100%; display: flex; align-items: center; gap: 14px; text-align: left; padding: 12px 14px; border-radius: 9px; border: 1px solid #ddd2c1; background: #fffdf7; color: inherit; }

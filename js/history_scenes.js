@@ -238,30 +238,41 @@
       this.session.restore(); this.scene = null; this.status = 'idle'; this.trigger.focus();
     }
     render() {
+      const focusedId = this.list.contains(document.activeElement) ? document.activeElement.dataset.sceneId : null;
       this.panel.classList.toggle('has-scene', Boolean(this.scene));
       this.label('history-scenes-trigger-label', '影像', 'Scenes');
       this.trigger.setAttribute('aria-label', this.text({ zh: '打开历史影像放映室', en: 'Open historical scenes' }));
       this.list.setAttribute('aria-label', this.text({ zh: '历史影像', en: 'Historical scenes' }));
       this.label('history-scenes-kicker', '江山 · 放映室', 'JIANGSHAN · VIEWING ROOM');
       this.label('history-scenes-heading', '让历史，在地图上发生', 'History, with a sense of place');
-      this.label('history-scenes-intro', '三段创作者影像，三个历史片刻。选一段，在地图旁观看。', 'Three creator-made films, three historical moments. Choose a scene to watch beside the map.');
+      this.label('history-scenes-intro', this.scenes.length + ' 段创作者影像，让历史与故事在地图旁展开。', this.scenes.length + ' creator-made films. Explore history and stories beside the map.');
       this.label('history-scenes-close', '返回探索 ×', 'Back to exploring ×');
       this.label('history-scene-context-label', '史实与演绎', 'History & dramatization');
       this.label('history-scene-focus', '回到影片年代与区域', 'Return map to this scene');
       this.label('history-scene-source', '查看原帖 ↗', 'Original post ↗');
       this.label('history-scene-empty', '选择一个历史片刻', 'Choose a historical moment');
-      this.label('history-scene-badge', 'AI 演绎 · 非史料影像', 'AI dramatization · not historical footage');
-      this.label('history-scene-sources-label', '历史背景参考', 'Historical references');
+      const literary = this.scene && this.scene.kind === 'literature';
+      this.label('history-scene-badge', literary ? 'AI 文学演绎 · 小说故事' : 'AI 演绎 · 非史料影像', literary ? 'AI literary dramatization · fictional story' : 'AI dramatization · not historical footage');
+      this.label('history-scene-sources-label', literary ? '文学原作' : '历史背景参考', literary ? 'Literary source' : 'Historical references');
+      if (literary) this.label('history-scene-context-label', '故事背景与演绎', 'Story & dramatization');
       this.list.replaceChildren(...this.scenes.map((scene, index) => {
         const button = document.createElement('button'); button.type = 'button';
         button.className = 'history-scene-choice'; button.dataset.sceneId = scene.id;
         button.setAttribute('aria-pressed', String(this.scene === scene));
-        const number = document.createElement('span'); number.className = 'history-scene-number'; number.textContent = '0' + (index + 1);
+        const number = document.createElement('span'); number.className = 'history-scene-number'; number.textContent = String(index + 1).padStart(2, '0');
         const copy = document.createElement('span');
         const title = document.createElement('strong'); title.textContent = this.text(scene.title);
         const meta = document.createElement('small'); meta.textContent = this.text(scene.date) + ' · ' + Math.floor(scene.duration / 60) + ':' + String(scene.duration % 60).padStart(2, '0');
         copy.append(title, meta); button.append(number, copy); return button;
       }));
+      const focused = Array.from(this.list.children).find(button => button.dataset.sceneId === focusedId);
+      if (focused) focused.focus({ preventScroll: true });
+      if (this.opened && this.scene) {
+        const choice = focused || Array.from(this.list.children).find(button => button.dataset.sceneId === this.scene.id);
+        const left = choice.offsetLeft, right = left + choice.offsetWidth;
+        if (left < this.list.scrollLeft) this.list.scrollLeft = left;
+        else if (right > this.list.scrollLeft + this.list.clientWidth) this.list.scrollLeft = right - this.list.clientWidth;
+      }
       document.getElementById('history-scene-detail').hidden = !this.scene;
       document.getElementById('history-scene-empty').hidden = Boolean(this.scene);
       if (this.scene) {

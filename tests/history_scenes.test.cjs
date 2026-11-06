@@ -31,19 +31,36 @@ const appFixture = () => ({
   openMilestoneBalloon(dynasty,event,options){ this.restoredEvent={dynasty,event,options}; },
 });
 
-test('the curated catalog has three distinct public post embeds and historical context',()=> {
-  assert.equal(scenes.length,3);assert.equal(new Set(scenes.map(s=>s.id)).size,3);
-  assert.equal(new Set(scenes.map(s=>s.postId)).size,3);
+test('the expanded catalog has distinct public post embeds and bilingual context',()=> {
+  assert(scenes.length>=6);assert.equal(new Set(scenes.map(s=>s.id)).size,scenes.length);
+  assert.equal(new Set(scenes.map(s=>s.postId)).size,scenes.length);
   for (const s of scenes) {
     assert.match(s.postId,/^\d{19}$/);assert.match(s.handle,/^[A-Za-z0-9_]+$/);
     assert.equal(new URL(sourceURL(s)).hostname,'x.com');
     assert(s.range[0]<=s.year && s.year<=s.range[1]);
     assert(s.coord.length===2 && s.coord.every(Number.isFinite));
+    assert(s.duration>0 && Number.isInteger(s.duration));
     for(const key of ['title','date','place','summary','history','caveat','credit']) {
       assert(s[key].zh && s[key].en,key);
     }
     assert(s.sources.every(source=>new URL(source.url).protocol==='https:'));
   }
+});
+test('the Hongmen scene uses the original creator post and the 206 BCE Lintong region',()=> {
+  const s=scenes.find(s=>s.id==='hongmen-banquet');
+  assert.equal(s.year,-206);assert.equal(s.handle,'PixelAigc');
+  assert(s.coord[0]>109 && s.coord[0]<110 && s.coord[1]>34 && s.coord[1]<35);
+});
+test('the three visits do not choose a precise cottage location from disputed traditions',()=> {
+  const s=scenes.find(s=>s.id==='three-visits');
+  assert.deepEqual(s.range,[207,208]);assert.equal(s.approximate,true);
+  assert.match(s.place.en,/disputed/);assert.match(s.caveat.en,/Nanyang.*Xiangyang/);
+});
+test('Wu Song is a literary scene with a contextual year and no incident pin',()=> {
+  const s=scenes.find(s=>s.id==='wu-song-tiger');
+  assert.equal(s.kind,'literature');assert.equal(s.approximate,true);
+  assert.match(s.history.en,/not a historical incident/);
+  assert.match(s.caveat.en,/not to date the story/);assert.match(s.credit.en,/unverified/);
 });
 test('Jing Ke is anchored to 227 BCE Xianyang rather than the 226 BCE Ji campaign',()=> {
   const s=scenes.find(s=>s.id==='jing-ke');
