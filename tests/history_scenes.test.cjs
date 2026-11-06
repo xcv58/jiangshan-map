@@ -32,10 +32,10 @@ const appFixture = () => ({
   openMilestoneBalloon(dynasty,event,options){ this.restoredEvent={dynasty,event,options}; },
 });
 
-test('the catalog has eight distinct X and YouTube embeds and bilingual context',()=> {
-  assert.equal(scenes.length,8);assert.equal(new Set(scenes.map(s=>s.id)).size,scenes.length);
+test('the catalog has twelve distinct X and YouTube embeds and bilingual context',()=> {
+  assert.equal(scenes.length,12);assert.equal(new Set(scenes.map(s=>s.id)).size,scenes.length);
   assert.equal(new Set(scenes.map(sourceURL)).size,scenes.length);
-  assert.deepEqual(Object.fromEntries(['x','youtube'].map(provider=>[provider,scenes.filter(s=>s.provider===provider).length])),{x:6,youtube:2});
+  assert.deepEqual(Object.fromEntries(['x','youtube'].map(provider=>[provider,scenes.filter(s=>s.provider===provider).length])),{x:6,youtube:6});
   for (const s of scenes) {
     const host={x:'x.com',youtube:'www.youtube.com'}[s.provider];
     assert.equal(new URL(sourceURL(s)).hostname,host);assert(s.era);
@@ -50,17 +50,17 @@ test('the catalog has eight distinct X and YouTube embeds and bilingual context'
 });
 test('history is chronological while literary stories form their own group',()=> {
   const original=scenes.map(s=>s.id),ordered=orderScenes(scenes);
-  const firstStory=ordered.findIndex(s=>s.kind==='literature');
-  assert(ordered.slice(firstStory).every(s=>s.kind==='literature'));
+  const firstStory=ordered.findIndex(s=>['literature','fiction'].includes(s.kind));
+  assert(ordered.slice(firstStory).every(s=>['literature','fiction'].includes(s.kind)));
   for(let i=1;i<firstStory;i++)assert(ordered[i].range[0]>=ordered[i-1].range[0]);
   assert(ordered.findIndex(s=>s.id==='hongmen-banquet')<ordered.findIndex(s=>s.id==='xuanwu-gate'));
   assert.deepEqual(scenes.map(s=>s.id),original);
 });
 test('era and duration filters intersect without modifying the catalog',()=> {
   assert.deepEqual(filterScenes(scenes,{era:'jin-mongol',length:'long'}).map(s=>s.id),['yehuling']);
-  assert.deepEqual(filterScenes(scenes,{era:'donghan',length:'long'}),[]);
+  assert.deepEqual(filterScenes(scenes,{era:'donghan',length:'long'}).map(s=>s.id),['baima-yan-liang','hulao-three-heroes','warm-wine-hua-xiong']);
   assert.deepEqual(filterScenes(scenes,{era:'xihan',length:'short'}),[]);
-  assert.deepEqual(filterScenes(scenes,{era:'qin',length:'short'}).map(s=>s.id),['hongmen-banquet','hongmen-film']);
+  assert.deepEqual(filterScenes(scenes,{era:'qin',length:'short'}).map(s=>s.id),['hongmen-banquet','hongmen-film','assassin-letter']);
   const boundary=[{...scenes[0],duration:180}];
   assert.equal(filterScenes(boundary,{length:'short'}).length,1);
   assert.equal(filterScenes(boundary,{length:'long'}).length,0);
@@ -127,6 +127,30 @@ test('Wu Song is a literary scene with a contextual year and no incident pin',()
   assert.equal(s.kind,'literature');assert.equal(s.approximate,true);
   assert.match(s.history.en,/not a historical incident/);
   assert.match(s.caveat.en,/not to date the story/);assert.match(s.credit.en,/unverified/);
+});
+test('original fiction and novel duels stay out of historical pins, events and timeline markers',()=> {
+  const storyIds=['assassin-letter','hulao-three-heroes','warm-wine-hua-xiong'];
+  for (const id of storyIds) {
+    const scene=scenes.find(s=>s.id===id);
+    assert(!timelineScenes(scenes).includes(scene));
+    assert.equal(canPinScene(scene,scene.year,20),false);
+    assert(!scenesForEvent(scenes,{year:scene.year,coord:scene.coord}).includes(scene));
+  }
+  // The kind itself prevents fictional pins, even if a later entry omits approximate.
+  const fiction={...scenes.find(s=>s.id==='assassin-letter'),approximate:false};
+  assert.equal(canPinScene(fiction,fiction.year,20),false);
+  assert.deepEqual(timelineScenes([fiction]),[]);
+  assert.equal(fiction.credit.en.includes('Zhang Bocheng and Li Bixian'),true);
+  assert.match(scenes.find(s=>s.id==='warm-wine-hua-xiong').history.en,/Sun Jian.*Yangren/);
+});
+test('Baima connects its documented event to the city and timeline without admitting fictional duels',()=> {
+  const scene=scenes.find(s=>s.id==='baima-yan-liang');
+  assert.equal(scene.year,200);
+  assert.deepEqual(scenesForEvent(scenes,{year:200,coord:[114.53,35.61]}).map(s=>s.id),[scene.id]);
+  assert.equal(canPinScene(scene,200,5),true);
+  assert.deepEqual(scenesForEvent(scenes,{year:190,coord:[113.32,34.82]}),[]);
+  assert.deepEqual(scenesAtPlace(scenes,[113.32,34.82]).map(s=>s.id),['hulao-three-heroes','warm-wine-hua-xiong']);
+  assert(scene.sources.some(source=>source.url.endsWith('/卷36')));
 });
 test('Jing Ke is anchored to 227 BCE Xianyang rather than the 226 BCE Ji campaign',()=> {
   const s=scenes.find(s=>s.id==='jing-ke');

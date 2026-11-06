@@ -106,6 +106,61 @@
       sources: [{ label: '河北省文化和旅游厅 · 野狐岭战役背景', url: 'https://whly.hebei.gov.cn/c/2025-06-30/581393.html' }],
     }
   );
+  scenes.push(
+    {
+      id: 'assassin-letter', era: 'qin', year: -210, range: [-210, -210], coord: [109.5, 38.2], zoom: 3,
+      kind: 'fiction', approximate: true,
+      title: { zh: '信 · ASSASSIN', en: 'ASSASSIN · the secret decree' },
+      date: { zh: '前 210 年背景 · 原创虚构短片', en: '210 BCE setting · original historical fiction' },
+      place: { zh: '上郡方向 · 秦代北方区域背景', en: 'Toward Shang Commandery · northern Qin regional setting' },
+      summary: { zh: '始皇帝死后，一封密诏与一名刺客奔向帝国北方。Zhang Bocheng与Li Bixian的AI武侠短片，由可灵官方频道展映。', en: 'After the emperor’s death, a secret decree and a lone assassin race toward the northern frontier. An AI wuxia short by Zhang Bocheng and Li Bixian, presented on Kling AI’s official channel.' },
+      history: { zh: '《史记·秦始皇本纪》记载，秦始皇三十七年死于巡行途中，赵高、李斯等参与继位安排，并以书令迫扶苏自尽。影片以这一历史转折为背景，编织刺客与密诏的虚构故事。', en: 'The Records of the Grand Historian recounts Qin Shi Huang’s death during his final tour and the succession intrigue involving Zhao Gao, Li Si and orders sent to Fusu. The film invents an assassin narrative around this historical background.' },
+      caveat: { zh: '原创历史虚构，刺客、追逐、对白与传信路线均非史料记载。地图只提供上郡方向的区域背景，不标示虚构事发点或路线；前210年是故事时代背景。', en: 'Original historical fiction: the assassin, pursuit, dialogue and delivery route are not documented events. The map provides only a regional setting toward Shang Commandery; no fictional incident pin or route is drawn. 210 BCE is the story’s setting.' },
+      provider: 'youtube', videoId: 'v_rfOWfmoPw', duration: 171,
+      credit: { zh: '创作：Zhang Bocheng、Li Bixian · 官方发布：Kling AI · NEXTGEN 入选作品', en: 'Filmmakers: Zhang Bocheng and Li Bixian · official upload: Kling AI · NEXTGEN Official Selection' },
+      sources: [{ label: '《史记》卷六 · 秦始皇本纪', url: 'https://zh.wikisource.org/wiki/史記/卷006' }],
+    },
+    {
+      id: 'hulao-three-heroes', era: 'donghan', year: 190, range: [190, 191], coord: [113.32, 34.82], zoom: 5,
+      kind: 'literature', approximate: true,
+      places: [{ coord: [113.32, 34.82], radiusKm: 20 }],
+      title: { zh: '三英战吕布 · 虎牢关', en: 'Three heroes face Lü Bu · Hulao Pass' },
+      date: { zh: '《三国演义》讨董故事 · 约190年背景', en: 'Romance of the Three Kingdoms · around 190 CE setting' },
+      place: { zh: '虎牢关一带 · 小说地理背景', en: 'Hulao Pass region · literary setting' },
+      summary: { zh: '关东诸侯进逼洛阳，吕布出关迎战，刘关张联手。Stunner Cadaver将《三国演义》的名场面拍成AI战争短片。', en: 'The eastern coalition approaches Luoyang, Lü Bu rides out, and Liu Bei, Guan Yu and Zhang Fei face him together. Stunner Cadaver turns the novel’s famous encounter into an AI war film.' },
+      history: { zh: '《三国演义》第五回描写关东会盟与刘关张三战吕布。诸侯讨董有历史背景，但三人合战吕布的情节不能当作《三国志》所记的真实战斗。', en: 'Chapter 5 of Romance of the Three Kingdoms depicts the coalition and the three brothers fighting Lü Bu. The campaign against Dong Zhuo has a historical background; the three-against-one duel is a literary episode, not a documented battle in the Records of the Three Kingdoms.' },
+      caveat: { zh: 'AI文学演绎。人物形象、阵势、对白与攻城过程有创作改编；190年仅帮助浏览讨董时期。地图显示虎牢关一带，不放置小说决斗的精确事发点。', en: 'AI literary dramatization. Appearances, formations, dialogue and siege action are adapted. 190 is a browsing reference for the coalition’s era. The map shows the Hulao region without a precise pin for the novel’s duel.' },
+      provider: 'youtube', videoId: 'Tx9THir4XUI', duration: 662,
+      credit: { zh: '创作者与原始发布：Stunner Cadaver', en: 'Creator and original upload: Stunner Cadaver' },
+      sources: [{ label: '《三国演义》第五回 · 三英战吕布', url: 'https://zh.wikisource.org/wiki/三國演義/第005回' }],
+    },
+    {
+      id: 'warm-wine-hua-xiong', era: 'donghan', year: 190, range: [190, 191], coord: [113.32, 34.82], zoom: 5,
+      kind: 'literature', approximate: true,
+      places: [{ coord: [113.32, 34.82], radiusKm: 20 }],
+      title: { zh: '温酒斩华雄', en: 'Hua Xiong falls · the wine is still warm' },
+      date: { zh: '《三国演义》故事 · 讨董时期背景', en: 'Romance of the Three Kingdoms · coalition-era setting' },
+      place: { zh: '小说汜水关一带 · 地理背景', en: 'The novel’s Sishui Pass region · literary setting' },
+      summary: { zh: '酒尚未凉，关羽已回营。以AI电影的镜头重述《三国演义》中关羽初露锋芒的故事。', en: 'Guan Yu returns before the wine has cooled. An AI cinematic retelling of his famous entrance in Romance of the Three Kingdoms.' },
+      history: { zh: '温酒斩华雄见于《三国演义》第五回。应与正史区分：《三国志·孙破虏讨逆传》记载，华雄是在孙坚军于阳人的战斗中被斩，并非关羽温酒出战的故事。', en: 'The warm-wine episode comes from Chapter 5 of Romance of the Three Kingdoms. In the Records of the Three Kingdoms, Hua Xiong is killed during Sun Jian’s victory at Yangren, rather than in Guan Yu’s fictional wine-cup encounter.' },
+      caveat: { zh: 'AI文学演绎，不能据此认定关羽斩杀华雄。地图仅展示小说关隘背景，不表示正史中的阳人战场；190年为浏览参考，不给小说情节添加精确史事标记。', en: 'AI literary dramatization, not evidence that Guan Yu killed Hua Xiong. The map shows the novel’s pass setting, not the historical Yangren battlefield. 190 is a browsing reference; the fictional episode has no precise historical marker.' },
+      provider: 'youtube', videoId: 'lpObbArAol0', duration: 243,
+      credit: { zh: '创作者与原始发布：Stunner Cadaver · 英语对白', en: 'Creator and original upload: Stunner Cadaver · English dialogue' },
+      sources: [{ label: '《三国演义》第五回 · 温酒斩华雄', url: 'https://zh.wikisource.org/wiki/三國演義/第005回' }, { label: '《三国志》卷四十六 · 孙坚传', url: 'https://zh.wikisource.org/wiki/三國志/卷46' }],
+    },
+    {
+      id: 'baima-yan-liang', era: 'donghan', year: 200, range: [200, 200], coord: [114.53, 35.61], zoom: 5,
+      title: { zh: '白马刺颜良', en: 'Guan Yu at Baima · the fall of Yan Liang' },
+      date: { zh: '200 年 · 建安五年', en: '200 CE · fifth year of Jian’an' },
+      place: { zh: '白马一带 · 今河南滑县附近区域示意', en: 'Baima region · near modern Huaxian, Henan' },
+      summary: { zh: '白马之围，关羽单骑冲阵。Stunner Cadaver以AI重述曹袁交战中的这一片刻。', en: 'At besieged Baima, Guan Yu rides into the enemy ranks. Stunner Cadaver revisits this episode in the conflict between Cao Cao and Yuan Shao.' },
+      history: { zh: '《三国志·关羽传》记载，建安五年，袁绍遣颜良攻白马，曹操派张辽、关羽迎战；关羽刺颜良、斩首而还，白马之围遂解。', en: 'Guan Yu’s biography in the Records of the Three Kingdoms records that in 200, Yan Liang attacked Baima. Cao Cao sent Zhang Liao and Guan Yu; Guan Yu killed Yan Liang and the siege was lifted.' },
+      caveat: { zh: '事件有史料记载，影片则采用演义式创作；具体对白、人物外貌、武器、单骑镜头及战斗时序不能据此考证。地图标记仅表示白马战役区域，不是经测定的决斗地点。', en: 'The event is documented, while the film uses a Romance-style dramatization. Dialogue, appearances, weapons, solo-rider shots and battle timing are not historical evidence. The map marks only the Baima battle region, not a surveyed duel site.' },
+      provider: 'youtube', videoId: 'NxEDuSkXTy0', duration: 443,
+      credit: { zh: '创作者与原始发布：Stunner Cadaver · 英语对白', en: 'Creator and original upload: Stunner Cadaver · English dialogue' },
+      sources: [{ label: '《三国志》卷三十六 · 关羽传', url: 'https://zh.wikisource.org/wiki/三國志/卷36' }],
+    }
+  );
   if (typeof module !== 'undefined' && module.exports) module.exports = scenes;
   else root.ATLAS_HISTORY_SCENES = scenes;
 })(typeof window === 'undefined' ? globalThis : window);

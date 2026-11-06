@@ -11,14 +11,14 @@
     tang: { zh: '唐', en: 'Tang' }, beisong: { zh: '北宋', en: 'Northern Song' },
     'jin-mongol': { zh: '金·蒙古', en: 'Jin / Mongols' },
   };
-  const literary = scene => scene.kind === 'literature';
-  const orderScenes = scenes => [...scenes].sort((a, b) => Number(literary(a)) - Number(literary(b)) ||
+  const fictional = scene => scene.kind === 'literature' || scene.kind === 'fiction';
+  const orderScenes = scenes => [...scenes].sort((a, b) => Number(fictional(a)) - Number(fictional(b)) ||
     a.range[0] - b.range[0] || a.range[1] - b.range[1] || a.id.localeCompare(b.id));
   const filterScenes = (scenes, filters = {}) => orderScenes(scenes).filter(scene =>
     (!filters.era || filters.era === 'all' || scene.era === filters.era) &&
     (!filters.length || filters.length === 'all' || (filters.length === 'short' ? scene.duration <= 180 : scene.duration > 180)));
-  const timelineScenes = scenes => orderScenes(scenes).filter(scene => !literary(scene) && scene.timeline !== false);
-  const canPinScene = (scene, year, zoom) => !literary(scene) && !scene.approximate &&
+  const timelineScenes = scenes => orderScenes(scenes).filter(scene => !fictional(scene) && scene.timeline !== false);
+  const canPinScene = (scene, year, zoom) => !fictional(scene) && !scene.approximate &&
     year >= scene.range[0] && year <= scene.range[1] && zoom >= 3.2;
   function distanceKm(a, b) {
     const rad = Math.PI / 180, lat = (b[1] - a[1]) * rad, lng = (b[0] - a[0]) * rad;
@@ -288,7 +288,7 @@
       const button = document.createElement('button'); button.type = 'button';
       button.className = 'history-scene-watch';
       button.textContent = compact ? '▶' + (scenes.length > 1 ? ' ' + scenes.length : '') :
-        '▶ ' + this.describe(scenes[0]) + (literary(scenes[0]) ? this.browser.text({ zh: ' · 文学故事', en: ' · Literary story' }) : '');
+        '▶ ' + this.describe(scenes[0]) + (fictional(scenes[0]) ? this.browser.text(scenes[0].kind === 'fiction' ? { zh: ' · 虚构故事', en: ' · Fictional story' } : { zh: ' · 文学故事', en: ' · Literary story' }) : '');
       button.title = scenes.map(scene => this.describe(scene)).join('\n');
       button.setAttribute('aria-label', this.browser.text({ zh: '观看影像：', en: 'Watch: ' }) + button.title);
       button.addEventListener('pointerdown', e => e.stopPropagation());
@@ -567,8 +567,9 @@
       this.label('history-scene-focus', '回到影片年代与区域', 'Return map to this scene');
       this.label('history-scene-source', '查看原帖 ↗', 'Original post ↗');
       this.label('history-scene-empty', '选择一个历史片刻', 'Choose a historical moment');
-      const isLiterary = this.scene && literary(this.scene);
-      this.label('history-scene-badge', isLiterary ? 'AI 文学演绎 · 小说故事' : 'AI 演绎 · 非史料影像', isLiterary ? 'AI literary dramatization · fictional story' : 'AI dramatization · not historical footage');
+      const isLiterary = this.scene && this.scene.kind === 'literature';
+      const isFiction = this.scene && this.scene.kind === 'fiction';
+      this.label('history-scene-badge', isLiterary ? 'AI 文学演绎 · 小说故事' : isFiction ? 'AI 原创虚构 · 历史背景' : 'AI 演绎 · 非史料影像', isLiterary ? 'AI literary dramatization · fictional story' : isFiction ? 'AI fiction · historical setting' : 'AI dramatization · not historical footage');
       const current = document.getElementById('history-scene-current');
       current.hidden = !this.scene;
       if (this.scene) {
@@ -577,18 +578,18 @@
         document.getElementById('history-scene-current-badge').textContent = document.getElementById('history-scene-badge').textContent;
       }
       this.label('history-scene-sources-label', isLiterary ? '文学原作' : '历史背景参考', isLiterary ? 'Literary source' : 'Historical references');
-      if (isLiterary) this.label('history-scene-context-label', '故事背景与演绎', 'Story & dramatization');
+      if (isLiterary || isFiction) this.label('history-scene-context-label', '故事背景与演绎', 'Story & dramatization');
       this.renderFilters();
       const visible = this.visibleScenes();
-      this.label('history-scene-order', visible.length + '/' + this.scenes.length + ' 部 · 史事按年代排列，文学故事单列', visible.length + '/' + this.scenes.length + ' films · historical chronology; literary stories grouped separately');
+      this.label('history-scene-order', visible.length + '/' + this.scenes.length + ' 部 · 史事按年代排列，文学与虚构单列', visible.length + '/' + this.scenes.length + ' films · historical chronology; literature and fiction grouped separately');
       document.getElementById('history-scene-no-results').hidden = Boolean(visible.length);
       const entries = [];
       let previousKind = null;
       visible.forEach(scene => {
-        const kind = literary(scene) ? 'literature' : 'history';
+        const kind = fictional(scene) ? 'literature' : 'history';
         if (kind !== previousKind) {
           const heading = document.createElement('h3'); heading.className = 'history-scene-group-label';
-          heading.textContent = this.text(kind === 'literature' ? { zh: '文学故事 · 按时代背景', en: 'Literary stories · by setting' } : { zh: '史事影像 · 按年代', en: 'Historical scenes · chronological' });
+          heading.textContent = this.text(kind === 'literature' ? { zh: '文学与虚构 · 按时代背景', en: 'Literature & fiction · by setting' } : { zh: '史事影像 · 按年代', en: 'Historical scenes · chronological' });
           entries.push(heading); previousKind = kind;
         }
         const button = document.createElement('button'); button.type = 'button';
