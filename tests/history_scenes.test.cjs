@@ -32,12 +32,12 @@ const appFixture = () => ({
   openMilestoneBalloon(dynasty,event,options){ this.restoredEvent={dynasty,event,options}; },
 });
 
-test('the catalog has twelve distinct provider embeds and bilingual context',()=> {
-  assert.equal(scenes.length,12);assert.equal(new Set(scenes.map(s=>s.id)).size,scenes.length);
+test('the catalog has eight distinct X and YouTube embeds and bilingual context',()=> {
+  assert.equal(scenes.length,8);assert.equal(new Set(scenes.map(s=>s.id)).size,scenes.length);
   assert.equal(new Set(scenes.map(sourceURL)).size,scenes.length);
-  assert.deepEqual(Object.fromEntries(['x','youtube','bilibili'].map(provider=>[provider,scenes.filter(s=>s.provider===provider).length])),{x:6,youtube:2,bilibili:4});
+  assert.deepEqual(Object.fromEntries(['x','youtube'].map(provider=>[provider,scenes.filter(s=>s.provider===provider).length])),{x:6,youtube:2});
   for (const s of scenes) {
-    const host={x:'x.com',youtube:'www.youtube.com',bilibili:'www.bilibili.com'}[s.provider];
+    const host={x:'x.com',youtube:'www.youtube.com'}[s.provider];
     assert.equal(new URL(sourceURL(s)).hostname,host);assert(s.era);
     assert(s.range[0]<=s.year && s.year<=s.range[1]);
     assert(s.coord.length===2 && s.coord.every(Number.isFinite));
@@ -57,7 +57,8 @@ test('history is chronological while literary stories form their own group',()=>
   assert.deepEqual(scenes.map(s=>s.id),original);
 });
 test('era and duration filters intersect without modifying the catalog',()=> {
-  assert.deepEqual(filterScenes(scenes,{era:'donghan',length:'long'}).map(s=>s.id),['peach-garden','three-visits-film']);
+  assert.deepEqual(filterScenes(scenes,{era:'jin-mongol',length:'long'}).map(s=>s.id),['yehuling']);
+  assert.deepEqual(filterScenes(scenes,{era:'donghan',length:'long'}),[]);
   assert.deepEqual(filterScenes(scenes,{era:'xihan',length:'short'}),[]);
   assert.deepEqual(filterScenes(scenes,{era:'qin',length:'short'}).map(s=>s.id),['hongmen-banquet','hongmen-film']);
   const boundary=[{...scenes[0],duration:180}];
@@ -79,11 +80,11 @@ test('a disabled map layer removes old pins without measuring layout',()=> {
   assert.equal(removed,1);assert.equal(state.pins.size,0);
 });
 test('city entries distinguish Xianyang from Chang’an and include both disputed cottage traditions',()=> {
-  assert.deepEqual(scenesAtPlace(scenes,[108.94,34.27]).map(s=>s.id),['changan-han-crisis','xuanwu-gate']);
+  assert.deepEqual(scenesAtPlace(scenes,[108.94,34.27]).map(s=>s.id),['xuanwu-gate']);
   assert.deepEqual(scenesAtPlace(scenes,[108.71,34.36]).map(s=>s.id),['jing-ke']);
   for(const coord of [[112.14,32.04],[112.53,32.99]]) {
     const ids=scenesAtPlace(scenes,coord).map(s=>s.id);
-    assert(ids.includes('three-visits'));assert(ids.includes('three-visits-film'));assert(!ids.includes('sima-guang'));
+    assert.deepEqual(ids,['three-visits']);
   }
   assert.deepEqual(scenesAtPlace(scenes,null),[]);
 });
@@ -104,13 +105,12 @@ test('official player URLs disable autoplay, retain provider controls and includ
   for(const s of scenes.filter(s=>s.provider!=='x')) {
     const url=new URL(embedURL(s,'http://192.168.8.31:8900'));
     assert.equal(url.searchParams.get('autoplay'),'0');
-    if(s.provider==='youtube') {
-      assert.equal(url.hostname,'www.youtube.com');assert.equal(url.searchParams.get('origin'),'http://192.168.8.31:8900');
-      assert.equal(url.searchParams.get('enablejsapi'),'1');assert.equal(url.searchParams.get('playsinline'),'1');
-    } else {assert.equal(url.hostname,'player.bilibili.com');assert.equal(url.searchParams.get('bvid'),s.videoId);}
+    assert.equal(url.hostname,'www.youtube.com');assert.equal(url.searchParams.get('origin'),'http://192.168.8.31:8900');
+    assert.equal(url.searchParams.get('enablejsapi'),'1');assert.equal(url.searchParams.get('playsinline'),'1');
   }
   assert.throws(()=>embedURL({provider:'youtube',videoId:'../../evil'},'http://localhost'));
   assert.throws(()=>sourceURL({provider:'untrusted',videoId:'https://evil.example'}));
+  assert.throws(()=>embedURL({provider:'bilibili',videoId:'BV1N4fhBGEFt'},'http://localhost'));
 });
 test('the Hongmen scene uses the original creator post and the 206 BCE Lintong region',()=> {
   const s=scenes.find(s=>s.id==='hongmen-banquet');
@@ -272,26 +272,26 @@ test('a timed-out render is removed even if the provider later returns a frame',
   reply.resolve(frame);await new Promise(resolve=>setImmediate(resolve));
   assert.equal(frame.removed,true);
 });
-test('switching from YouTube to Bilibili destroys the previous player before mounting the next',async()=> {
+test('switching YouTube films destroys the previous player before mounting the next',async()=> {
   let destroyed=0,xRequests=0;const states=[],frames=[];
   const player=new ScenePlayer(()=>{xRequests++;},s=>states.push(s),18000,async(scene,mount,lang,active,own)=>{
     const frame=target();frames.push(frame);own(()=>{destroyed++;frame.remove();});return frame;
   });
-  const youtube=scenes.find(s=>s.provider==='youtube'),bili=scenes.find(s=>s.provider==='bilibili');
+  const [youtube,next]=scenes.filter(s=>s.provider==='youtube');
   await player.load(youtube,target(),'en');assert.match(frames[0].title,/YouTube/);
-  await player.load(bili,target(),'en');assert.equal(destroyed,1);assert.equal(frames[0].removed,true);
-  assert.match(frames[1].title,/Bilibili/);assert.equal(xRequests,0);
+  await player.load(next,target(),'en');assert.equal(destroyed,1);assert.equal(frames[0].removed,true);
+  assert.match(frames[1].title,/Yehuling.*YouTube/);assert.equal(xRequests,0);
   player.stop();assert.equal(destroyed,2);assert.deepEqual(states,['loading','ready','loading','ready']);
 });
 test('a late provider cleanup cannot replace or destroy the new player',async()=> {
   const reply=deferred();let release,oldDestroyed=0,newDestroyed=0;
-  const youtube=scenes.find(s=>s.provider==='youtube'),bili=scenes.find(s=>s.provider==='bilibili');
+  const [youtube,next]=scenes.filter(s=>s.provider==='youtube');
   const player=new ScenePlayer(()=>{},()=>{},18000,async(scene,mount,lang,active,own)=>{
     if(scene===youtube){release=own;return reply.promise;}
     own(()=>{newDestroyed++;});return target();
   });
   const pending=player.load(youtube,target(),'en');
-  await player.load(bili,target(),'en');release(()=>{oldDestroyed++;});reply.resolve(target());await pending;
+  await player.load(next,target(),'en');release(()=>{oldDestroyed++;});reply.resolve(target());await pending;
   assert.equal(oldDestroyed,1);assert.equal(newDestroyed,0);player.stop();assert.equal(newDestroyed,1);
 });
 test('provider errors after readiness stop playback and stale errors do not affect a retry',async()=> {

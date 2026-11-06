@@ -4,10 +4,10 @@
   const CONTEXT_KEYS = ['activePerson', 'activePersonEventIdx', 'activeReturnPerson',
     'activeCustomRoute', 'customRouteStopIdx', 'activeTrace', 'activeTraceLabel',
     'activePolity', 'eraFocus', 'activeMilestone', 'genealogyEventsOnly', 'genealogySheetExpanded'];
-  const PROVIDERS = { x: 'X', youtube: 'YouTube', bilibili: 'Bilibili' };
+  const PROVIDERS = { x: 'X', youtube: 'YouTube' };
   const ERAS = {
     zhanguo: { zh: '战国', en: 'Warring States' }, qin: { zh: '秦末·楚汉', en: 'Qin / Chu–Han' },
-    xihan: { zh: '西汉', en: 'Western Han' }, donghan: { zh: '东汉末', en: 'Late Eastern Han' },
+    donghan: { zh: '东汉末', en: 'Late Eastern Han' },
     tang: { zh: '唐', en: 'Tang' }, beisong: { zh: '北宋', en: 'Northern Song' },
     'jin-mongol': { zh: '金·蒙古', en: 'Jin / Mongols' },
   };
@@ -49,7 +49,6 @@
   }
   function sourceURL(scene) {
     if (scene.provider === 'youtube' && /^[\w-]{11}$/.test(scene.videoId)) return 'https://www.youtube.com/watch?v=' + scene.videoId;
-    if (scene.provider === 'bilibili' && /^BV[\w]{10}$/.test(scene.videoId)) return 'https://www.bilibili.com/video/' + scene.videoId + '/';
     if (scene.provider === 'x' && /^[\w]+$/.test(scene.handle) && /^\d{19}$/.test(scene.postId)) return 'https://x.com/' + scene.handle + '/status/' + scene.postId;
     throw new Error('unsupported-video');
   }
@@ -60,8 +59,6 @@
       url.search = new URLSearchParams({ autoplay: '0', playsinline: '1', enablejsapi: '1', origin }).toString();
       return url.href;
     }
-    if (scene.provider === 'bilibili') return 'https://player.bilibili.com/player.html?' +
-      new URLSearchParams({ bvid: scene.videoId, p: '1', autoplay: '0', danmaku: '0', poster: '1' });
     throw new Error('unsupported-frame-provider');
   }
 
@@ -211,7 +208,7 @@
   }
   async function renderOfficialFrame(scene, target, lang, active, own, fail) {
     const url = embedURL(scene, root.location.origin);
-    const youtube = scene.provider === 'youtube' ? await loadYouTubeAPI() : null;
+    const youtube = await loadYouTubeAPI();
     if (!active()) return null;
     const frame = document.createElement('iframe');
     frame.className = 'history-scene-frame'; frame.allowFullscreen = true;
@@ -221,14 +218,11 @@
       let api = null;
       own(() => { if (api) api.destroy(); frame.remove(); });
       frame.onerror = () => reject(new Error('frame-failed'));
-      if (!youtube) frame.onload = () => resolve(frame);
       frame.src = url; target.append(frame);
-      if (youtube) {
-        api = new youtube.Player(frame, { events: {
-          onReady: () => resolve(frame),
-          onError: () => { reject(new Error('youtube-unavailable')); fail(); },
-        } });
-      }
+      api = new youtube.Player(frame, { events: {
+        onReady: () => resolve(frame),
+        onError: () => { reject(new Error('youtube-unavailable')); fail(); },
+      } });
     });
   }
 
