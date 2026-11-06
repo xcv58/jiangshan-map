@@ -309,7 +309,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&text=%20%26%27CDEFHJKMNPQRSTWYabcdefghilmnoprstuvxy%E4%B8%89%E4%B8%9C%E4%B8%AD%E4%BA%94%E4%BA%BA%E4%BB%A3%E5%85%83%E5%85%AD%E5%85%B1%E5%8C%97%E5%8D%81%E5%8D%8E%E5%8D%97%E5%92%8C%E5%94%90%E5%9B%BD%E5%AE%8B%E5%B1%B1%E5%BA%8F%E6%88%98%E6%97%B6%E6%98%8E%E6%99%8B%E6%9C%9D%E6%B0%91%E6%B1%89%E6%B1%9F%E6%B8%85%E7%A7%A6%E8%A5%BF%E9%9A%8B&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css?v=7955b8e8" />
-  <link rel="stylesheet" href="css/history_scenes.css?v=651c9e53" />
+  <link rel="stylesheet" href="css/history_scenes.css?v=6005d2fd" />
   <!-- Analytics: Vercount & Cloudflare Web Analytics -->
   <script defer src="https://events.vercount.one/js"></script>
   <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "dc645937f75341b2a7416bd1fb81b635", "spa": false}'></script>
@@ -380,6 +380,7 @@
             <label class="layer-chip"><input type="checkbox" id="chk-settlements" checked /><span id="lbl-settlements">古地名</span></label>
             <label class="layer-chip" title="名关雄隘 · 长城 · 大运河 · 丝绸之路"><input type="checkbox" id="chk-corridors" checked /><span id="lbl-corridors">关河丝路</span></label>
             <label class="layer-chip"><input type="checkbox" id="chk-milestones" checked /><span id="lbl-milestones">重大事件</span></label>
+            <label class="layer-chip"><input type="checkbox" id="chk-history-scenes" /><span id="lbl-history-scenes-layer">影像标记</span></label>
           </div>
         </div>
         <div class="layers-pop-section">
@@ -526,6 +527,7 @@
             </div>
           </div>
           <div id="genealogy-sub" class="genealogy-sub"></div>
+          <section id="history-scenes-place-links" class="history-scene-context-links" hidden></section>
           <div id="genealogy-body" class="genealogy-body">
             <div id="genealogy-lore" class="pass-lore-banner is-hidden"></div>
             <ol id="genealogy-timeline" class="genealogy-list"></ol>
@@ -551,7 +553,14 @@
           <h2 id="history-scenes-heading">让历史，在地图上发生</h2>
           <p id="history-scenes-intro">创作者影像，让历史与故事在地图旁展开。</p>
         </header>
+        <div id="history-scene-filters" class="history-scene-filters">
+          <label><span id="history-scene-era-label">朝代</span><select id="history-scene-era"></select></label>
+          <label><span id="history-scene-length-label">片长</span><select id="history-scene-length"></select></label>
+          <button id="history-scene-clear" type="button" hidden>全部影像</button>
+        </div>
+        <p id="history-scene-order" class="history-scene-order"></p>
         <nav id="history-scene-list" aria-label="历史影像"></nav>
+        <p id="history-scene-no-results" hidden>没有符合筛选条件的影片</p>
         <p id="history-scene-empty">选择一个历史片刻</p>
         <article id="history-scene-detail" hidden>
           <div class="history-scene-meta"><span id="history-scene-date"></span><span id="history-scene-badge">AI 演绎 · 非史料影像</span></div>
@@ -595,6 +604,7 @@
 
         <div class="milestone-section">
           <h3 id="txt-milestones-heading">重大事件</h3>
+          <section id="history-scenes-era-links" class="history-scene-context-links" hidden></section>
           <ul id="milestone-list">
             <li><span class="ev-yr">前403 年</span><span>周威烈王命韩、赵、魏为诸侯（三家分晋）</span></li>
             <li><span class="ev-yr">前386 年</span><span>周安王册命田和为齐侯，田氏代齐，七雄形成</span></li>
@@ -657,6 +667,7 @@
           <div id="dynasty-bands"></div>
           <div id="scrubber-motion"><div id="scrubber-handle"></div></div>
         </div>
+        <div id="history-scenes-timeline" aria-label="按史事年代浏览影像"></div>
         <div id="scrubber-ticks"></div>
       </div>
 
@@ -794,7 +805,7 @@
   <script src="js/zh_hant.js?v=e97ea63f"></script>
   <script id="atlas-app-script" src="js/app.js?v=ea34709c" data-v-snapshots="15063e46" data-v-i18n="3f011a54"></script>
   <script src="js/atlas_quiz.js?v=3d1c930b"></script>
-  <script src="js/history_scenes_data.js?v=e118dd33"></script>
-  <script src="js/history_scenes.js?v=fb487160"></script>
+  <script src="js/history_scenes_data.js?v=bf02d2cf"></script>
+  <script src="js/history_scenes.js?v=3c007774"></script>
 </body>
 </html>
