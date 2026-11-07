@@ -138,12 +138,20 @@
     constructor(getWidgets, onState, timeoutMs = 18000, renderFrame = renderOfficialFrame) {
       this.getWidgets = getWidgets; this.onState = onState;
       this.timeoutMs = timeoutMs; this.renderFrame = renderFrame; this.cleanup = null;
-      this.sequence = 0; this.target = null; this.timer = null;
+      this.sequence = 0; this.target = null; this.timer = null; this.controls = null; this.state = 'idle';
+    }
+    report(state) {
+      this.state = state; this.onState(state);
+    }
+    pause() {
+      if (!this.target) return;
+      try { if (this.controls && this.controls.pause()) return; } catch (_) { /* Fall back to stopping an uncontrolled player. */ }
+      this.stop(); this.report('stopped');
     }
     stop() {
       this.sequence++;
       clearTimeout(this.timer); this.timer = null;
-      const cleanup = this.cleanup; this.cleanup = null;
+      const cleanup = this.cleanup; this.cleanup = null; this.controls = null; this.state = 'stopped';
       try { if (cleanup) cleanup(); } catch (_) { /* Removing the owned frame still stops playback. */ }
       if (this.target) this.target.remove();
       this.target = null;
@@ -151,7 +159,7 @@
     async load(scene, target, lang) {
       this.stop(); this.target = target;
       const sequence = this.sequence;
-      this.onState('loading');
+      this.report('loading');
       const deadline = new Promise((_, reject) => {
         this.timer = setTimeout(() => reject(new Error('embed-timeout')), this.timeoutMs);
       });
@@ -167,9 +175,11 @@
               theme: 'light', lang, align: 'center', width: 550,
             });
           } else {
-            frame = await this.renderFrame(scene, target, lang, active, cleanup => {
-              if (active()) this.cleanup = cleanup; else cleanup();
-            }, () => { if (active()) { this.stop(); this.onState('error'); } });
+            frame = await this.renderFrame(scene, target, lang, active, (cleanup, controls) => {
+              if (active()) { this.cleanup = cleanup; this.controls = controls || null; } else cleanup();
+            }, () => { if (active()) { this.stop(); this.report('error'); } }, state => {
+              if (active()) this.report(state);
+            });
           }
           if (sequence !== this.sequence && frame) { frame.remove(); return null; }
           return frame;
@@ -178,10 +188,10 @@
         clearTimeout(this.timer); this.timer = null;
         if (!frame) throw new Error('embed-unavailable');
         frame.title = scene.title[lang === 'en' ? 'en' : 'zh'] + ' · ' + PROVIDERS[scene.provider];
-        this.onState('ready');
+        if (this.state === 'loading') this.report('ready');
       } catch (_) {
         if (sequence !== this.sequence) return;
-        this.stop(); this.onState('error');
+        this.stop(); this.report('error');
       }
     }
   }
@@ -206,7 +216,7 @@
     }).catch(error => { youtubePromise = null; throw error; });
     return youtubePromise;
   }
-  async function renderOfficialFrame(scene, target, lang, active, own, fail) {
+  async function renderOfficialFrame(scene, target, lang, active, own, fail, report) {
     const url = embedURL(scene, root.location.origin);
     const youtube = await loadYouTubeAPI();
     if (!active()) return null;
@@ -215,12 +225,26 @@
     frame.allow = 'fullscreen; encrypted-media; picture-in-picture';
     frame.referrerPolicy = 'strict-origin-when-cross-origin';
     return new Promise((resolve, reject) => {
-      let api = null;
-      own(() => { if (api) api.destroy(); frame.remove(); });
+      let api = null, ready = false;
+      own(() => { if (api) api.destroy(); frame.remove(); }, { pause() {
+        if (!ready || !api) return false;
+        const state = api.getPlayerState();
+        // Preserve the ended replay screen and an already paused/cued player.
+        // PLAYING (1) and BUFFERING (3) need a pause, never a destructive stop.
+        if (state === 1 || state === 3) { api.pauseVideo(); report('paused'); }
+        else if (state === 0) report('ended');
+        else if (state === 2) report('paused');
+        return true;
+      } });
       frame.onerror = () => reject(new Error('frame-failed'));
       frame.src = url; target.append(frame);
       api = new youtube.Player(frame, { events: {
-        onReady: () => resolve(frame),
+        onReady: () => { ready = true; resolve(frame); },
+        onStateChange: event => {
+          if (!ready || !active()) return;
+          const state = { 0: 'ended', 1: 'playing', 2: 'paused', 3: 'buffering', 5: 'ready', '-1': 'ready' }[event.data];
+          if (state) report(state);
+        },
         onError: () => { reject(new Error('youtube-unavailable')); fail(); },
       } });
     });
@@ -277,8 +301,8 @@
       this.resizeObserver = new ResizeObserver(() => this.renderTimeline());
       this.resizeObserver.observe(document.getElementById('scrubber-track'));
       document.getElementById('act-music').addEventListener('click', () => {
-        // Choosing music stops the video before the atlas's normal music handler runs.
-        if (browser.player.target) { browser.player.stop(); browser.status = 'stopped'; browser.renderStatus(); }
+        // Pause video before the atlas's normal music handler runs.
+        browser.player.pause();
       }, true);
     }
     describe(scene) {
@@ -399,7 +423,7 @@
       this.trigger = document.getElementById('act-history-scenes');
       this.list = document.getElementById('history-scene-list');
       this.host = document.getElementById('history-scene-player');
-      this.player = new ScenePlayer(loadXWidgets, state => { this.status = state; this.renderStatus(); });
+      this.player = new ScenePlayer(loadXWidgets, state => this.onPlaybackState(state));
       this.trigger.addEventListener('click', () => this.opened ? this.close() : this.open());
       document.getElementById('history-scenes-close').addEventListener('click', () => this.close());
       document.getElementById('history-scene-retry').addEventListener('click', () => this.play());
@@ -425,9 +449,7 @@
         }
       }, true);
       document.addEventListener('visibilitychange', () => {
-        if (document.hidden && this.player.target) {
-          this.player.stop(); this.status = 'stopped'; this.renderStatus();
-        }
+        if (document.hidden) this.player.pause();
       });
       this.stateObserver = new MutationObserver(() => this.render());
       this.stateObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
@@ -634,11 +656,23 @@
       const inEra = this.app.year >= this.scene.range[0] && this.app.year <= this.scene.range[1];
       document.getElementById('history-scene-focus').hidden = inEra;
     }
+    onPlaybackState(state) {
+      this.status = state;
+      if (state === 'playing' || state === 'buffering') {
+        this.app.stopAutoplay();
+        if (this.app.musicPlaying) this.app.toggleMusic();
+      }
+      this.renderStatus();
+    }
     renderStatus() {
       const provider = this.scene ? PROVIDERS[this.scene.provider] : '';
       const labels = {
         idle: { zh: '', en: '' }, ready: { zh: '在 ' + provider + ' 播放器中点击播放', en: 'Press play in the ' + provider + ' player' },
         loading: { zh: '正在载入原帖播放器…', en: 'Loading the original player…' },
+        playing: { zh: '正在播放', en: 'Playing' },
+        buffering: { zh: '正在缓冲…', en: 'Buffering…' },
+        paused: { zh: '已暂停，可在播放器中继续', en: 'Paused · continue in the player' },
+        ended: { zh: '播放完毕，可在播放器中重新播放', en: 'Finished · replay in the player' },
         error: { zh: '播放器未能载入。可重试，或查看原帖；历史背景仍可阅读。', en: 'The player could not load. Retry or open the original; the historical context remains available.' },
         stopped: { zh: '已停止播放', en: 'Playback stopped' },
         'map-error': { zh: '地图资料未能载入，请稍后重新选择此片。', en: 'Map data could not load. Please select this scene again.' },
@@ -649,6 +683,13 @@
       retry.disabled = this.status === 'loading';
       retry.textContent = this.text(this.status === 'stopped' ? { zh: '重新播放', en: 'Play again' } : { zh: '重新载入播放器', en: 'Retry player' });
       this.host.setAttribute('aria-busy', String(this.status === 'loading'));
+      if (this.status === 'stopped' && this.opened && this.scene) {
+        const card = document.createElement('div'); card.className = 'history-scene-stopped';
+        const title = document.createElement('strong'); title.textContent = this.text(this.scene.title);
+        const hint = document.createElement('p');
+        hint.textContent = this.text({ zh: '播放器已停止，点击“重新播放”再次载入。', en: 'The player was stopped. Choose “Play again” to reload it.' });
+        card.append(title, hint); this.host.replaceChildren(card);
+      }
     }
     updateMarker() {
       this.navigation.renderMap();

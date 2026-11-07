@@ -161,6 +161,18 @@
       sources: [{ label: '《三国志》卷三十六 · 关羽传', url: 'https://zh.wikisource.org/wiki/三國志/卷36' }],
     }
   );
+  scenes.push({
+    id: 'hongmen-yang', era: 'qin', year: -206, range: [-206, -206], coord: [109.26, 34.43], zoom: 6,
+    title: { zh: '鸿门宴 · yang监控版', en: 'Hongmen · yang’s surveillance version' },
+    date: { zh: '前 206 年', en: '206 BCE' },
+    place: { zh: '鸿门 · 今临潼附近的区域示意', en: 'Hongmen · regional reference near modern Lintong' },
+    summary: { zh: 'yang首次尝试制作的鸿门宴“监控录像”，以竖屏和黑白机位重述宴席中的险局。', en: 'Yang’s self-described first attempt at a Hongmen surveillance short uses a portrait presentation and monochrome camera views to retell the dangerous banquet.' },
+    history: { zh: '《史记·项羽本纪》记载，项羽在鸿门宴请刘邦，项庄舞剑、项伯相护，樊哙入帐后刘邦借故脱身。这一版本与放映室中的另两部鸿门宴影片共享历史背景。', en: 'The Records of the Grand Historian recounts Xiang Yu hosting Liu Bang at Hongmen, Xiang Zhuang’s sword dance, Xiang Bo’s intervention and Liu Bang’s escape after Fan Kuai entered. This version shares the historical background of the other two Hongmen films in the catalog.' },
+    caveat: { zh: 'AI演绎，监控机位、时间戳、具体对白、人物与营帐布景均不能作为史料。地图只表示鸿门附近区域，不是考定的宴会地点。作者在原帖说明这是自己首次尝试制作的版本。', en: 'AI dramatization: surveillance angles, timestamps, dialogue, characters and tent staging are not historical evidence. The map indicates the Hongmen region, not an established banquet site. The creator describes this as their first attempt in the original post.' },
+    provider: 'x', postId: '2118440392043508206', handle: 'xingliuyang', duration: 82,
+    credit: { zh: '创作者：yang（@xingliuyang）· 原帖自述制作', en: 'Creator: yang (@xingliuyang) · self-described production in the original post' },
+    sources: [{ label: '《史记》卷七 · 项羽本纪', url: 'https://zh.wikisource.org/wiki/史記/卷007' }],
+  });
   if (typeof module !== 'undefined' && module.exports) module.exports = scenes;
   else root.ATLAS_HISTORY_SCENES = scenes;
 })(typeof window === 'undefined' ? globalThis : window);

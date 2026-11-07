@@ -1,6 +1,8 @@
 'use strict';
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
 const scenes = require('../js/history_scenes_data.js');
 const {SceneSession, ScenePlayer, SceneBrowser, SceneNavigation, sourceURL, embedURL, orderScenes, filterScenes,
   timelineScenes, timelineGroups, canPinScene, scenesAtPlace, scenesForEvent} = require('../js/history_scenes.js');
@@ -10,6 +12,28 @@ const deferred = () => {
   return {promise, resolve, reject};
 };
 const target = () => ({removed:false, remove(){ this.removed = true; }});
+function youtubeHarness() {
+  const instances = [];
+  const context = {module:{exports:{}}, URL, URLSearchParams, setTimeout, clearTimeout,
+    document:{createElement:()=>target()},
+    window:{location:{origin:'http://localhost'}, YT:{Player:function(frame, options) {
+      const api = {state:-1, position:37, pauses:0, destroyed:0,
+        getPlayerState(){return this.state;},
+        change(state){this.state=state;options.events.onStateChange({data:state});},
+        pauseVideo(){this.pauses++;this.change(2);},
+        destroy(){this.destroyed++;},
+      };
+      instances.push(api);
+      queueMicrotask(()=>options.events.onReady({target:api}));
+      return api;
+    }}},
+  };
+  vm.createContext(context);
+  vm.runInContext(fs.readFileSync(require.resolve('../js/history_scenes.js'),'utf8'),context);
+  const states=[], player=new context.module.exports.ScenePlayer(()=>{},state=>states.push(state));
+  const mount={...target(),children:[],append(frame){this.children.push(frame);}};
+  return {instances, states, player, mount};
+}
 const appFixture = () => ({
   year:750, camera:{x:100,y:200,w:400,h:240,zoom:2.5}, aspect:0.6,
   activePerson:{profiles:[{key:'libai'}]}, activePersonEventIdx:4,
@@ -32,10 +56,10 @@ const appFixture = () => ({
   openMilestoneBalloon(dynasty,event,options){ this.restoredEvent={dynasty,event,options}; },
 });
 
-test('the catalog has twelve distinct X and YouTube embeds and bilingual context',()=> {
-  assert.equal(scenes.length,12);assert.equal(new Set(scenes.map(s=>s.id)).size,scenes.length);
+test('the catalog has thirteen distinct X and YouTube embeds and bilingual context',()=> {
+  assert.equal(scenes.length,13);assert.equal(new Set(scenes.map(s=>s.id)).size,scenes.length);
   assert.equal(new Set(scenes.map(sourceURL)).size,scenes.length);
-  assert.deepEqual(Object.fromEntries(['x','youtube'].map(provider=>[provider,scenes.filter(s=>s.provider===provider).length])),{x:6,youtube:6});
+  assert.deepEqual(Object.fromEntries(['x','youtube'].map(provider=>[provider,scenes.filter(s=>s.provider===provider).length])),{x:7,youtube:6});
   for (const s of scenes) {
     const host={x:'x.com',youtube:'www.youtube.com'}[s.provider];
     assert.equal(new URL(sourceURL(s)).hostname,host);assert(s.era);
@@ -60,7 +84,7 @@ test('era and duration filters intersect without modifying the catalog',()=> {
   assert.deepEqual(filterScenes(scenes,{era:'jin-mongol',length:'long'}).map(s=>s.id),['yehuling']);
   assert.deepEqual(filterScenes(scenes,{era:'donghan',length:'long'}).map(s=>s.id),['baima-yan-liang','hulao-three-heroes','warm-wine-hua-xiong']);
   assert.deepEqual(filterScenes(scenes,{era:'xihan',length:'short'}),[]);
-  assert.deepEqual(filterScenes(scenes,{era:'qin',length:'short'}).map(s=>s.id),['hongmen-banquet','hongmen-film','assassin-letter']);
+  assert.deepEqual(filterScenes(scenes,{era:'qin',length:'short'}).map(s=>s.id),['hongmen-banquet','hongmen-film','hongmen-yang','assassin-letter']);
   const boundary=[{...scenes[0],duration:180}];
   assert.equal(filterScenes(boundary,{length:'short'}).length,1);
   assert.equal(filterScenes(boundary,{length:'long'}).length,0);
@@ -116,6 +140,13 @@ test('the Hongmen scene uses the original creator post and the 206 BCE Lintong r
   const s=scenes.find(s=>s.id==='hongmen-banquet');
   assert.equal(s.year,-206);assert.equal(s.handle,'PixelAigc');
   assert(s.coord[0]>109 && s.coord[0]<110 && s.coord[1]>34 && s.coord[1]<35);
+});
+test('yang’s Hongmen version shares the event context while retaining its own creator and source',()=> {
+  const scene=scenes.find(s=>s.id==='hongmen-yang');
+  assert.equal(sourceURL(scene),'https://x.com/xingliuyang/status/2118440392043508206');
+  assert.equal(scene.duration,82);assert.equal(scene.year,-206);
+  assert.match(scene.credit.en,/@xingliuyang/);
+  assert.deepEqual(scenesForEvent(scenes,{year:-206,coord:[109.26,34.43]}).map(s=>s.id),['hongmen-banquet','hongmen-film','hongmen-yang']);
 });
 test('the three visits do not choose a precise cottage location from disputed traditions',()=> {
   const s=scenes.find(s=>s.id==='three-visits');
@@ -248,6 +279,88 @@ test('a workflow takeover discards its return snapshot before a rapid reopen',as
 test('constructing the player loads no third-party scripts or video',()=> {
   let requests=0;new ScenePlayer(()=>{requests++;},()=>{});
   assert.equal(requests,0);
+});
+test('pausing a YouTube player retains its frame and position across a tab switch',async()=> {
+  const {instances,states,player,mount}=youtubeHarness();
+  await player.load(scenes.find(s=>s.id==='hongmen-film'),mount,'en');
+  const api=instances[0],frame=mount.children[0];
+  api.change(1);player.pause();
+  assert.equal(api.pauses,1);assert.equal(api.position,37);assert.equal(api.destroyed,0);
+  assert.equal(player.target,mount);assert.equal(mount.removed,false);assert.equal(frame.removed,false);
+  assert.equal(states.at(-1),'paused');
+  player.pause();assert.equal(api.pauses,1,'an already paused player stays paused without restarting');
+  player.stop();assert.equal(api.destroyed,1);assert.equal(frame.removed,true);
+  const before=states.length;api.change(1);assert.equal(states.length,before,'destroyed player events are ignored');
+});
+test('an ended YouTube player keeps its replay screen when the tab is hidden',async()=> {
+  const {instances,states,player,mount}=youtubeHarness();
+  await player.load(scenes.find(s=>s.id==='hongmen-film'),mount,'en');
+  const api=instances[0];api.change(0);player.pause();
+  assert.equal(states.at(-1),'ended');assert.equal(api.pauses,0);assert.equal(api.destroyed,0);
+  assert.equal(player.target,mount);assert.equal(mount.children[0].removed,false);
+  player.stop();
+});
+test('buffering is paused while an unstarted YouTube player stays ready',async()=> {
+  const {instances,states,player,mount}=youtubeHarness();
+  await player.load(scenes.find(s=>s.id==='hongmen-film'),mount,'en');
+  const api=instances[0];player.pause();
+  assert.equal(states.at(-1),'ready');assert.equal(api.pauses,0);
+  api.change(3);player.pause();assert.equal(states.at(-1),'paused');assert.equal(api.pauses,1);
+  assert.equal(mount.removed,false);player.stop();
+});
+test('an X widget without pause controls is stopped without leaving background audio',async()=> {
+  const states=[],mount=target();
+  const player=new ScenePlayer(async()=>({createTweet:async()=>target()}),state=>states.push(state));
+  await player.load(scenes[0],mount,'en');player.pause();
+  assert.equal(player.target,null);assert.equal(mount.removed,true);assert.equal(states.at(-1),'stopped');
+});
+test('hiding a pending player cancels late frames and their pause controls',async()=> {
+  const pending=deferred(),states=[],mount=target();let own,disposed=0;
+  const player=new ScenePlayer(()=>{},state=>states.push(state),18000,async(scene,target,lang,active,register)=>{
+    own=register;return pending.promise;
+  });
+  const loading=player.load(scenes.find(s=>s.provider==='youtube'),mount,'en');
+  player.pause();own(()=>disposed++,{pause(){throw Error('stale control');}});
+  const frame=target();pending.resolve(frame);await loading;
+  assert.equal(disposed,1);assert.equal(frame.removed,true);assert.equal(player.target,null);
+  assert.deepEqual(states,['loading','stopped']);
+});
+test('a failed pause control falls back to stopping the owned player',async()=> {
+  const states=[],mount=target();let disposed=0;
+  const player=new ScenePlayer(()=>{},state=>states.push(state),18000,async(scene,target,lang,active,own)=>{
+    own(()=>disposed++,{pause(){throw Error('provider lost');}});return target;
+  });
+  await player.load(scenes.find(s=>s.provider==='youtube'),mount,'en');player.pause();
+  assert.equal(disposed,1);assert.equal(mount.removed,true);assert.equal(states.at(-1),'stopped');
+});
+test('resuming inside a retained YouTube player hands audio back from map music',()=> {
+  const state={app:appFixture(),renderStatus(){}};
+  SceneBrowser.prototype.onPlaybackState.call(state,'playing');
+  assert.equal(state.app.musicPlaying,false);assert.equal(state.app.playing,false);
+  state.app.musicPlaying=true;
+  SceneBrowser.prototype.onPlaybackState.call(state,'paused');
+  assert.equal(state.app.musicPlaying,true,'a pause must not turn off music the user just selected');
+  SceneBrowser.prototype.onPlaybackState.call(state,'buffering');
+  assert.equal(state.app.musicPlaying,false);
+});
+test('paused and finished UI keeps the frame; an uncontrolled stop gets a visible reload card',()=> {
+  const prior=global.document;
+  const nodes=new Map();
+  const element=()=>({children:[],append(...children){this.children.push(...children);}});
+  global.document={getElementById(id){if(!nodes.has(id))nodes.set(id,element());return nodes.get(id);},createElement:element};
+  const frame={iframe:true},host={children:[frame],setAttribute(){},replaceChildren(...children){this.children=children;}};
+  const state={scene:{provider:'youtube',title:{en:'Hongmen'}},opened:true,host,text:copy=>copy.en};
+  try {
+    for (const status of ['paused','ended']) {
+      state.status=status;SceneBrowser.prototype.renderStatus.call(state);
+      assert.equal(host.children[0],frame);
+      assert.equal(nodes.get('history-scene-status').textContent.includes(status==='paused'?'Paused':'Finished'),true);
+    }
+    state.status='stopped';SceneBrowser.prototype.renderStatus.call(state);
+    assert.equal(host.children[0].children[0].textContent,'Hongmen');
+    assert.match(host.children[0].children[1].textContent,/Play again/);
+    assert.equal(nodes.get('history-scene-retry').hidden,false);
+  } finally {if(prior===undefined)delete global.document;else global.document=prior;}
 });
 test('the player uses the official post ID and retains provider cards and attribution',async()=> {
   const states=[],mount=target(),frame=target();let args;
