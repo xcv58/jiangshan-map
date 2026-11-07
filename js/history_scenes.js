@@ -138,20 +138,15 @@
     constructor(getWidgets, onState, timeoutMs = 18000, renderFrame = renderOfficialFrame) {
       this.getWidgets = getWidgets; this.onState = onState;
       this.timeoutMs = timeoutMs; this.renderFrame = renderFrame; this.cleanup = null;
-      this.sequence = 0; this.target = null; this.timer = null; this.controls = null; this.state = 'idle';
+      this.sequence = 0; this.target = null; this.timer = null; this.state = 'idle';
     }
     report(state) {
       this.state = state; this.onState(state);
     }
-    pause() {
-      if (!this.target) return;
-      try { if (this.controls && this.controls.pause()) return; } catch (_) { /* Fall back to stopping an uncontrolled player. */ }
-      this.stop(); this.report('stopped');
-    }
     stop() {
       this.sequence++;
       clearTimeout(this.timer); this.timer = null;
-      const cleanup = this.cleanup; this.cleanup = null; this.controls = null; this.state = 'stopped';
+      const cleanup = this.cleanup; this.cleanup = null; this.state = 'stopped';
       try { if (cleanup) cleanup(); } catch (_) { /* Removing the owned frame still stops playback. */ }
       if (this.target) this.target.remove();
       this.target = null;
@@ -175,8 +170,8 @@
               theme: 'light', lang, align: 'center', width: 550,
             });
           } else {
-            frame = await this.renderFrame(scene, target, lang, active, (cleanup, controls) => {
-              if (active()) { this.cleanup = cleanup; this.controls = controls || null; } else cleanup();
+            frame = await this.renderFrame(scene, target, lang, active, cleanup => {
+              if (active()) this.cleanup = cleanup; else cleanup();
             }, () => { if (active()) { this.stop(); this.report('error'); } }, state => {
               if (active()) this.report(state);
             });
@@ -226,16 +221,7 @@
     frame.referrerPolicy = 'strict-origin-when-cross-origin';
     return new Promise((resolve, reject) => {
       let api = null, ready = false;
-      own(() => { if (api) api.destroy(); frame.remove(); }, { pause() {
-        if (!ready || !api) return false;
-        const state = api.getPlayerState();
-        // Preserve the ended replay screen and an already paused/cued player.
-        // PLAYING (1) and BUFFERING (3) need a pause, never a destructive stop.
-        if (state === 1 || state === 3) { api.pauseVideo(); report('paused'); }
-        else if (state === 0) report('ended');
-        else if (state === 2) report('paused');
-        return true;
-      } });
+      own(() => { if (api) api.destroy(); frame.remove(); });
       frame.onerror = () => reject(new Error('frame-failed'));
       frame.src = url; target.append(frame);
       api = new youtube.Player(frame, { events: {
@@ -300,10 +286,6 @@
       this.quizObserver.observe(document.getElementById('challenge-card'), { attributes: true, attributeFilter: ['class'] });
       this.resizeObserver = new ResizeObserver(() => this.renderTimeline());
       this.resizeObserver.observe(document.getElementById('scrubber-track'));
-      document.getElementById('act-music').addEventListener('click', () => {
-        // Pause video before the atlas's normal music handler runs.
-        browser.player.pause();
-      }, true);
     }
     describe(scene) {
       return this.browser.text(scene.title) + ' · ' + this.browser.text(scene.date);
@@ -657,7 +639,6 @@
       this.status = state;
       if (state === 'playing' || state === 'buffering') {
         this.app.stopAutoplay();
-        if (this.app.musicPlaying) this.app.toggleMusic();
       }
       this.renderStatus();
     }
@@ -678,15 +659,8 @@
       const retry = document.getElementById('history-scene-retry');
       retry.hidden = !this.scene || this.status === 'map-error';
       retry.disabled = this.status === 'loading';
-      retry.textContent = this.text(this.status === 'stopped' ? { zh: '重新播放', en: 'Play again' } : { zh: '重新载入播放器', en: 'Retry player' });
+      retry.textContent = this.text({ zh: '重新载入播放器', en: 'Retry player' });
       this.host.setAttribute('aria-busy', String(this.status === 'loading'));
-      if (this.status === 'stopped' && this.opened && this.scene) {
-        const card = document.createElement('div'); card.className = 'history-scene-stopped';
-        const title = document.createElement('strong'); title.textContent = this.text(this.scene.title);
-        const hint = document.createElement('p');
-        hint.textContent = this.text({ zh: '播放器已停止，点击“重新播放”再次载入。', en: 'The player was stopped. Choose “Play again” to reload it.' });
-        card.append(title, hint); this.host.replaceChildren(card);
-      }
     }
     updateMarker() {
       this.navigation.renderMap();

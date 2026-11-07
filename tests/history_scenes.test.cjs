@@ -50,7 +50,10 @@ function browserHarness() {
   Browser.prototype.render=Browser.prototype.renderStatus=()=>{};
   Browser.prototype.hashScene=()=>null;
   const browser=new Browser(appFixture(),scenes);
-  return {...harness,browser,visibility(value){hidden=value;events.dispatchEvent(new Event('visibilitychange'));}};
+  const music=context.document.getElementById('act-music');
+  music.addEventListener('click',()=>browser.app.toggleMusic());
+  return {...harness,browser,music:()=>music.dispatchEvent(new Event('click')),
+    visibility(value){hidden=value;events.dispatchEvent(new Event('visibilitychange'));}};
 }
 const appFixture = () => ({
   year:750, camera:{x:100,y:200,w:400,h:240,zoom:2.5}, aspect:0.6,
@@ -328,70 +331,68 @@ test('switching tabs preserves both pending and ready X embeds without reloading
   }
   browser.player.stop();assert.equal(mount.removed,true);
 });
-test('pausing a YouTube player for map music retains its frame and position',async()=> {
-  const {instances,states,player,mount}=youtubeHarness();
-  await player.load(scenes.find(s=>s.id==='hongmen-film'),mount,'en');
-  const api=instances[0],frame=mount.children[0];
-  api.change(1);player.pause();
-  assert.equal(api.pauses,1);assert.equal(api.position,37);assert.equal(api.destroyed,0);
-  assert.equal(player.target,mount);assert.equal(mount.removed,false);assert.equal(frame.removed,false);
-  assert.equal(states.at(-1),'paused');
-  player.pause();assert.equal(api.pauses,1,'an already paused player stays paused without restarting');
-  player.stop();assert.equal(api.destroyed,1);assert.equal(frame.removed,true);
-  const before=states.length;api.change(1);assert.equal(states.length,before,'destroyed player events are ignored');
+test('selecting music leaves YouTube playback and its completed replay screen untouched',async()=> {
+  const {browser,instances,mount,music}=browserHarness();
+  await browser.player.load(scenes.find(s=>s.id==='hongmen-film'),mount,'en');
+  const api=instances[0],frame=mount.children[0],sequence=browser.player.sequence;
+  for(const [state,status] of [[1,'playing'],[2,'paused'],[0,'ended'],[3,'buffering'],[5,'ready']]) {
+    api.change(state);browser.app.musicPlaying=false;
+    for(const enabled of [true,false,true]) {
+      music();assert.equal(browser.app.musicPlaying,enabled);
+      assert.equal(api.state,state);assert.equal(browser.status,status);assert.equal(api.position,37);
+      assert.equal(browser.player.target,mount);assert.equal(browser.player.sequence,sequence);
+      assert.equal(api.pauses,0);assert.equal(api.destroyed,0);assert.equal(frame.removed,false);
+    }
+  }
+  browser.player.stop();assert.equal(api.destroyed,1);assert.equal(frame.removed,true);
+  const before=browser.status;api.change(1);assert.equal(browser.status,before,'destroyed player events are ignored');
 });
-test('an ended YouTube player keeps its replay screen when map music is selected',async()=> {
-  const {instances,states,player,mount}=youtubeHarness();
-  await player.load(scenes.find(s=>s.id==='hongmen-film'),mount,'en');
-  const api=instances[0];api.change(0);player.pause();
-  assert.equal(states.at(-1),'ended');assert.equal(api.pauses,0);assert.equal(api.destroyed,0);
-  assert.equal(player.target,mount);assert.equal(mount.children[0].removed,false);
-  player.stop();
+test('selecting music preserves a YouTube player that is still loading',async()=> {
+  const {browser,instances,mount,music}=browserHarness();browser.app.musicPlaying=false;
+  const loading=browser.player.load(scenes.find(s=>s.id==='hongmen-film'),mount,'en');
+  music();assert.equal(browser.app.musicPlaying,true);assert.equal(browser.status,'loading');
+  await loading;
+  assert.equal(browser.status,'ready');assert.equal(browser.player.target,mount);
+  assert.equal(instances[0].destroyed,0);assert.equal(instances[0].pauses,0);browser.player.stop();
 });
-test('buffering is paused while an unstarted YouTube player stays ready',async()=> {
-  const {instances,states,player,mount}=youtubeHarness();
-  await player.load(scenes.find(s=>s.id==='hongmen-film'),mount,'en');
-  const api=instances[0];player.pause();
-  assert.equal(states.at(-1),'ready');assert.equal(api.pauses,0);
-  api.change(3);player.pause();assert.equal(states.at(-1),'paused');assert.equal(api.pauses,1);
-  assert.equal(mount.removed,false);player.stop();
+test('selecting music preserves pending and ready X embeds without reloading',async()=> {
+  const {browser,mount,music}=browserHarness(),reply=deferred(),frame=target();let requests=0;
+  browser.app.musicPlaying=false;
+  browser.player.getWidgets=async()=>({createTweet(){requests++;return reply.promise;}});
+  const loading=browser.player.load(scenes[0],mount,'en'),sequence=browser.player.sequence;
+  await Promise.resolve();music();
+  assert.equal(browser.app.musicPlaying,true);assert.equal(browser.status,'loading');assert.equal(browser.player.target,mount);
+  reply.resolve(frame);await loading;
+  for(const enabled of [false,true,false]) {
+    music();assert.equal(browser.app.musicPlaying,enabled);assert.equal(browser.status,'ready');
+    assert.equal(browser.player.target,mount);assert.equal(browser.player.sequence,sequence);
+    assert.equal(frame.removed,false);assert.equal(requests,1);
+  }
+  browser.player.stop();assert.equal(mount.removed,true);
 });
-test('an X widget without pause controls is stopped without leaving background audio',async()=> {
-  const states=[],mount=target();
-  const player=new ScenePlayer(async()=>({createTweet:async()=>target()}),state=>states.push(state));
-  await player.load(scenes[0],mount,'en');player.pause();
-  assert.equal(player.target,null);assert.equal(mount.removed,true);assert.equal(states.at(-1),'stopped');
-});
-test('pausing a pending player for map music cancels late frames and their pause controls',async()=> {
+test('closing a pending player cancels late frames and their cleanup',async()=> {
   const pending=deferred(),states=[],mount=target();let own,disposed=0;
   const player=new ScenePlayer(()=>{},state=>states.push(state),18000,async(scene,target,lang,active,register)=>{
     own=register;return pending.promise;
   });
   const loading=player.load(scenes.find(s=>s.provider==='youtube'),mount,'en');
-  player.pause();own(()=>disposed++,{pause(){throw Error('stale control');}});
+  player.stop();own(()=>disposed++);
   const frame=target();pending.resolve(frame);await loading;
   assert.equal(disposed,1);assert.equal(frame.removed,true);assert.equal(player.target,null);
-  assert.deepEqual(states,['loading','stopped']);
+  assert.deepEqual(states,['loading']);
 });
-test('a failed pause control falls back to stopping the owned player',async()=> {
-  const states=[],mount=target();let disposed=0;
-  const player=new ScenePlayer(()=>{},state=>states.push(state),18000,async(scene,target,lang,active,own)=>{
-    own(()=>disposed++,{pause(){throw Error('provider lost');}});return target;
-  });
-  await player.load(scenes.find(s=>s.provider==='youtube'),mount,'en');player.pause();
-  assert.equal(disposed,1);assert.equal(mount.removed,true);assert.equal(states.at(-1),'stopped');
-});
-test('resuming inside a retained YouTube player hands audio back from map music',()=> {
+test('YouTube state updates preserve the music selected by the user',()=> {
   const state={app:appFixture(),renderStatus(){}};
-  SceneBrowser.prototype.onPlaybackState.call(state,'playing');
-  assert.equal(state.app.musicPlaying,false);assert.equal(state.app.playing,false);
-  state.app.musicPlaying=true;
-  SceneBrowser.prototype.onPlaybackState.call(state,'paused');
-  assert.equal(state.app.musicPlaying,true,'a pause must not turn off music the user just selected');
-  SceneBrowser.prototype.onPlaybackState.call(state,'buffering');
-  assert.equal(state.app.musicPlaying,false);
+  for(const status of ['playing','buffering','paused','ended','ready']) {
+    for(const enabled of [true,false]) {
+      state.app.musicPlaying=enabled;
+      SceneBrowser.prototype.onPlaybackState.call(state,status);
+      assert.equal(state.app.musicPlaying,enabled);assert.equal(state.status,status);
+    }
+  }
+  assert.equal(state.app.playing,false);
 });
-test('paused and finished UI keeps the frame; an uncontrolled stop gets a visible reload card',()=> {
+test('playback status updates never replace the owned embed with a placeholder',()=> {
   const prior=global.document;
   const nodes=new Map();
   const element=()=>({children:[],append(...children){this.children.push(...children);}});
@@ -399,15 +400,11 @@ test('paused and finished UI keeps the frame; an uncontrolled stop gets a visibl
   const frame={iframe:true},host={children:[frame],setAttribute(){},replaceChildren(...children){this.children=children;}};
   const state={scene:{provider:'youtube',title:{en:'Hongmen'}},opened:true,host,text:copy=>copy.en};
   try {
-    for (const status of ['paused','ended']) {
+    for (const status of ['ready','playing','buffering','paused','ended','stopped']) {
       state.status=status;SceneBrowser.prototype.renderStatus.call(state);
       assert.equal(host.children[0],frame);
-      assert.equal(nodes.get('history-scene-status').textContent.includes(status==='paused'?'Paused':'Finished'),true);
+      assert.equal(nodes.get('history-scene-retry').hidden,false);
     }
-    state.status='stopped';SceneBrowser.prototype.renderStatus.call(state);
-    assert.equal(host.children[0].children[0].textContent,'Hongmen');
-    assert.match(host.children[0].children[1].textContent,/Play again/);
-    assert.equal(nodes.get('history-scene-retry').hidden,false);
   } finally {if(prior===undefined)delete global.document;else global.document=prior;}
 });
 test('the player uses the official post ID and retains provider cards and attribution',async()=> {
