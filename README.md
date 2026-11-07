@@ -29,14 +29,15 @@ Visit `http://localhost:8900/`. For a static release run `node scripts/build_web
 
 [**Explore Jiangshan Scenes → jiangshan-scenes.vercel.app**](https://jiangshan-scenes.vercel.app/?year=-206#scene=hongmen-film) · [Original atlas project](https://github.com/DeanChensj/jiangshan-map)
 
-This web-only fork adds **Scenes / 影像**: a viewing room beside the existing map with thirteen official embeds from **X and YouTube**. Historical scenes are ordered by the event's date, with literary and fictional stories grouped separately by their setting. Era and length filters distinguish clips of three minutes or less from longer films. Selecting a scene sets the map's era and region; closing returns to the previous year, camera and exploration context, with playback paused. No video files are copied or rehosted, and provider scripts and players load only after a scene is selected.
+This web-only fork adds **Scenes / 影像**: a viewing room beside the existing map with fourteen official embeds from **X and YouTube**. Historical scenes are ordered by the event's date, with literary and fictional stories grouped separately by their setting. Era and length filters distinguish clips of three minutes or less from longer films. Selecting a scene sets the map's era and region; closing returns to the previous year, camera and exploration context, with playback paused. No video files are copied or rehosted, and provider scripts and players load only after a scene is selected.
 
 Open it through the header, **related-video buttons in city details**, the current era's chronicle, watch buttons on matching events, or clustered play markers on the timeline. **Layers → Scene markers / 图层 → 影像标记** enables an optional map layer, off by default: documented events appear only during their era and at zoom 3.2 or above. Coincident clips open a chooser. Uncertain locations and literary incidents receive no map pin; uncertain browsing-reference dates receive no timeline marker. Date and coordinate matching keeps unrelated events apart. The atlas renderer, quiz and onboarding code remain unchanged.
 
-The original six clips are Jing Ke, the Xuanwu Gate incident, Sima Guang, the CCTV-style Hongmen banquet, Three Visits, and Wu Song. The additional creator uploads are:
+The original six clips are Jing Ke, the Xuanwu Gate incident, Sima Guang, the CCTV-style Hongmen banquet, Three Visits, and Wu Song. The additional clips are listed below.
 
 | Scene ID | Video / creator | Length |
 | --- | --- | --- |
+| `wu-song-tiger-anne` | [武松打虎 · Anne版, shared by Xiaoxiao (@xiaoobtc)](https://x.com/xiaoobtc/status/2119019145752957174) | 0:30 |
 | `hongmen-yang` | [鸿门宴 · yang监控版 — yang (@xingliuyang)](https://x.com/xingliuyang/status/2118440392043508206) | 1:22 |
 | `hongmen-film` | [鸿门宴 — Kelvin Ma](https://www.youtube.com/watch?v=RGlKmg-JUdw) | 1:38 |
 | `yehuling` | [Yehuling — SCENLYX](https://www.youtube.com/watch?v=2e_6kQ9T2n4) | 4:34 |

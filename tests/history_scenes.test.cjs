@@ -77,10 +77,10 @@ const appFixture = () => ({
   openMilestoneBalloon(dynasty,event,options){ this.restoredEvent={dynasty,event,options}; },
 });
 
-test('the catalog has thirteen distinct X and YouTube embeds and bilingual context',()=> {
-  assert.equal(scenes.length,13);assert.equal(new Set(scenes.map(s=>s.id)).size,scenes.length);
+test('the catalog has fourteen distinct X and YouTube embeds and bilingual context',()=> {
+  assert.equal(scenes.length,14);assert.equal(new Set(scenes.map(s=>s.id)).size,scenes.length);
   assert.equal(new Set(scenes.map(sourceURL)).size,scenes.length);
-  assert.deepEqual(Object.fromEntries(['x','youtube'].map(provider=>[provider,scenes.filter(s=>s.provider===provider).length])),{x:7,youtube:6});
+  assert.deepEqual(Object.fromEntries(['x','youtube'].map(provider=>[provider,scenes.filter(s=>s.provider===provider).length])),{x:8,youtube:6});
   for (const s of scenes) {
     const host={x:'x.com',youtube:'www.youtube.com'}[s.provider];
     assert.equal(new URL(sourceURL(s)).hostname,host);assert(s.era);
@@ -174,11 +174,17 @@ test('the three visits do not choose a precise cottage location from disputed tr
   assert.deepEqual(s.range,[207,208]);assert.equal(s.approximate,true);
   assert.match(s.place.en,/disputed/);assert.match(s.caveat.en,/Nanyang.*Xiangyang/);
 });
-test('Wu Song is a literary scene with a contextual year and no incident pin',()=> {
+test('both Wu Song clips share the literary setting and keep distinct X posts',()=> {
   const s=scenes.find(s=>s.id==='wu-song-tiger');
+  const anne=scenes.find(s=>s.id==='wu-song-tiger-anne');
   assert.equal(s.kind,'literature');assert.equal(s.approximate,true);
   assert.match(s.history.en,/not a historical incident/);
   assert.match(s.caveat.en,/not to date the story/);assert.match(s.credit.en,/unverified/);
+  assert.equal(anne.kind,s.kind);assert.equal(anne.year,s.year);
+  assert.equal(sourceURL(anne),'https://x.com/xiaoobtc/status/2119019145752957174');
+  assert.equal(anne.duration,30);assert.match(anne.credit.en,/original creator unverified/);
+  assert.deepEqual(scenesAtPlace(scenes,[115.8,36.1]).map(scene=>scene.id),[s.id,anne.id]);
+  assert.deepEqual(scenesForEvent(scenes,{year:1115,coord:[115.8,36.1]}),[]);
 });
 test('original fiction and novel duels stay out of historical pins, events and timeline markers',()=> {
   const storyIds=['assassin-letter','hulao-three-heroes','warm-wine-hua-xiong'];

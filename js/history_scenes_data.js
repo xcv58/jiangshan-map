@@ -1,6 +1,15 @@
 /* Curated external videos. The original platforms host and attribute the media. */
 (function (root) {
   'use strict';
+  const wuSongContext = {
+    era: 'beisong', year: 1115, range: [1100, 1126], coord: [115.8, 36.1], zoom: 3.8,
+    kind: 'literature', approximate: true,
+    places: [{ coord: [115.8, 36.1], radiusKm: 18 }],
+    date: { zh: '《水浒传》故事 · 北宋末背景', en: 'Water Margin story · late Northern Song setting' },
+    place: { zh: '阳谷一带 · 小说地理背景', en: 'Yanggu region · literary setting' },
+    history: { zh: '《水浒传》第二十三回讲述武松过景阳冈、醉后打虎，随后到阳谷县。这是文学故事，不能等同于一件有确切年月、地点可考的历史事件。', en: 'Chapter 23 of Water Margin tells of Wu Song crossing Jingyang Ridge, fighting a tiger after drinking, and then arriving in Yanggu County. This is a literary story, not a historical incident with a verifiable date and site.' },
+    sources: [{ label: '《水浒传》第二十三回 · 景阳冈武松打虎', url: 'https://zh.wikisource.org/wiki/水滸傳_(120回本)/第023回' }],
+  };
   const scenes = [
     {
       id: 'jing-ke', era: 'zhanguo', year: -227, range: [-227, -227], coord: [108.71, 34.36], zoom: 8,
@@ -66,18 +75,22 @@
       sources: [{ label: '诸葛亮 ·《出师表》', url: 'https://zh.wikisource.org/wiki/前出師表' }, { label: '中国新闻网 · 南阳与襄阳的躬耕地之争', url: 'https://www.chinanews.com/cul/2010/12-27/2747715.shtml' }],
     },
     {
-      id: 'wu-song-tiger', era: 'beisong', year: 1115, range: [1100, 1126], coord: [115.8, 36.1], zoom: 3.8,
-      kind: 'literature', approximate: true,
-      places: [{ coord: [115.8, 36.1], radiusKm: 18 }],
+      ...wuSongContext,
+      id: 'wu-song-tiger',
       title: { zh: '武松打虎', en: 'Wu Song fights the tiger' },
-      date: { zh: '《水浒传》故事 · 北宋末背景', en: 'Water Margin story · late Northern Song setting' },
-      place: { zh: '阳谷一带 · 小说地理背景', en: 'Yanggu region · literary setting' },
       summary: { zh: '景阳冈的猛虎，遇上了“监控录像”。熟悉的打虎故事被重新讲成一段带时间戳的短片。', en: 'The tiger of Jingyang Ridge meets surveillance footage: a timestamped short retells the familiar tale of Wu Song.' },
-      history: { zh: '《水浒传》第二十三回讲述武松过景阳冈、醉后打虎，随后到阳谷县。这是文学故事，不能等同于一件有确切年月、地点可考的历史事件。', en: 'Chapter 23 of Water Margin tells of Wu Song crossing Jingyang Ridge, fighting a tiger after drinking, and then arriving in Yanggu County. This is a literary story, not a historical incident with a verifiable date and site.' },
       caveat: { zh: 'AI文学演绎，非真实人与虎搏斗的录像。地图以1115年展示北宋末背景，不表示故事发生于该年；不放置精确事发点。原始创作者尚未核实。', en: 'An AI literary dramatization, not footage of a real encounter. The map uses 1115 only to show the late Northern Song setting, not to date the story; no precise incident pin is placed. The original creator remains unverified.' },
       provider: 'x', postId: '2118656449643676158', handle: 'sam_qin', duration: 29,
       credit: { zh: '发布者：Salame · 原创作者未核实', en: 'Posted by Salame · original creator unverified' },
-      sources: [{ label: '《水浒传》第二十三回 · 景阳冈武松打虎', url: 'https://zh.wikisource.org/wiki/水滸傳_(120回本)/第023回' }],
+    },
+    {
+      ...wuSongContext,
+      id: 'wu-song-tiger-anne',
+      title: { zh: '武松打虎 · Anne版', en: 'Wu Song fights the tiger · Anne version' },
+      summary: { zh: '武松在景阳冈遇虎。潇潇分享的这段短片，以另一段“监控录像”重述《水浒传》的打虎故事。', en: 'Wu Song encounters a tiger at Jingyang Ridge. This short, shared by Xiaoxiao, gives the Water Margin episode another surveillance-camera treatment.' },
+      caveat: { zh: '这是AI文学演绎。地图以1115年展示北宋末背景，阳谷一带是小说的地理背景。', en: 'This is an AI literary dramatization. The map uses 1115 as a reference for the late Northern Song and shows the Yanggu region as the novel’s setting.' },
+      provider: 'x', postId: '2119019145752957174', handle: 'xiaoobtc', duration: 30,
+      credit: { zh: '发布者：潇潇（@xiaoobtc）· 帖文提及 Anne · 原创作者未核实', en: 'Posted by Xiaoxiao (@xiaoobtc) · Anne mentioned in the post · original creator unverified' },
     },
   ];
   scenes.push(
