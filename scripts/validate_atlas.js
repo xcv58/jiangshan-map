@@ -225,7 +225,9 @@ function main() {
     'atlas_boot.js',
     'atlas_snapshots.js',
     'map_data.js',
-    'lore_data.js',
+    'lore_core.js',
+    'lore_detail.js',
+    'event_pinyin.js',
     'i18n_dict.js',
     'zh_hant.js',
   ];
@@ -249,6 +251,30 @@ function main() {
         sandbox.window.ATLAS_FULL_SNAPSHOTS_LOADED === true &&
           Boolean(sandbox.window.ATLAS_SNAPSHOTS.s_prc),
         'atlas_snapshots.js must set window.ATLAS_FULL_SNAPSHOTS_LOADED = true'
+      );
+    }
+    if (file === 'lore_core.js') {
+      assert(
+        !sandbox.window.ATLAS_LORE_DETAIL_LOADED &&
+          !sandbox.window.ATLAS_LORE_DATA.PLACE_LANDMARK_EVENTS &&
+          !sandbox.window.ATLAS_LORE_DATA.CITY_LORE &&
+          Array.isArray(sandbox.window.ATLAS_LORE_DATA.CHINESE_ERA_SPANS) &&
+          Array.isArray(sandbox.window.ATLAS_LORE_DATA.PLACE_GAZETTEER) &&
+          Array.isArray(sandbox.window.ATLAS_LORE_DATA.PERSON_PROFILES) &&
+          Array.isArray(sandbox.window.ATLAS_LORE_DATA.POLITY_PROFILES) &&
+          sandbox.window.ATLAS_LORE_DATA.POLITY_PROFILES.every((p) => !p.summaryZh && !p.summaryEn),
+        'lore_core.js must provide core first-paint & search lore (including POLITY_PROFILES index without summary prose) and must not set ATLAS_LORE_DETAIL_LOADED'
+      );
+    }
+    if (file === 'lore_detail.js') {
+      assert(
+        sandbox.window.ATLAS_LORE_DETAIL_LOADED === true &&
+          Array.isArray(sandbox.window.ATLAS_LORE_DATA.PLACE_LANDMARK_EVENTS) &&
+          Array.isArray(sandbox.window.ATLAS_LORE_DATA.CITY_LORE) &&
+          Array.isArray(sandbox.window.ATLAS_LORE_DATA.HISTORICAL_JOURNEYS) &&
+          Array.isArray(sandbox.window.ATLAS_LORE_DATA.POLITY_PROFILES) &&
+          sandbox.window.ATLAS_LORE_DATA.POLITY_PROFILES.every((p) => p.summaryZh && p.summaryEn),
+        'lore_detail.js must set window.ATLAS_LORE_DETAIL_LOADED = true, merge detail arrays, and hydrate summaryZh/summaryEn onto POLITY_PROFILES'
       );
     }
   }
@@ -721,6 +747,8 @@ function main() {
     'app.js',
     'atlas_quiz.js',
     'lore_data.js',
+    'lore_core.js',
+    'lore_detail.js',
     'map_data.js',
     'china_geo_data.js',
     'atlas_boot.js',
@@ -733,6 +761,10 @@ function main() {
       `Stray duplicate file "${strayFile}" found at repository root; all runtime scripts and styles must live exclusively under js/ or css/`
     );
   }
+  assert(
+    !fs.existsSync(path.join(JS_DIR, 'lore_data.js')),
+    'Legacy monolithic js/lore_data.js must not exist; lore data is split into js/lore_core.js and js/lore_detail.js'
+  );
   const llmsTxtPath = path.join(ROOT, 'llms.txt');
   const skillMdPath = path.join(ROOT, 'skills', 'jiangshan-atlas', 'SKILL.md');
   const skillPyPath = path.join(ROOT, 'skills', 'jiangshan-atlas', 'scripts', 'jiangshan.py');
@@ -873,7 +905,7 @@ function main() {
     sandbox.document = {
       getElementById: (id) =>
         id === 'atlas-app-script'
-          ? { dataset: { vSnapshots: 'a1b2c3d4', vI18n: 'e5f60718' } }
+          ? { dataset: { vSnapshots: 'a1b2c3d4', vI18n: 'e5f60718', vLore: '11223344' } }
           : null,
     };
     assert.strictEqual(
@@ -885,6 +917,11 @@ function main() {
       ctrl._lazyAssetUrl('js/i18n_dict.js', 'vI18n'),
       'js/i18n_dict.js?v=e5f60718',
       '_lazyAssetUrl must read data-v-i18n from #atlas-app-script'
+    );
+    assert.strictEqual(
+      ctrl._lazyAssetUrl('js/lore_detail.js', 'vLore'),
+      'js/lore_detail.js?v=11223344',
+      '_lazyAssetUrl must read data-v-lore from #atlas-app-script'
     );
     sandbox.document = undefined;
     sandbox.window.ATLAS_ASSET_VERSIONS = { vSnapshots: 'deadbeef' };
@@ -901,6 +938,25 @@ function main() {
     );
     sandbox.document = savedDocLazy;
     sandbox.window.ATLAS_ASSET_VERSIONS = savedWinVers;
+
+    // Verify perf_budget.js first-paint synchronous script gzip budget
+    const { measurePerfBudget, readBaseline: readPerfBaseline } = require('./perf_budget');
+    const perfReport = measurePerfBudget(ROOT);
+    const perfBaseline = readPerfBaseline(ROOT);
+    assert(
+      perfBaseline && typeof perfBaseline.maxSyncScriptsGzipBytes === 'number',
+      'data/atlas/perf_baseline.json must exist and define maxSyncScriptsGzipBytes'
+    );
+    assert(
+      perfReport.syncScriptsGzipBytes <= perfBaseline.maxSyncScriptsGzipBytes,
+      `Synchronous first-paint script gzip sum (${perfReport.syncScriptsGzipBytes} B) exceeds budget ceiling (${perfBaseline.maxSyncScriptsGzipBytes} B)`
+    );
+    assert(
+      perfReport.syncScripts.some((s) => s.relPath === 'js/lore_core.js') &&
+        !perfReport.syncScripts.some((s) => s.relPath === 'js/lore_detail.js') &&
+        perfReport.lazyScripts.some((s) => s.relPath === 'js/lore_detail.js'),
+      'index.html must load js/lore_core.js synchronously and defer js/lore_detail.js as a lazy bundle'
+    );
   }
 
   // CUJ 9a: 0D Single-Place Resolution & Exact-First Disambiguation (Poems, Passes, Battles, Cities)
@@ -1002,7 +1058,8 @@ function main() {
   // CUJ 9f: Root Mirror Byte-Level Synchronization Check (if any root mirror files exist)
   const mirrorPairs = [
     ['js/app.js', 'app.js'],
-    ['js/lore_data.js', 'lore_data.js'],
+    ['js/lore_core.js', 'lore_core.js'],
+    ['js/lore_detail.js', 'lore_detail.js'],
     ['css/style.css', 'style.css'],
   ];
   for (const [srcRel, dstRel] of mirrorPairs) {
@@ -1204,6 +1261,16 @@ function main() {
     eventSearch.some((item) => item.kind === 'event' && item.year === 383),
     'Quick search for "淝水之战" must return 383 CE milestone event'
   );
+  for (const [query, year, title] of [
+    ['nanjingtiaoyue', 1842, '南京条约'],
+    ['nibuchutiaoyue', 1689, '尼布楚条约'],
+  ]) {
+    assert(
+      ctrl._queryQuickSearch(query).some(item => item.kind === 'event' &&
+        item.rawYear === year && item.titleZh.includes(title)),
+      `Event pinyin search failed: ${query}`
+    );
+  }
   const personJourneySearch = ctrl._queryQuickSearch('苏轼');
   assert(
     personJourneySearch.some((item) => item.kind === 'person' && item.personKey === 'sushi') &&
@@ -1711,14 +1778,16 @@ function main() {
       readmeSrc.includes('Map Pinpoint · Ancient Place Quiz') &&
       readmeSrc.includes('href="README_ZH.md"') &&
       contributingSrc.includes('href="CONTRIBUTING_ZH.md"') &&
-      contributingSrc.includes('lore_data.js') &&
+      contributingSrc.includes('lore_core.js') &&
+      contributingSrc.includes('lore_detail.js') &&
       contributingZhSrc.includes('href="CONTRIBUTING.md"') &&
-      contributingZhSrc.includes('lore_data.js') &&
+      contributingZhSrc.includes('lore_core.js') &&
+      contributingZhSrc.includes('lore_detail.js') &&
       !readmeSrc.includes('&event=') &&
       !readmeZhSrc.includes('&event=') &&
       !appCode.includes("q.has('event')") &&
       !/\b\d{3}\s*(幅|座|处|条|桩|段)/.test(readmeZhSrc),
-    'README.md, README_ZH.md, CONTRIBUTING.md, CONTRIBUTING_ZH.md, and app.js must cross-link between English and Chinese docs, reference lore_data.js, document unified Person Chronicles & search-box Quiz entry point, avoid redundant &event= query params, and avoid hardcoded 3-digit entity counts'
+    'README.md, README_ZH.md, CONTRIBUTING.md, CONTRIBUTING_ZH.md, and app.js must cross-link between English and Chinese docs, reference lore_core.js & lore_detail.js, document unified Person Chronicles & search-box Quiz entry point, avoid redundant &event= query params, and avoid hardcoded 3-digit entity counts'
   );
   const llmsSrc = fs.readFileSync(path.join(ROOT, 'llms.txt'), 'utf8');
   for (const d of dynasties) {
@@ -3203,7 +3272,7 @@ function main() {
     );
   }
   const tangSnapKeys = Object.keys(snapshots).filter((k) => k.startsWith('s_tang'));
-  assert(tangSnapKeys.length === 27, `Expected 27 s_tang* snapshots, found ${tangSnapKeys.length}`);
+  assert(tangSnapKeys.length === 28, `Expected 28 s_tang* snapshots, found ${tangSnapKeys.length}`);
   // Issue #267. Tang northeast: 平壤 is 安东's seat until 676, never 新罗's before 702;
   // 震国 (698–713) is renamed 渤海 only from 713; 安西 / 北庭 hold oases, not the desert, in 764–790;
   // the Four Garrisons fall to 吐蕃 in 670–679 and 686–692, when 安西 falls back to 西州.
@@ -3332,7 +3401,7 @@ function main() {
     );
   }
   // 南诏 exists from 738 (before that: 六诏 plus 唐 羁縻 in 滇东; 618–621 爨 · 六诏).
-  const preNanzhao = new Set(['s_tang_0', 's_tang_a0', 's_tang_a1', 's_tang_a1b', 's_tang_a2', 's_tang_a2b', 's_tang_a3', 's_tang_a4', 's_tang_a4b',
+  const preNanzhao = new Set(['s_tang_0', 's_tang_a0', 's_tang_a1', 's_tang_a1b', 's_tang_a2', 's_tang_a2b', 's_tang_a3', 's_tang_a3b', 's_tang_a4', 's_tang_a4b',
     's_tang_a6', 's_tang_a', 's_tang_a7', 's_tang_wz0', 's_tang_wz1', 's_tang_wz1b', 's_tang_wz2', 's_tang_a5z', 's_tang_a5y']);
   const nzSnapKeys = tangSnapKeys.filter((k) => !preNanzhao.has(k));
   assert.strictEqual(nzSnapKeys.length, tangSnapKeys.length - preNanzhao.size, 'every pre-738 Tang snapshot key must exist');
@@ -4801,13 +4870,25 @@ function main() {
       // 4) Tuyuhun (吐谷浑) present across Eastern Jin, Northern & Southern Dynasties, Sui, and Early Tang (317-634 CE)
       for (const sk of ['s_dongjin_317', 's_dongjin_c', 's_nanbei_0', 's_nanbei_a', 's_nanbei_e', 's_sui_a', 's_sui', 's_sui_d', 's_tang_0']) {
         assert(
-          hasPolAt(sk, '吐谷浑', 99.82, 36.85),
-          `${sk}: Qinghai Lake / Fusicheng ([99.82, 36.85]) must belong to 吐谷浑`
+          hasPolAt(sk, '吐谷浑', 99.82, 36.85) &&
+            !hasPolAt(sk, '吐谷浑', 96.6, 33.0) &&
+            !hasPolAt(sk, '吐谷浑', 91.0, 34.5),
+          `${sk}: Qinghai Lake / Fusicheng ([99.82, 36.85]) must belong to 吐谷浑 while Yushu ([96.6, 33.0]) and Hoh Xil ([91.0, 34.5]) stay outside`
         );
       }
       assert(
-        hasPolAt('s_sui_c', '隋', 93.51, 42.82) && hasPolAt('s_sui_c', '西海·鄯善等四郡', 99.82, 36.85),
-        's_sui_c (609-618 CE): Hami (Yiwu) must belong to 隋 and Qinghai Lake (Xihai) to 西海·鄯善等四郡'
+        hasPolAt('s_sui_c', '隋', 93.51, 42.82) &&
+          hasPolAt('s_sui_c', '西海·鄯善等四郡', 99.82, 36.85) &&
+          hasPolAt('s_sui_c', '吐谷浑', 99.2, 34.1) &&
+          !hasPolAt('s_sui_c', '吐谷浑', 92.0, 34.0),
+        's_sui_c (609-618 CE): Hami must belong to 隋, Qinghai Lake to 西海·鄯善等四郡, and Fuyun remnant to southeastern Bayan Har / Hequ ([99.2, 34.1])'
+      );
+      assert(
+        hasPolAt('s_tang_a1b', '吐谷浑（唐册封诺曷钵）', 99.82, 36.85) &&
+          hasPolAt('s_tang_a1b', '吐蕃', 97.5, 34.8) &&
+          hasPolAt('s_tang_a3b', '吐蕃', 99.82, 36.85) &&
+          !hasPolAt('s_tang_a3b', '吐谷浑（唐册封诺曷钵）', 99.82, 36.85),
+        's_tang_a1b..a3 (635-662 CE) must contract 吐谷浑（唐册封诺曷钵） north of Bayan Har, and s_tang_a3b (663-668 CE) must transfer Qinghai Lake to 吐蕃'
       );
       // 5) Post-763 Eastern Longyou (Qinzhou [105.72, 34.58], Weizhou [104.63, 35.00], Yuanzhou [106.28, 36.01]) in Tubo, Longzhou ([106.86, 34.89]) & Lingzhou in Tang
       for (const sk of ['s_tang_b1', 's_tang_b']) {
@@ -4929,6 +5010,82 @@ function main() {
           `${sk}: Qinghai Lake & Qaidam must belong to 青海蒙古 in 1513-1644`
         );
       }
+
+      // P2 Northwest Frontier & Northern Hexi De-Provincialization invariants
+      for (const sk of Object.keys(snapshots).filter((k) => /^(s_xihan|s_donghan|s_sanguo|s_xijin|s_dongjin)/.test(k))) {
+        const lintanOwners = (snapshots[sk].polities || []).filter((p) => p.shape && pointInShape(103.35, 34.69, p.shape));
+        assert.strictEqual(
+          lintanOwners.length,
+          1,
+          `${sk}: Lintan/Zhuoni ([103.35, 34.69], ancient Lintao west) must belong to exactly 1 polity`
+        );
+      }
+      for (const sk of ['s_xihan_b1', 's_xihan_b2', 's_xihan_b3a', 's_xihan_b3b', 's_xihan_b3']) {
+        assert(
+          hasPolAt(sk, '匈奴', 101.05, 41.95) && !hasPolAt(sk, '汉', 101.05, 41.95),
+          `${sk}: pre-102 BCE Juyan ([101.05, 41.95]) must belong to 匈奴 prior to Lu Bode's 102 BCE fortification`
+        );
+      }
+      for (const [sk, hexiPol] of [
+        ['s_xihan_b', '汉'],
+        ['s_xihan_c', '汉'],
+        ['s_xihan_d', '新（王莽）'],
+        ['s_xihan_e', '隗嚣 · 窦融'],
+        ['s_donghan_a', '东汉'],
+        ['s_donghan', '东汉'],
+        ['s_tang_a5y', '唐'],
+        ['s_tang_a5', '唐'],
+        ['s_tang_a', '唐'],
+        ['s_tang_a6', '唐'],
+        ['s_tang_a7', '唐'],
+      ]) {
+        assert(
+          hasPolAt(sk, hexiPol, 101.05, 41.95) &&
+            hasPolAt(sk, hexiPol, 101.25, 42.27) &&
+            !hasPolAt(sk, hexiPol, 101.05, 42.80) &&
+            !hasPolAt(sk, hexiPol, 99.80, 42.10) &&
+            !hasPolAt(sk, hexiPol, 102.20, 40.50),
+          `${sk}: narrow Ruoshui-Juyan corridor ([101.05, 41.95] & Juyan Hai [101.25, 42.27]) must belong to ${hexiPol} while Mongolia border ([101.05, 42.80]), west Ejina ([99.80, 42.10]), and Badain Jaran ([102.20, 40.50]) stay outside`
+        );
+      }
+      // De-provincialize modern Gansu Mazongshan ([96.80, 41.80]) & modern Minqin-Tengger spike ([103.90, 39.30]) across Han–Five Dynasties + Ming
+      const deProvCoreSet = new Set([
+        '汉（郡国并行）', '汉', '新（王莽）', '隗嚣 · 窦融', '东汉', '马腾(凉州)', '马腾·韩遂(关陇)', '曹操(北方)',
+        '魏', '晋', '汉赵', '前赵', '后赵', '前凉', '前秦（苻氏）', '前秦', '后凉', '西凉', '北凉',
+        '北魏', '西魏', '北周', '隋', '凉（李轨）', '唐', '武周', '吐蕃', '归义军（张议潮）',
+        '沙州归义军', '甘州回鹘', '凉州（六谷部）', '明', '哈密卫（关西七卫）', '大顺（李自成）',
+      ]);
+      for (const sk of Object.keys(snapshots).filter((k) => /^s_(xihan|donghan|sanguo|xijin|dongjin|nanbei|sui|tang|wudai|ming)(_|$)/.test(k))) {
+        const leak = (snapshots[sk].polities || []).find(
+          (p) =>
+            p.shape &&
+            deProvCoreSet.has(p.title) &&
+            (pointInShape(96.80, 41.80, p.shape) ||
+              pointInShape(103.90, 39.30, p.shape) ||
+              pointInShape(102.10, 39.12, p.shape) ||
+              pointInShape(105.00, 39.80, p.shape))
+        );
+        assert(!leak, `${sk}: ${leak ? leak.title : ''} must not inherit modern Gansu Mazongshan ([96.80, 41.80]), Jinchang ([102.10, 39.12]), Minqin-Tengger spike ([103.90, 39.30]), or Helan-west 90-degree desert box ([105.00, 39.80])`);
+      }
+      for (const sk of ['s_ming_0c', 's_ming_0d', 's_ming_a0', 's_ming_a', 's_ming_a2', 's_ming_b0', 's_ming_b', 's_ming_c0', 's_ming_c']) {
+        assert(
+          hasPolAt(sk, '明', 103.09, 38.62) && !hasPolAt(sk, '明', 102.00, 38.90),
+          `${sk}: Ming must retain Zhenfan Guard ([103.09, 38.62]) while retracting south of [102.00, 38.90] along Yongchang Guard & Ming Great Wall`
+        );
+      }
+      assert(
+        hasPolAt('s_xihan_b1', '匈奴', 98.51, 39.74) &&
+          hasPolAt('s_xihan_b2', '汉', 98.51, 39.74) &&
+          !hasPolAt('s_xihan_b2', '月氏', 98.51, 39.74) &&
+          !hasPolAt('s_xihan_e', '刘秀（河北）', 108.50, 40.80) &&
+          hasPolAt('s_xihan_e', '匈奴', 108.50, 40.80) &&
+          hasPolAt('s_xihan_e', '更始（汉）', 112.55, 37.87) &&
+          !hasPolAt('s_sui_c', '吐蕃', 99.82, 36.85) &&
+          !hasPolAt('s_sui_c', '吐谷浑', 99.82, 36.85) &&
+          hasPolAt('s_tang_a4', '安北都护府', 101.05, 41.95) &&
+          !hasPolAt('s_tang_a4', '唐', 101.05, 41.95),
+        'P2: pre-121 BCE Xiongnu Hexi, zero s_xihan_b2 Han+Yuezhi overlap, 23-25 CE Liu Xiu out of Hetao, zero s_sui_c Xihai+Tubo/Tuyuhun overlap, and 679-689 Anbei Protectorate at Juyan'
+      );
     }
     // 427-430 CE (s_nanbei_427) must place Tongwancheng ([108.871, 37.991]) inside 北魏 while keeping 胡夏 and 西秦 until 431 CE
     assert(
@@ -5140,13 +5297,13 @@ function main() {
       assert(findSt(tangDyn, w), `tang: must include warlord settlement ${w}`);
     }
 
-    // Tang 23 map change milestones
-    const expectedTangMapChanges = [618, 621, 630, 635, 640, 648, 657, 668, 670, 676, 679, 686, 690, 692, 698, 702, 705, 713, 738, 755, 757, 763, 764, 790, 848, 881, 885, 907];
+    // Tang 29 map change milestones
+    const expectedTangMapChanges = [618, 621, 630, 635, 640, 648, 657, 663, 668, 670, 676, 679, 686, 690, 692, 698, 702, 705, 713, 738, 755, 757, 763, 764, 790, 848, 881, 885, 907];
     const actualTangMapChanges = (tangDyn.milestones || []).filter((m) => m.isMapChange).map((m) => m.year);
     assert.strictEqual(
       JSON.stringify(actualTangMapChanges),
       JSON.stringify(expectedTangMapChanges),
-      'tang: 23 map change milestone years must match'
+      'tang: 29 map change milestone years must match'
     );
 
     // Spatial checks: s_sui_d and s_tang_0 warlords
@@ -6285,9 +6442,12 @@ function main() {
         hasPt('s_xihan_b', '汉', 94.661, 40.141) &&
         hasPt('s_xihan_b', '汉', 100.45, 38.93) &&
         hasPt('s_xihan_c', '汉', 100.45, 38.93) &&
-        !hasPt('s_xihan_b', '汉', 101.06, 41.95) &&
-        !hasPt('s_xihan_c', '汉', 101.06, 41.95),
-      'Lelang Commandery (-108 BCE), Dunhuang, and Zhangye must lie inside Han/Xin polygons without the artificial Juyan needle'
+        !hasPt('s_xihan_b3', '汉', 101.05, 41.95) &&
+        hasPt('s_xihan_b', '汉', 101.05, 41.95) &&
+        hasPt('s_xihan_c', '汉', 101.05, 41.95) &&
+        hasPt('s_xihan_d', '新（王莽）', 101.05, 41.95) &&
+        !hasPt('s_xihan_b', '汉', 102.20, 40.50),
+      'Lelang Commandery (-108 BCE), Dunhuang, Zhangye, and post-102 BCE CHGIS Juyan oasis must lie inside Han/Xin while Badain Jaran desert stays outside'
     );
   }
 
@@ -7320,6 +7480,100 @@ function main() {
           'en',
           '_effectiveRenderedLocale must return en once i18n_dict.js is loaded'
         );
+
+        // 5b. Lazy lore detail loading (_isLoreDetailLoaded / _ensureLoreDetail) & zero-jump cold-boot search
+        {
+          for (const p of loreData.PERSON_PROFILES) {
+            const actualEvCount = ctrl._collectPersonEvents(p).length;
+            assert.strictEqual(
+              p.evCount,
+              actualEvCount,
+              `PERSON_PROFILES[${p.key}].evCount (${p.evCount}) in js/lore_core.js must match _collectPersonEvents (${actualEvCount})`
+            );
+          }
+          const fullShowcaseSig = ctrl
+            ._getSearchShowcasePool()
+            .map((x) => `${x.titleZh}|${x.subZh}|${x.titleEn}|${x.subEn}`)
+            .join('\n');
+          const fullSushiSubZh = ctrl._queryQuickSearch('苏轼')[0].subZh;
+          const savedLoreSentinel = sandbox.window.ATLAS_LORE_DETAIL_LOADED;
+          const savedLandmarks = sandbox.window.ATLAS_LORE_DATA.PLACE_LANDMARK_EVENTS;
+          const savedJourneys = sandbox.window.ATLAS_LORE_DATA.HISTORICAL_JOURNEYS;
+          const savedLoreLoaded = ctrl._loreDetailLoaded;
+          const savedLorePromise = ctrl._loreDetailPromise;
+          const savedLoadScriptOnce = ctrl._loadScriptOnce;
+          let requestedSrc = null;
+          try {
+            sandbox.window.ATLAS_LORE_DETAIL_LOADED = false;
+            delete sandbox.window.ATLAS_LORE_DATA.PLACE_LANDMARK_EVENTS;
+            delete sandbox.window.ATLAS_LORE_DATA.HISTORICAL_JOURNEYS;
+            ctrl._loreDetailLoaded = false;
+            ctrl._loreDetailPromise = null;
+            ctrl.searchIndex = null;
+            ctrl._loadScriptOnce = () => ({ then() { return this; } });
+            assert.strictEqual(
+              ctrl._isLoreDetailLoaded(),
+              false,
+              '_isLoreDetailLoaded() must return false when lore_detail.js has not loaded yet'
+            );
+            const coldShowcaseSig = ctrl
+              ._getSearchShowcasePool()
+              .map((x) => `${x.titleZh}|${x.subZh}|${x.titleEn}|${x.subEn}`)
+              .join('\n');
+            assert.strictEqual(
+              coldShowcaseSig,
+              fullShowcaseSig,
+              'Cold-boot search showcase pool before lore_detail.js loads must match post-load showcase pool with zero count jump'
+            );
+            const coldSushi = ctrl._queryQuickSearch('苏轼')[0];
+            assert.strictEqual(
+              coldSushi && coldSushi.subZh,
+              fullSushiSubZh,
+              `Cold-boot search for 苏轼 must match post-load subtitle (${fullSushiSubZh}), got ${coldSushi && coldSushi.subZh}`
+            );
+            const coldShuhan = ctrl._queryQuickSearch('蜀汉')[0];
+            assert(
+              coldShuhan && coldShuhan.kind === 'polity' && coldShuhan.polityKey === 'shuhan',
+              'Cold-boot search for 蜀汉 must resolve polity shuhan from lore_core.js before lore_detail.js loads'
+            );
+            ctrl._loreDetailPromise = null;
+            ctrl.searchIndex = [{ dummy: true }];
+            ctrl._loadScriptOnce = (src) => {
+              requestedSrc = src;
+              sandbox.window.ATLAS_LORE_DATA.PLACE_LANDMARK_EVENTS = savedLandmarks;
+              sandbox.window.ATLAS_LORE_DATA.HISTORICAL_JOURNEYS = savedJourneys;
+              sandbox.window.ATLAS_LORE_DETAIL_LOADED = true;
+              return {
+                then(cb) {
+                  return Promise.resolve(cb());
+                },
+              };
+            };
+            ctrl._ensureLoreDetail();
+            assert(
+              requestedSrc && requestedSrc.startsWith('js/lore_detail.js'),
+              `_ensureLoreDetail() must request js/lore_detail.js, got ${requestedSrc}`
+            );
+            assert.strictEqual(
+              ctrl._isLoreDetailLoaded(),
+              true,
+              '_isLoreDetailLoaded() must return true after _ensureLoreDetail() resolves'
+            );
+            assert.strictEqual(
+              ctrl.searchIndex,
+              null,
+              '_ensureLoreDetail() must invalidate searchIndex so newly loaded landmarks/polities are indexed'
+            );
+          } finally {
+            sandbox.window.ATLAS_LORE_DETAIL_LOADED = savedLoreSentinel;
+            sandbox.window.ATLAS_LORE_DATA.PLACE_LANDMARK_EVENTS = savedLandmarks;
+            sandbox.window.ATLAS_LORE_DATA.HISTORICAL_JOURNEYS = savedJourneys;
+            ctrl._loreDetailLoaded = savedLoreLoaded;
+            ctrl._loreDetailPromise = savedLorePromise;
+            ctrl._loadScriptOnce = savedLoadScriptOnce;
+            ctrl.searchIndex = null;
+          }
+        }
         // 6. WebMCP (navigator.modelContext) registration & Stdio MCP server (scripts/mcp_server.js)
         const registeredWebMcpTools = [];
         const origNav = sandbox.navigator;
@@ -9162,6 +9416,27 @@ function main() {
       const m = d && d.milestones.find((x) => x.year === yr);
       assert(m && m.headline.includes(kw), `Expected transition milestone ${dk}:${yr} containing "${kw}"`);
       assert.strictEqual(ctrl._getMilestoneAnchors(d, m).length, expAnchors, `Expected ${expAnchors} anchors on ${dk}:${yr}`);
+    }
+
+    // Issue #299 regression check: #milestone-list hover style must be distinct from .is-current,
+    // and clicking a visible milestone item must not force-scroll #chronicle-pane to 42% height.
+    {
+      const cssSrc = fs.readFileSync(path.join(ROOT, 'css', 'style.css'), 'utf8');
+      assert(
+        !cssSrc.includes('#milestone-list li:hover,\n#milestone-list li.is-current'),
+        'css/style.css must not share identical styles between #milestone-list li:hover and #milestone-list li.is-current (#299)'
+      );
+      assert(
+        cssSrc.includes('#milestone-list li:not(.polity-empty):not(.is-current):hover') &&
+          cssSrc.includes('box-shadow: inset 3px 0 0 var(--vermilion)'),
+        'css/style.css must differentiate #milestone-list li hover from .is-current (#299)'
+      );
+      const appSrc = fs.readFileSync(path.join(ROOT, 'js', 'app.js'), 'utf8');
+      assert(
+        appSrc.includes('this._suppressChronicleAutoScroll = true') &&
+          appSrc.includes('const suppressCenterScroll = Boolean(this._suppressChronicleAutoScroll)'),
+        'js/app.js must suppress forced center-scrolling when clicking a visible item in #milestone-list (#299)'
+      );
     }
   }
 

@@ -19,6 +19,11 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Verify generated event pinyin and search regressions
+        run: |
+          npm ci --prefix scripts/search-pinyin --ignore-scripts --no-audit --no-fund
+          npm test --prefix scripts/search-pinyin
+
       - name: Verify polygon bundles are canonical encodings
         run: node scripts/build_atlas.js --check
 
@@ -27,6 +32,12 @@ jobs:
 
       - name: Check prefecture layer against baseline
         run: node scripts/audit_prefectures.js --check
+
+      - name: Check data references against baseline
+        run: node scripts/audit_sources.js --check
+
+      - name: Check first-paint synchronous script gzip budget
+        run: node scripts/perf_budget.js --check
 
       - name: Run Atlas Validation Suite
         run: node scripts/validate_atlas.js

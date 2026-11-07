@@ -377,6 +377,13 @@
       );
       this._fullSnapshotsPromise = null;
       this._enLocalePromise = null;
+      this._loreDetailLoaded = Boolean(
+        window.ATLAS_LORE_DETAIL_LOADED ||
+          (window.ATLAS_LORE_DATA &&
+            Array.isArray(window.ATLAS_LORE_DATA.PLACE_LANDMARK_EVENTS) &&
+            window.ATLAS_LORE_DATA.PLACE_LANDMARK_EVENTS.length > 0)
+      );
+      this._loreDetailPromise = null;
       this._hydrateSnapshots();
 
       this._setEnglishLocale(window.EN_LOCALE || {
@@ -487,6 +494,13 @@
 
       if (typeof window !== 'undefined' && !this._fullSnapshotsLoaded) {
         setTimeout(() => this._ensureFullSnapshots(), 50);
+      }
+      if (typeof window !== 'undefined' && !this._isLoreDetailLoaded()) {
+        const scheduleIdle =
+          typeof window.requestIdleCallback === 'function'
+            ? (fn) => window.requestIdleCallback(fn, { timeout: 200 })
+            : (fn) => setTimeout(fn, 80);
+        scheduleIdle(() => this._ensureLoreDetail());
       }
     }
 
@@ -646,6 +660,57 @@
         });
       }
       return this._enLocalePromise;
+    }
+
+    _ensureEventPinyin() {
+      if (window.ATLAS_EVENT_PINYIN) return Promise.resolve(true);
+      if (!this._eventPinyinPromise) {
+        this._eventPinyinPromise = this._loadScriptOnce(
+          this._lazyAssetUrl('js/event_pinyin.js', 'vPinyin')
+        ).then(() => {
+          if (window.ATLAS_EVENT_PINYIN) {
+            this.searchIndex = null;
+            return true;
+          }
+          this._eventPinyinPromise = null;
+          return false;
+        });
+      }
+      return this._eventPinyinPromise;
+    }
+
+    _isLoreDetailLoaded() {
+      if (this._loreDetailLoaded) return true;
+      if (
+        typeof window !== 'undefined' &&
+        (window.ATLAS_LORE_DETAIL_LOADED ||
+          (window.ATLAS_LORE_DATA &&
+            Array.isArray(window.ATLAS_LORE_DATA.PLACE_LANDMARK_EVENTS) &&
+            window.ATLAS_LORE_DATA.PLACE_LANDMARK_EVENTS.length > 0))
+      ) {
+        this._loreDetailLoaded = true;
+        return true;
+      }
+      return false;
+    }
+
+    _ensureLoreDetail() {
+      if (this._isLoreDetailLoaded()) {
+        return Promise.resolve((typeof window !== 'undefined' && window.ATLAS_LORE_DATA) || {});
+      }
+      if (!this._loreDetailPromise) {
+        this._loreDetailPromise = this._loadScriptOnce(
+          this._lazyAssetUrl('js/lore_detail.js', 'vLore')
+        ).then(() => {
+          this._loreDetailLoaded = true;
+          this.searchIndex = null;
+          this._soloPersonEventsCache = null;
+          this._extraEnTermMap = null;
+          this._challengeBaseTiers = null;
+          return (typeof window !== 'undefined' && window.ATLAS_LORE_DATA) || {};
+        });
+      }
+      return this._loreDetailPromise;
     }
 
     _syncMobileOverlayState() {
@@ -959,10 +1024,12 @@
     _getExtraEnTermMap() {
       const dictRef = (this.enLocale && this.enLocale.dict) || null;
       const hasKeys = this._hasEnDict();
+      const loreLoaded = this._isLoreDetailLoaded();
       if (
         this._extraEnTermMap &&
         this._extraEnTermMapDictRef === dictRef &&
-        this._extraEnTermMapHasKeys === hasKeys
+        this._extraEnTermMapHasKeys === hasKeys &&
+        this._extraEnTermMapLoreLoaded === loreLoaded
       ) {
         return this._extraEnTermMap;
       }
@@ -1039,6 +1106,7 @@
       this._extraEnTermMap = map;
       this._extraEnTermMapDictRef = dictRef;
       this._extraEnTermMapHasKeys = hasKeys;
+      this._extraEnTermMapLoreLoaded = loreLoaded;
       return map;
     }
 
@@ -1858,8 +1926,8 @@
             ? 'Relic Provenance · Across Dynasties'
             : '点物溯史 · 传世国器流转'
           : this.locale === 'en'
-            ? 'Person Chronicle · Life Across Time & Space'
-            : '点人溯事 · 人物生平纪事'
+            ? 'Person Chronicle · Key Life Milestones'
+            : '点人溯事 · 生平大事记'
         : this.uiStr('trace_kicker', '点地溯源 · 古今政区沿革');
       const chalKicker = this._id('txt-challenge-kicker');
       if (chalKicker) {
@@ -4917,6 +4985,13 @@
         this._setPolityFocus(null);
         this._lastLegendKey = null;
         if (this.lastRenderedSnap) this._renderLegendBox(this.lastRenderedSnap);
+        if (!this._isLoreDetailLoaded()) {
+          this._ensureLoreDetail().then(() => {
+            if (this.eraFocus && cur && this.eraFocus.dynastyKey === cur.key && !this.activePolity) {
+              this.openPolity(title, { ...opts, zoom: false });
+            }
+          });
+        }
         return null;
       }
       this.eraFocus = null;
@@ -4936,6 +5011,13 @@
         this._ensureFullSnapshots().then(() => {
           const c = this.dynasties[this.dynastyIdx];
           if (this.activePolity === desc && c) this._renderChroniclePane(c);
+        });
+      }
+      if (!this._isLoreDetailLoaded()) {
+        this._ensureLoreDetail().then(() => {
+          if (this.activePolity === desc) {
+            this.openPolity(title, { ...opts, zoom: false });
+          }
         });
       }
       return desc;
@@ -4989,7 +5071,12 @@
       const prof = HistoricalAtlasController.POLITY_PROFILES.find(
         (p) => p.key === k || p.zh === key || String(p.en).toLowerCase() === k
       );
-      if (!prof) return null;
+      if (!prof) {
+        if (!this._isLoreDetailLoaded()) {
+          return this._ensureLoreDetail().then(() => this.openPolityByKey(key));
+        }
+        return null;
+      }
       const go = () => {
         const desc = { ...prof, curated: true };
         let y = this.year;
@@ -5725,8 +5812,13 @@
           if (window.innerWidth <= 900 && this.mobileChronicleOpen) {
             this.toggleMobileChronicle(false);
           }
-          this.jumpToYear(targetY);
-          this.openMilestoneBalloon(dynasty, m);
+          this._suppressChronicleAutoScroll = true;
+          try {
+            this.jumpToYear(targetY);
+            this.openMilestoneBalloon(dynasty, m);
+          } finally {
+            this._suppressChronicleAutoScroll = false;
+          }
           this._frameMilestoneAnchors(dynasty, m, {
             isMapChange: Boolean(snapShift || m.isMapChange),
           });
@@ -5760,6 +5852,7 @@
       if (this._isMobileViewport() && !this.mobileChronicleOpen) {
         return;
       }
+      const suppressCenterScroll = Boolean(this._suppressChronicleAutoScroll);
       if (this._chronicleScrollRaf) {
         cancelAnimationFrame(this._chronicleScrollRaf);
         this._chronicleScrollRaf = null;
@@ -5767,6 +5860,24 @@
       if (typeof requestAnimationFrame === 'function') {
         this._chronicleScrollRaf = requestAnimationFrame(() => {
           this._chronicleScrollRaf = null;
+          if (suppressCenterScroll) {
+            if (items[activeIdx] && pane.scrollHeight > pane.clientHeight) {
+              const el = items[activeIdx];
+              const elTop = el.offsetTop - pane.offsetTop;
+              const elBottom = elTop + el.offsetHeight;
+              const viewTop = pane.scrollTop;
+              const viewBottom = viewTop + pane.clientHeight;
+              if (elTop < viewTop) {
+                pane.scrollTo({ top: Math.max(0, elTop - 8), behavior: 'smooth' });
+              } else if (elBottom > viewBottom) {
+                pane.scrollTo({
+                  top: Math.max(0, elBottom - pane.clientHeight + 8),
+                  behavior: 'smooth',
+                });
+              }
+            }
+            return;
+          }
           if (activeIdx <= 0) {
             if (pane.scrollTop > 0) {
               pane.scrollTo({ top: 0, behavior: 'smooth' });
@@ -6158,6 +6269,7 @@
       const snapFull = Boolean(snapRef && snapRef.s_prc);
       const hasEn = canCacheSolo ? this._hasEnDict() : false;
       const enRef = canCacheSolo ? this.enLocale : null;
+      const loreLoaded = canCacheSolo ? this._isLoreDetailLoaded() : false;
       if (canCacheSolo) {
         if (!this._soloPersonEventsCache) this._soloPersonEventsCache = new WeakMap();
         const hit = this._soloPersonEventsCache.get(profile);
@@ -6166,7 +6278,8 @@
           hit.snapRef === snapRef &&
           hit.snapFull === snapFull &&
           hit.hasEn === hasEn &&
-          hit.enRef === enRef
+          hit.enRef === enRef &&
+          hit.loreLoaded === loreLoaded
         ) {
           return hit.events.map((ev) => ({ ...ev }));
         }
@@ -6437,6 +6550,7 @@
           snapFull,
           hasEn,
           enRef,
+          loreLoaded,
           events: deduped.map((ev) => ({ ...ev })),
         });
       }
@@ -6700,7 +6814,15 @@
       const profiles = this._resolvePersonProfiles(personOrQuery);
       if (!profiles.length) return false;
       const state = this._buildPersonTracksAndEvents(profiles);
-      if (!state || !state.events.length) return false;
+      if (!state || !state.events.length) {
+        if (!this._isLoreDetailLoaded()) {
+          this._ensureLoreDetail().then(() => {
+            this.openPersonChronicle(personOrQuery, initialIdx);
+          });
+          return true;
+        }
+        return false;
+      }
       const { events } = state;
       const stateKey = state.profiles.map((p) => p.key).join(',');
 
@@ -6710,6 +6832,24 @@
             this.activePerson &&
             this.activePerson.profiles.map((p) => p.key).join(',') === stateKey
           ) {
+            this._renderPersonChronicleCard(true);
+          }
+        });
+      }
+      if (!this._isLoreDetailLoaded()) {
+        this._ensureLoreDetail().then(() => {
+          if (
+            this.activePerson &&
+            this.activePerson.profiles.map((p) => p.key).join(',') === stateKey
+          ) {
+            const rebuilt = this._buildPersonTracksAndEvents(profiles);
+            if (rebuilt && rebuilt.events.length) {
+              this.activePerson = rebuilt;
+              if (initialIdx >= 0 && initialIdx < rebuilt.events.length) {
+                this.activePersonEventIdx = initialIdx;
+              }
+            }
+            this._renderPersonPinsOverlay();
             this._renderPersonChronicleCard(true);
           }
         });
@@ -6785,6 +6925,11 @@
     }
 
     openJourneyAsPerson(journeyKey, stopIdx = -1) {
+      if (!this._isLoreDetailLoaded()) {
+        this._ensureLoreDetail().then(() => {
+          this.openJourneyAsPerson(journeyKey, stopIdx);
+        });
+      }
       if (!this.openPersonChronicle(journeyKey, -1)) return false;
       if (stopIdx >= 0 && this.activePerson && this.activePerson.events.length) {
         const matchIdx = this.activePerson.events.findIndex((ev) => ev.journeyStopIdx === stopIdx);
@@ -7439,8 +7584,8 @@
             ? 'Relic Provenance · Across Dynasties'
             : '点物溯史 · 传世国器流转'
           : isEn
-            ? 'Person Chronicle · Life Across Time & Space'
-            : '点人溯事 · 人物生平纪事';
+            ? 'Person Chronicle · Key Life Milestones'
+            : '点人溯事 · 生平大事记';
       }
 
       const headingEl = this._id('genealogy-heading');
@@ -7540,8 +7685,8 @@
               : ` · ${sameTimeCount} 处同途`
             : '';
         const summaryTxt = isEn
-          ? `${events.length} events · ${dynCount} era${dynCount > 1 ? 's' : ''}${encounterSuffix}`
-          : `共 ${events.length} 处史事 · 历 ${dynCount} 朝${encounterSuffix}`;
+          ? `${events.length} key events · ${dynCount} era${dynCount > 1 ? 's' : ''}${encounterSuffix}`
+          : `${isMulti ? '共' : '精选'} ${events.length} 处${isMulti ? '史事' : '代表史事'} · 历 ${dynCount} 朝${encounterSuffix}`;
         subEl.innerHTML =
           `<span>${summaryTxt}</span>` +
           `<span class="person-sub-actions">` +
@@ -7578,9 +7723,22 @@
         const yrStr = isEn
           ? this.formatYear(ev.year)
           : `${ev.year <= 0 ? '前' + -ev.year : ev.year}年`;
+        const coreSite = String(ev.siteZh || '').replace(/(?:府|寺|城)$/, '');
+        const modNoProv = String(ev.modernZh || '').replace(
+          /^(?:河北|山西|辽宁|吉林|黑龙江|江苏|浙江|安徽|福建|江西|山东|河南|湖北|湖南|广东|海南|四川|贵州|云南|陕西|甘肃|青海|台湾|内蒙古|广西|西藏|宁夏|新疆)/,
+          ''
+        );
+        const isSameSite =
+          !ev.modernZh ||
+          ev.siteZh.includes(ev.modernZh) ||
+          ev.modernZh.includes(ev.siteZh) ||
+          (coreSite.length >= 2 && ev.modernZh.includes(coreSite)) ||
+          (modNoProv.length >= 2 && ev.siteZh.includes(modNoProv));
         const siteLabel = isEn
           ? ev.siteEn || this.trTerm(ev.siteZh)
-          : ev.siteZh + (ev.modernZh && !ev.siteZh.includes(ev.modernZh) ? `（今${ev.modernZh}）` : '');
+          : isSameSite
+            ? ev.siteZh
+            : `${ev.siteZh}（今${ev.modernZh}）`;
         const mapBadge = ev.isMapChange
           ? `<span class="ev-map-tag" title="${
               isEn ? 'Territory shift at this year' : '此节点触发版图演变'
@@ -8621,6 +8779,13 @@
       }
       if (!this._fullSnapshotsLoaded) {
         this._ensureFullSnapshots().then(() => {
+          if (this.activeTrace && Math.hypot(this.activeTrace[0] - lng, this.activeTrace[1] - lat) < 0.01) {
+            this.openGenealogyAt(lng, lat, this.activeTraceLabel, opts);
+          }
+        });
+      }
+      if (!this._isLoreDetailLoaded()) {
+        this._ensureLoreDetail().then(() => {
           if (this.activeTrace && Math.hypot(this.activeTrace[0] - lng, this.activeTrace[1] - lat) < 0.01) {
             this.openGenealogyAt(lng, lat, this.activeTraceLabel, opts);
           }
@@ -12045,14 +12210,30 @@
         'zhangqian',
         'dufu',
       ];
+      const multiShowcaseFallback = {
+        'libai,dufu': { events: 21, sameTime: 3, dynastyKey: 'tang' },
+        'libai,dufu,gaoshi': { events: 23, sameTime: 5, dynastyKey: 'tang' },
+        'caocao,liubei,sunquan': { events: 32, sameTime: 8, dynastyKey: 'donghan' },
+        'yanghu,duyu': { events: 10, sameTime: 2, dynastyKey: 'sanguo' },
+        'zhugeliang,simayi': { events: 16, sameTime: 3, dynastyKey: 'donghan' },
+        'zuti,liukun': { events: 9, sameTime: 1, dynastyKey: 'xijin' },
+      };
+      const loreReady = this._isLoreDetailLoaded();
       const pool = [];
       for (const spec of showcaseSpecs) {
         if (Array.isArray(spec)) {
           const profiles = this._resolvePersonProfiles(spec);
           if (profiles.length >= 2) {
-            const st = this._buildPersonTracksAndEvents(profiles);
-            if (st && st.isMulti) {
-              const d = st.events[0] ? st.events[0].dynasty : this.dynasties[0];
+            const fb = !loreReady ? multiShowcaseFallback[spec.join(',')] : null;
+            const st = fb ? null : this._buildPersonTracksAndEvents(profiles);
+            if (fb || (st && st.isMulti)) {
+              const evLen = fb ? fb.events : st.events.length;
+              const sameTimeCount = fb ? fb.sameTime : st.sameTimeCount;
+              const d = fb
+                ? this.dynasties.find((dyn) => dyn.key === fb.dynastyKey) || this.dynasties[0]
+                : st.events[0]
+                  ? st.events[0].dynasty
+                  : this.dynasties[0];
               pool.push({
                 kind: 'multi_person',
                 personKeys: profiles.map((p) => p.key),
@@ -12061,14 +12242,14 @@
                 year: null,
                 titleZh: profiles.map((p) => p.zh).join(' × '),
                 subZh:
-                  st.sameTimeCount > 0
-                    ? `共 ${st.events.length} 处行迹 · ${st.sameTimeCount} 处相逢`
-                    : `并行行迹对照 · 共 ${st.events.length} 处行迹`,
+                  sameTimeCount > 0
+                    ? `共 ${evLen} 处行迹 · ${sameTimeCount} 处相逢`
+                    : `并行行迹对照 · 共 ${evLen} 处行迹`,
                 titleEn: profiles.map((p) => p.en).join(' × '),
                 subEn:
-                  st.sameTimeCount > 0
-                    ? `${st.events.length} stops · ${st.sameTimeCount} encounters`
-                    : `${st.events.length} stops`,
+                  sameTimeCount > 0
+                    ? `${evLen} stops · ${sameTimeCount} encounters`
+                    : `${evLen} stops`,
               });
             }
           }
@@ -12088,6 +12269,9 @@
     _ensureSearchIndex() {
       if (!this._fullSnapshotsLoaded && typeof window !== 'undefined') {
         this._ensureFullSnapshots();
+      }
+      if (!this._isLoreDetailLoaded() && typeof window !== 'undefined') {
+        this._ensureLoreDetail();
       }
       if (this.searchIndex) return this.searchIndex;
       const entries = [];
@@ -12135,12 +12319,17 @@
       };
 
       // 0a. Historical Figures Chronicle Index (点人溯事)
+      const loreLoaded = this._isLoreDetailLoaded();
       for (const p of HistoricalAtlasController.PERSON_PROFILES) {
         const d =
           this.dynasties.find((item) => item.key === p.dynastyKey) ||
           this.dynasties[this._findDynastyIndex(p.span ? p.span[0] : 0)] ||
           this.dynasties[0];
-        const evCount = this._collectPersonEvents(p).length;
+        const evCount = loreLoaded
+          ? this._collectPersonEvents(p).length
+          : typeof p.evCount === 'number'
+            ? p.evCount
+            : this._collectPersonEvents(p).length;
         const aliases = this._personSearchAliases(p);
         const eraNames = [];
         if (!p.isRelic) {
@@ -12379,8 +12568,9 @@
 
       // 3. Historical Milestones / Events
       const eventEntries = [];
+      const eventPinyin = window.ATLAS_EVENT_PINYIN || {};
       for (const d of this.dynasties) {
-        for (const m of d.milestones || []) {
+        for (const [eventIdx, m] of (d.milestones || []).entries()) {
           const enHead = this._enMilestoneHeadline(d, m);
           const siteEn = m.site ? this._enMilestoneSite(d, m) : '';
           const yrEn = m.year <= 0 ? `${-m.year || 1} BCE` : `${m.year} CE`;
@@ -12395,6 +12585,7 @@
             subZh: `${m.year <= 0 ? '前' + -m.year : m.year}年${m.site ? ' · ' + m.site : ''}`,
             titleEn: enHead,
             subEn: `${yrEn}${siteEn ? ' · ' + siteEn : ''}`,
+            pinyinKeys: [...(eventPinyin.milestones?.[d.key]?.[eventIdx] || [])],
             keywords: `${m.headline} ${m.site || ''} ${enHead} ${siteEn} ${m.year}`.toLowerCase(),
           };
           entries.push(evEntry);
@@ -12404,12 +12595,28 @@
 
       // 3b. Curated Place Landmark Events (名胜史事 · 战役古迹)
       const seenLm = new Set();
-      for (const lm of HistoricalAtlasController.PLACE_LANDMARK_EVENTS) {
+      for (const [eventIdx, lm] of HistoricalAtlasController.PLACE_LANDMARK_EVENTS.entries()) {
         if (!lm.zh) continue;
         const uid = `${lm.year}:${lm.zh.slice(0, 16)}`;
         if (seenLm.has(uid)) continue;
         seenLm.add(uid);
         const lmKeywords = `${lm.zh} ${lm.site || ''} ${lm.en || ''} ${lm.siteEn || ''} ${lm.year}`.toLowerCase();
+        const yrEn = lm.year <= 0 ? `${-lm.year || 1} BCE` : `${lm.year} CE`;
+        const landmark = {
+          milestone: {
+            year: lm.year,
+            headline: lm.zh,
+            headlineEn: lm.en,
+            site: lm.site,
+            siteEn: lm.siteEn,
+            coord: lm.coord,
+          },
+          titleZh: lm.zh,
+          subZh: `${lm.year <= 0 ? '前' + -lm.year : lm.year}年${lm.site ? ' · ' + lm.site : ''}`,
+          titleEn: lm.en || lm.zh,
+          subEn: `${yrEn}${lm.siteEn ? ' · ' + lm.siteEn : ''}`,
+          pinyinKeys: eventPinyin.landmarks?.[eventIdx] || [],
+        };
         const existingEv = eventEntries.find(
           (ev) =>
             ev.rawYear === lm.year &&
@@ -12419,6 +12626,9 @@
         );
         if (existingEv) {
           existingEv.keywords += ` ${lmKeywords}`;
+          if (landmark.pinyinKeys.length) {
+            (existingEv.altPinyin ||= []).push(landmark);
+          }
           if (!existingEv.altTitlesZh) existingEv.altTitlesZh = [];
           existingEv.altTitlesZh.push(lm.zh);
           if (lm.en) {
@@ -12431,26 +12641,13 @@
           this.dynasties.find((dyn) => dyn.key === lm.dynastyKey) ||
           this.dynasties[this._findDynastyIndex(lm.year)] ||
           this.dynasties[0];
-        const yrEn = lm.year <= 0 ? `${-lm.year || 1} BCE` : `${lm.year} CE`;
-        const milestoneObj = {
-          year: lm.year,
-          headline: lm.zh,
-          headlineEn: lm.en,
-          site: lm.site,
-          siteEn: lm.siteEn,
-          coord: lm.coord,
-        };
         const lmEntry = {
+          ...landmark,
           kind: 'event',
           dynasty: d,
           year: this._clampYearToDynasty(d, lm.year),
           rawYear: lm.year,
-          milestone: milestoneObj,
           coord: lm.coord,
-          titleZh: lm.zh,
-          subZh: `${lm.year <= 0 ? '前' + -lm.year : lm.year}年${lm.site ? ' · ' + lm.site : ''}`,
-          titleEn: lm.en || lm.zh,
-          subEn: `${yrEn}${lm.siteEn ? ' · ' + lm.siteEn : ''}`,
           keywords: `${lmKeywords} 史事 事件 战役 名胜`,
         };
         entries.push(lmEntry);
@@ -12774,6 +12971,17 @@
       return 'event';
     }
 
+    _eventPinyinQuery(query) {
+      return query.toLowerCase().normalize('NFD')
+        .replace(/u\u0308/g, 'v')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[\p{Punctuation}\s`]/gu, '');
+    }
+
+    _canMatchEventPinyin(query, resultCount = 0) {
+      return resultCount < 12 && /^[a-z]{4,}$/.test(query);
+    }
+
     _queryQuickSearch(rawQuery) {
       const rawTrim = rawQuery.trim();
       if (!rawTrim) return [];
@@ -12786,6 +12994,8 @@
           .replace(/['’‘`\-_.\s]+/g, '');
       const isAscii = /[a-z]/i.test(q) && !/[\u4e00-\u9fa5]/.test(q);
       const qFold = isAscii ? fold(q) : '';
+      // Additional event fallback only; existing query normalization and scores stay intact.
+      const pinyinQuery = this._eventPinyinQuery(q);
       const index = this._ensureSearchIndex();
       const eraResults = this._matchEraResults(normQ);
       const hasEraMatch = eraResults.length > 0;
@@ -13000,6 +13210,51 @@
         }
       }
 
+      // Finish legacy ranking before pinyin candidates can affect bucket quotas or deduplication.
+      const ranked = this._rankQuickSearchResults(results);
+      if (!window.ATLAS_EVENT_PINYIN || !this._canMatchEventPinyin(pinyinQuery, ranked.length)) return ranked;
+      return this._appendEventPinyinResults(ranked, index, pinyinQuery, hasEraMatch);
+    }
+
+    _isDuplicateSearchEvent(item, previous) {
+      const year = item.rawYear !== undefined ? item.rawYear : item.year;
+      const previousYear = previous.rawYear !== undefined ? previous.rawYear : previous.year;
+      return previous.kind === 'event' && previousYear === year && previous.coord && item.coord &&
+        this.projector.greatCircleKm(previous.coord, item.coord) <= 65;
+    }
+
+    _appendEventPinyinResults(ranked, index, query, hasEraMatch) {
+      const matches = [];
+      for (const item of index) {
+        if (item.kind !== 'event') continue;
+        const sources = [item, ...(item.altPinyin || [])];
+        let source = sources.find(entry => entry.pinyinKeys?.includes(query));
+        let score = 50;
+        if (!source && !hasEraMatch) {
+          source = sources.find(entry => entry.pinyinKeys?.some(key => key.includes(query)));
+          score = 45;
+        }
+        if (!source) continue;
+        matches.push({
+          ...item,
+          milestone: source.milestone,
+          titleZh: source.titleZh,
+          titleEn: source.titleEn,
+          subZh: source.subZh,
+          subEn: source.subEn,
+          score: score + (item.dynasty === this.dynasties[this.dynastyIdx] ? 4 : 0),
+          bucket: 'event',
+        });
+      }
+      matches.sort((a, b) => b.score - a.score);
+      for (const item of matches) {
+        if (ranked.length >= 12) break;
+        if (!ranked.some(previous => this._isDuplicateSearchEvent(item, previous))) ranked.push(item);
+      }
+      return ranked;
+    }
+
+    _rankQuickSearchResults(results) {
       results.sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
         if (a.polityFrom !== undefined && b.polityFrom !== undefined) {
@@ -13039,15 +13294,7 @@
           );
           if (dupCity) continue;
         } else if (item.kind === 'event') {
-          const evYr = item.rawYear !== undefined ? item.rawYear : item.year;
-          const dupEv = deduped.some(
-            (prev) =>
-              prev.kind === 'event' &&
-              (prev.rawYear !== undefined ? prev.rawYear : prev.year) === evYr &&
-              prev.coord &&
-              item.coord &&
-              this.projector.greatCircleKm(prev.coord, item.coord) <= 65
-          );
+          const dupEv = deduped.some(previous => this._isDuplicateSearchEvent(item, previous));
           if (dupEv) continue;
         }
         deduped.push(item);
@@ -13441,13 +13688,32 @@
           searchList.appendChild(guideLi);
           searchList.classList.remove('is-hidden');
           if (this.locale === 'zh-tw') this._applyZhHantDom(searchList);
+          if (!this._isLoreDetailLoaded()) {
+            this._ensureLoreDetail();
+          }
           return;
         }
+        const pinyinQuery = this._eventPinyinQuery(q);
         if (/[a-z]/i.test(q) && !this._hasEnDict()) {
+          if (this._canMatchEventPinyin(pinyinQuery)) this._ensureEventPinyin();
           this._ensureEnglishLocale().then(renderSearchDropdown);
           return;
         }
         currentResults = this._queryQuickSearch(q);
+        const pendingSearchData = [];
+        if (!this._isLoreDetailLoaded()) pendingSearchData.push(this._ensureLoreDetail());
+        if (!window.ATLAS_EVENT_PINYIN && this._canMatchEventPinyin(pinyinQuery, currentResults.length)) {
+          pendingSearchData.push(this._ensureEventPinyin());
+        }
+        if (pendingSearchData.length) {
+          const prevSig = currentResults.map((r) => `${r.kind}:${r.titleZh}:${r.subZh}`).join('|');
+          Promise.all(pendingSearchData).then(() => {
+            if (searchList.classList.contains('is-hidden') || searchInp.value.trim() !== q) return;
+            const nextResults = this._queryQuickSearch(q);
+            const nextSig = nextResults.map((r) => `${r.kind}:${r.titleZh}:${r.subZh}`).join('|');
+            if (nextSig !== prevSig) renderSearchDropdown();
+          });
+        }
         activeSearchIdx = currentResults.length ? 0 : -1;
         searchList.innerHTML = '';
         if (!currentResults.length) {
@@ -15988,10 +16254,12 @@
       const hasEnDict = this._hasEnDict();
       const needsEnDict =
         !hasEnDict && (this.locale === 'en' || (place && /[a-z]/i.test(String(place))));
-      if (!this._fullSnapshotsLoaded || needsEnDict) {
+      const needsLoreDetail = !this._isLoreDetailLoaded();
+      if (!this._fullSnapshotsLoaded || needsEnDict || needsLoreDetail) {
         Promise.all([
           this._fullSnapshotsLoaded ? Promise.resolve() : this._ensureFullSnapshots(),
           needsEnDict ? this._ensureEnglishLocale() : Promise.resolve(),
+          needsLoreDetail ? this._ensureLoreDetail() : Promise.resolve(),
         ]).then(() => {
           this.locate(opts);
         });
@@ -16127,6 +16395,9 @@
         if (!this._fullSnapshotsLoaded && typeof window !== 'undefined') {
           tasks.push(this._ensureFullSnapshots());
         }
+        if (!this._isLoreDetailLoaded() && typeof window !== 'undefined') {
+          tasks.push(this._ensureLoreDetail());
+        }
         if (needsEn && typeof window !== 'undefined' && !this._hasEnDict()) {
           tasks.push(this._ensureEnglishLocale());
         }
@@ -16141,9 +16412,15 @@
         if (rawQ) {
           const inp = this._id('inp-map-search');
           if (inp) inp.value = rawQ;
+          const pinyinReady = this._canMatchEventPinyin(this._eventPinyinQuery(rawQ))
+            ? this._ensureEventPinyin()
+            : Promise.resolve();
           afterFullSnapshots(() => {
-            const hits = this._queryQuickSearch(rawQ);
-            if (hits && hits.length) this._selectSearchResult(hits[0]);
+            pinyinReady.then(() => {
+              if (inp && inp.value.trim() !== rawQ) return;
+              const hits = this._queryQuickSearch(rawQ);
+              if (hits && hits.length) this._selectSearchResult(hits[0]);
+            });
           }, 80);
         }
       }
@@ -16397,6 +16674,7 @@
           execute: async (args = {}) => {
             applyOptionalLang(args.lang);
             await this._ensureFullSnapshots();
+            await this._ensureLoreDetail();
             if (this.locale === 'en') await this._ensureEnglishLocale();
             return this.locate({
               year: args.year,
@@ -16440,6 +16718,7 @@
           execute: async (args = {}) => {
             applyOptionalLang(args.lang);
             await this._ensureFullSnapshots();
+            await this._ensureLoreDetail();
             if (this.locale === 'en') await this._ensureEnglishLocale();
             return this.inspect({
               year: args.year,
@@ -16476,6 +16755,7 @@
           execute: async (args = {}) => {
             applyOptionalLang(args.lang);
             await this._ensureFullSnapshots();
+            await this._ensureLoreDetail();
             if (this.locale === 'en') await this._ensureEnglishLocale();
             const stopIdx = typeof args.stop === 'number' ? args.stop : -1;
             this.openPersonChronicle(args.person, stopIdx);
