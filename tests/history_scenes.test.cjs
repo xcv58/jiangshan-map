@@ -77,10 +77,10 @@ const appFixture = () => ({
   openMilestoneBalloon(dynasty,event,options){ this.restoredEvent={dynasty,event,options}; },
 });
 
-test('the catalog has fourteen distinct X and YouTube embeds and bilingual context',()=> {
-  assert.equal(scenes.length,14);assert.equal(new Set(scenes.map(s=>s.id)).size,scenes.length);
+test('the catalog has fifteen distinct X and YouTube embeds and bilingual context',()=> {
+  assert.equal(scenes.length,15);assert.equal(new Set(scenes.map(s=>s.id)).size,scenes.length);
   assert.equal(new Set(scenes.map(sourceURL)).size,scenes.length);
-  assert.deepEqual(Object.fromEntries(['x','youtube'].map(provider=>[provider,scenes.filter(s=>s.provider===provider).length])),{x:8,youtube:6});
+  assert.deepEqual(Object.fromEntries(['x','youtube'].map(provider=>[provider,scenes.filter(s=>s.provider===provider).length])),{x:9,youtube:6});
   for (const s of scenes) {
     const host={x:'x.com',youtube:'www.youtube.com'}[s.provider];
     assert.equal(new URL(sourceURL(s)).hostname,host);assert(s.era);
@@ -105,7 +105,7 @@ test('era and duration filters intersect without modifying the catalog',()=> {
   assert.deepEqual(filterScenes(scenes,{era:'jin-mongol',length:'long'}).map(s=>s.id),['yehuling']);
   assert.deepEqual(filterScenes(scenes,{era:'donghan',length:'long'}).map(s=>s.id),['baima-yan-liang','hulao-three-heroes','warm-wine-hua-xiong']);
   assert.deepEqual(filterScenes(scenes,{era:'xihan',length:'short'}),[]);
-  assert.deepEqual(filterScenes(scenes,{era:'qin',length:'short'}).map(s=>s.id),['hongmen-banquet','hongmen-film','hongmen-yang','assassin-letter']);
+  assert.deepEqual(filterScenes(scenes,{era:'qin',length:'short'}).map(s=>s.id),['deer-called-horse','hongmen-banquet','hongmen-film','hongmen-yang','assassin-letter']);
   const boundary=[{...scenes[0],duration:180}];
   assert.equal(filterScenes(boundary,{length:'short'}).length,1);
   assert.equal(filterScenes(boundary,{length:'long'}).length,0);
@@ -126,7 +126,7 @@ test('a disabled map layer removes old pins without measuring layout',()=> {
 });
 test('city entries distinguish Xianyang from Chang’an and include both disputed cottage traditions',()=> {
   assert.deepEqual(scenesAtPlace(scenes,[108.94,34.27]).map(s=>s.id),['xuanwu-gate']);
-  assert.deepEqual(scenesAtPlace(scenes,[108.71,34.36]).map(s=>s.id),['jing-ke']);
+  assert.deepEqual(scenesAtPlace(scenes,[108.71,34.36]).map(s=>s.id),['jing-ke','deer-called-horse']);
   for(const coord of [[112.14,32.04],[112.53,32.99]]) {
     const ids=scenesAtPlace(scenes,coord).map(s=>s.id);
     assert.deepEqual(ids,['three-visits']);
@@ -135,6 +135,8 @@ test('city entries distinguish Xianyang from Chang’an and include both dispute
 });
 test('event watch buttons require both a matching year and a matching place',()=> {
   assert.deepEqual(scenesForEvent(scenes,{year:-226,coord:[116.4,39.9]}),[]);
+  assert.deepEqual(scenesForEvent(scenes,{year:-207,coord:[115.031,37.221]}),[]);
+  assert.deepEqual(scenesForEvent(scenes,{year:-207,coord:[108.70,34.33]}).map(s=>s.id),['deer-called-horse']);
   assert.deepEqual(scenesForEvent(scenes,{year:626,coord:[108.94,34.27]}).map(s=>s.id),['xuanwu-gate']);
   assert.deepEqual(scenesForEvent(scenes,{year:626,coord:[116.4,39.9]}),[]);
   assert.deepEqual(scenesForEvent(scenes,{year:626}),[]);
