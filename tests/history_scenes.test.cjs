@@ -32,7 +32,25 @@ function youtubeHarness() {
   vm.runInContext(fs.readFileSync(require.resolve('../js/history_scenes.js'),'utf8'),context);
   const states=[], player=new context.module.exports.ScenePlayer(()=>{},state=>states.push(state));
   const mount={...target(),children:[],append(frame){this.children.push(frame);}};
-  return {instances, states, player, mount};
+  return {instances, states, player, mount, context};
+}
+function browserHarness() {
+  const harness=youtubeHarness(),{context}=harness,nodes=new Map(),events=new EventTarget();
+  let hidden=false;
+  const element=()=>Object.assign(new EventTarget(),target(),{append(){},setAttribute(){}});
+  Object.assign(context.document,{
+    addEventListener:events.addEventListener.bind(events),
+    getElementById(id){if(!nodes.has(id))nodes.set(id,element());return nodes.get(id);},
+    createElementNS:element,
+  });
+  Object.defineProperty(context.document,'hidden',{get:()=>hidden});
+  context.window.addEventListener=()=>{};
+  context.MutationObserver=context.ResizeObserver=class{observe(){}};
+  const Browser=context.module.exports.SceneBrowser;
+  Browser.prototype.render=Browser.prototype.renderStatus=()=>{};
+  Browser.prototype.hashScene=()=>null;
+  const browser=new Browser(appFixture(),scenes);
+  return {...harness,browser,visibility(value){hidden=value;events.dispatchEvent(new Event('visibilitychange'));}};
 }
 const appFixture = () => ({
   year:750, camera:{x:100,y:200,w:400,h:240,zoom:2.5}, aspect:0.6,
@@ -280,7 +298,37 @@ test('constructing the player loads no third-party scripts or video',()=> {
   let requests=0;new ScenePlayer(()=>{requests++;},()=>{});
   assert.equal(requests,0);
 });
-test('pausing a YouTube player retains its frame and position across a tab switch',async()=> {
+test('switching tabs leaves YouTube playback and its owned frame unchanged',async()=> {
+  const {browser,instances,mount,visibility}=browserHarness();
+  await browser.player.load(scenes.find(s=>s.id==='hongmen-film'),mount,'en');
+  const api=instances[0],frame=mount.children[0],sequence=browser.player.sequence;
+  for(const [state,status] of [[1,'playing'],[2,'paused'],[0,'ended'],[3,'buffering'],[5,'ready']]) {
+    api.change(state);
+    for(const hidden of [true,false,true,false]) {
+      visibility(hidden);
+      assert.equal(api.state,state);assert.equal(browser.status,status);assert.equal(api.position,37);
+      assert.equal(browser.player.target,mount);assert.equal(browser.player.sequence,sequence);
+      assert.equal(api.pauses,0);assert.equal(api.destroyed,0);assert.equal(frame.removed,false);
+    }
+  }
+  browser.player.stop();assert.equal(api.destroyed,1);
+});
+test('switching tabs preserves both pending and ready X embeds without reloading',async()=> {
+  const {browser,mount,visibility}=browserHarness(),reply=deferred(),frame=target();let requests=0;
+  browser.player.getWidgets=async()=>({createTweet(){requests++;return reply.promise;}});
+  const loading=browser.player.load(scenes[0],mount,'en'),sequence=browser.player.sequence;
+  await Promise.resolve();
+  for(const hidden of [true,false]) {
+    visibility(hidden);assert.equal(browser.status,'loading');assert.equal(browser.player.target,mount);
+  }
+  reply.resolve(frame);await loading;
+  for(const hidden of [true,false,true,false]) {
+    visibility(hidden);assert.equal(browser.status,'ready');assert.equal(browser.player.target,mount);
+    assert.equal(browser.player.sequence,sequence);assert.equal(frame.removed,false);assert.equal(requests,1);
+  }
+  browser.player.stop();assert.equal(mount.removed,true);
+});
+test('pausing a YouTube player for map music retains its frame and position',async()=> {
   const {instances,states,player,mount}=youtubeHarness();
   await player.load(scenes.find(s=>s.id==='hongmen-film'),mount,'en');
   const api=instances[0],frame=mount.children[0];
@@ -292,7 +340,7 @@ test('pausing a YouTube player retains its frame and position across a tab switc
   player.stop();assert.equal(api.destroyed,1);assert.equal(frame.removed,true);
   const before=states.length;api.change(1);assert.equal(states.length,before,'destroyed player events are ignored');
 });
-test('an ended YouTube player keeps its replay screen when the tab is hidden',async()=> {
+test('an ended YouTube player keeps its replay screen when map music is selected',async()=> {
   const {instances,states,player,mount}=youtubeHarness();
   await player.load(scenes.find(s=>s.id==='hongmen-film'),mount,'en');
   const api=instances[0];api.change(0);player.pause();
@@ -314,7 +362,7 @@ test('an X widget without pause controls is stopped without leaving background a
   await player.load(scenes[0],mount,'en');player.pause();
   assert.equal(player.target,null);assert.equal(mount.removed,true);assert.equal(states.at(-1),'stopped');
 });
-test('hiding a pending player cancels late frames and their pause controls',async()=> {
+test('pausing a pending player for map music cancels late frames and their pause controls',async()=> {
   const pending=deferred(),states=[],mount=target();let own,disposed=0;
   const player=new ScenePlayer(()=>{},state=>states.push(state),18000,async(scene,target,lang,active,register)=>{
     own=register;return pending.promise;

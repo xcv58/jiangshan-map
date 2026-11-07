@@ -448,9 +448,6 @@
           e.preventDefault(); this.close();
         }
       }, true);
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) this.player.pause();
-      });
       this.stateObserver = new MutationObserver(() => this.render());
       this.stateObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
       this.cameraObserver = new MutationObserver(() => this.updateMarker());
